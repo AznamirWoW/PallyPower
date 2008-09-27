@@ -695,8 +695,11 @@ function PallyPower:ScanSpells()
 				if i == 1 then
 					talent = talent + select(5, GetTalentInfo(1, 10))
 				elseif i == 2 then
-			    	talent = talent + select(5, GetTalentInfo(3, 1))
+			    	talent = talent + select(5, GetTalentInfo(3, 5))
+			    elseif i == 3 then
+			    	talent = talent + select(5, GetTalentInfo(2, 2))
 				end
+
 				RankInfo[i].talent = talent
 			end
 		end
