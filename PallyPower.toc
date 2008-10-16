@@ -1,7 +1,7 @@
 ﻿## Interface: 30000
 ## Author: Aznamir
 ## Title: PallyPower |cff7fff7f-Ace2-|r
-## Version: @project-revision@ 
+## Version: @project-version@ 
 ## Notes: Raid/Party Paladin buffs
 ## Notes-esES: Buffs de Paladín para Grupo/Banda
 ## Notes-zhCN: 圣骑士祝福管理
