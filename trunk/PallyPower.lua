@@ -371,7 +371,7 @@ function PallyPowerConfigGrid_Update()
 			end
 			getglobal(fname .. "Symbols"):SetText(SkillInfo.symbols)
 			getglobal(fname .. "Symbols"):SetTextColor(1,1,0.5)
-			for id = 1, 6 do
+			for id = 1, 4 do
 				if SkillInfo[id] then
 					getglobal(fname.."Icon"..id):Show()
 					getglobal(fname.."Skill"..id):Show()
@@ -384,6 +384,10 @@ function PallyPowerConfigGrid_Update()
 					getglobal(fname.."Icon"..id):Hide()
 					getglobal(fname.."Skill"..id):Hide()
 				end
+			end
+			for id = 5, 6 do
+					getglobal(fname.."Icon"..id):Hide()
+					getglobal(fname.."Skill"..id):Hide()
 			end
 			for id = 1, PALLYPOWER_MAXCLASSES do
 				if BuffInfo and BuffInfo[id] then
