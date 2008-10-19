@@ -1895,7 +1895,7 @@ function PallyPower:AutoBuff(mousebutton)
 				end
 				--self:Print("penalty on " .. unit.name .. ": " .. penalty)
 				local buffExpire, _, buffName = self:IsBuffActive(spell, spell2, unit.unitid)
-				if ((not buffExpire or buffExpire + penalty < minExpire and buffExpire < PALLYPOWER_NORMALBLESSINGDURATION) and minExpire > 0 and not (buffName == PallyPower.GSpells[6])) then
+				if ((not buffExpire or buffExpire + penalty < minExpire and buffExpire < PALLYPOWER_NORMALBLESSINGDURATION) and minExpire > 0 ) then
 					--self:Print("buff needed " .. unit.name)
 					minExpire = (buffExpire or 0) + penalty
 					minUnit = unit
