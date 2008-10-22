@@ -27,6 +27,9 @@ function PallyPower:OnInitialize()
 	self.opt = self.db.profile
 	self:ScanInventory()
 	self:CreateLayout()
+	if self.opt.skin then
+		PallyPower:ApplySkin(self.opt.skin)
+ 	end
 	dewdrop:Register(PallyPowerConfigFrame, "children",
 		function(level, value) dewdrop:FeedAceOptionsTable(self.options) end,
 		"dontHook", true
