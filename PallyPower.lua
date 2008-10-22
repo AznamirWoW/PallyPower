@@ -1434,7 +1434,7 @@ function PallyPower:UpdateButton(button, baseName, classID)
 	elseif (nspecial > 0) then
 		button:SetBackdropColor(0.0, 0.0, 1.0, 0.5)
 	else
-		button:SetBackdropColor(0.0, 0.0, 0.0, 0.5)
+		button:SetBackdropColor(0.0, 0.75, 0.0, 0.5)
 	end
 
 	return classExpire, classDuration, specialExpire, specialDuration, nhave, nneed, nspecial
@@ -1546,7 +1546,7 @@ function PallyPower:UpdatePButton(button, baseName, classID, playerID)
 		--elseif (nneed == 1) then
 		--    button:SetBackdropColor(1.0, 1.0, 0.5, 0.5)
 		else
-			button:SetBackdropColor(0.0, 0.0, 0.0, 0.5)
+			button:SetBackdropColor(0.0, 0.75, 0.0, 0.5)
 		end	
 
 		if unit.hasbuff then
@@ -1580,7 +1580,7 @@ function PallyPower:UpdatePButton(button, baseName, classID, playerID)
 		end
 		name:SetText(unit.name)
 	else
-		button:SetBackdropColor(0.0, 0.0, 0.0, 0.5)
+		button:SetBackdropColor(0.0, 0.75, 0.0, 0.5)
 		buffIcon:SetAlpha(0)
 		rng:SetAlpha(0)
 		dead:SetAlpha(0)
@@ -1625,7 +1625,7 @@ function PallyPower:ButtonsUpdate()
 	elseif (sumnspecial > 0) then
 		autobutton:SetBackdropColor(0.0, 0.0, 1.0, 0.5)
 	else
-		autobutton:SetBackdropColor(0.0, 0.0, 0.0, 0.5)
+		autobutton:SetBackdropColor(0.0, 0.75, 0.0, 0.5)
 	end
 	time:SetText(self:FormatTime(minClassExpire))
 	time:SetTextColor(self:GetSeverityColor(minClassExpire and minClassDuration and (minClassExpire/minClassDuration) or 0))
@@ -1643,7 +1643,7 @@ function PallyPower:ButtonsUpdate()
 	if expire == 9999 then
 		rfbutton:SetBackdropColor(1.0, 0.0, 0.0, 0.5)
 	else
-		rfbutton:SetBackdropColor(0.0, 0.0, 0.0, 0.5)
+		rfbutton:SetBackdropColor(0.0, 0.75, 0.0, 0.5)
 	end
 	time:SetText(self:FormatTime(expire))
 	time:SetTextColor(self:GetSeverityColor(expire/duration))
@@ -1957,4 +1957,30 @@ function PallyPower:LoadPreset(preset)
 	else
 		self:Print("No such preset name")
 	end
+end
+
+function PallyPower:ApplySkin(skinname)
+
+    PallyPowerAuto:SetBackdrop({bgFile = 'Interface\\AddOns\\PallyPower\\Skins\\'..skinname,
+		                  edgeFile='Interface\\Tooltips\\UI-Tooltip-Border',
+						  tile=false, tileSize = 8, edgeSize = 8,
+						  insets = { left = 2, right = 2, top = 2, bottom = 2}});
+    PallyPowerRF:SetBackdrop({bgFile = 'Interface\\AddOns\\PallyPower\\Skins\\'..skinname,
+		                  edgeFile='Interface\\Tooltips\\UI-Tooltip-Border',
+						  tile=false, tileSize = 8, edgeSize = 8,
+						  insets = { left = 2, right = 2, top = 2, bottom = 2}});
+	for i = 1, PALLYPOWER_MAXCLASSES do
+		local cBtn = PallyPower.classButtons[i]
+		cBtn:SetBackdrop({bgFile = 'Interface\\AddOns\\PallyPower\\Skins\\'..skinname,
+		                  edgeFile='Interface\\Tooltips\\UI-Tooltip-Border',
+						  tile=false, tileSize = 8, edgeSize = 8,
+						  insets = { left = 2, right = 2, top = 2, bottom = 2}});
+		for j = 1, PALLYPOWER_MAXPERCLASS do
+			local pBtn = PallyPower.playerButtons[i][j]
+			pBtn:SetBackdrop({bgFile = 'Interface\\AddOns\\PallyPower\\Skins\\'..skinname,
+		                  edgeFile='Interface\\Tooltips\\UI-Tooltip-Border',
+						  tile=false, tileSize = 8, edgeSize = 8,
+						  insets = { left = 2, right = 2, top = 2, bottom = 2}});
+		end
+    end
 end
