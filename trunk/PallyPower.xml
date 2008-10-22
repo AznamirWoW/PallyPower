@@ -1113,12 +1113,29 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				</OnClick> 
 			</Scripts>
 		</Button>
-		<Button name="$parentOptions" inherits="GameMenuButtonTemplate" text="PALLYPOWER_OPTIONS" hidden="false">
+		<Button name="$parentAutoAssign" inherits="GameMenuButtonTemplate" text="Auto-Assign" hidden="false">
 			<Size>
 				<AbsDimension x="100" y="20" /> 
 			</Size>
 			<Anchors>
 				<Anchor point="BOTTOMRIGHT" relativeTo="$parentClear" relativePoint="BOTTOMLEFT">
+					<Offset>
+						<AbsDimension x="-7" y="0" /> 
+					</Offset>
+				</Anchor>
+			</Anchors>
+			<Scripts>
+				<OnClick>
+					PallyPower:AutoAssign();
+				</OnClick> 
+			</Scripts>
+		</Button>
+		<Button name="$parentOptions" inherits="GameMenuButtonTemplate" text="PALLYPOWER_OPTIONS" hidden="false">
+			<Size>
+				<AbsDimension x="100" y="20" /> 
+			</Size>
+			<Anchors>
+				<Anchor point="BOTTOMRIGHT" relativeTo="$parentAutoAssign" relativePoint="BOTTOMLEFT">
 					<Offset>
 						<AbsDimension x="-7" y="0" /> 
 					</Offset>
