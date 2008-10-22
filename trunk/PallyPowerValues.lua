@@ -43,6 +43,7 @@ PALLYPOWER_DEFAULT_VALUES = {
 	},
 	ShowInParty = true,
 	ShowWhenSingle = true,
+	skin = "Smooth",
 	};
 
 PallyPower_Credits1 = "Pally Power - by Aznamir";

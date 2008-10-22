@@ -132,6 +132,22 @@ PallyPower.options = {
 			type = "group",
 			desc = L["DISP_DESC"],
 			args = {
+				skin = {
+					name = "Skin",
+					type = "text",
+					desc = "Skin buttons",
+					get = "skinButtons",
+					set = "skinButtons",
+					validate = {
+							"Banto",
+							"BantoBarReverse",
+							"Glaze",
+							"Gloss",
+							"Healbot",
+							"oCB",
+							"Smooth",
+					},
+				},
 				columns = {
 					name = L["DISPCOL"],
 					type = "range",
@@ -248,6 +264,15 @@ end
 function PallyPower:ConfigScale(value)
 	if not value then return self.opt.configscale end
 	self.opt.configscale = value;
+end
+
+function PallyPower:skinButtons(value)
+	if not value then
+		return self.opt.skin;
+	else
+    	self.opt.skin = value;
+		PallyPower:ApplySkin(value);
+	end
 end
 
 function PallyPower:displayRows(value)
