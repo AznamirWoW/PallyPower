@@ -1987,3 +1987,127 @@ function PallyPower:ApplySkin(skinname)
 		end
     end
 end
+
+
+-- Auto-Assign blessings by Maddeathelf
+
+local WisdomPallys, MightPallys, KingsPallys,  SancPallys = {}, {}, {}, {}
+
+function PallyPower:AutoAssign()
+
+	PallyPowerConfig_Clear()
+	
+	for name in pairs(AllPallys) do
+		if PallyPower:CanBuff(name, 1) then
+			table.insert(WisdomPallys, PallyPower:AddPallyforRankings(name, AllPallys[name][1].rank, AllPallys[name][1].talent))
+		end
+		
+		if PallyPower:CanBuff(name, 2) then
+			table.insert(MightPallys, PallyPower:AddPallyforRankings(name, AllPallys[name][2].rank, AllPallys[name][2].talent))
+		end
+	
+		if PallyPower:CanBuff(name, 3) then
+			table.insert(KingsPallys, PallyPower:AddPallyforRankings(name, AllPallys[name][3].rank, AllPallys[name][3].talent))
+		end
+	
+		if PallyPower:CanBuff(name, 4) then
+			table.insert(SancPallys, PallyPower:AddPallyforRankings(name, AllPallys[name][4].rank, AllPallys[name][4].talent))
+		end
+	end
+	
+	local pallycount = 0	
+	for i, v in pairs(AllPallys) do
+		pallycount = pallycount + 1
+	end
+	-- Class Priorities (class, wisdom, might, kings, sanc)
+
+	PallyPower:SelectBuffsByClass(pallycount, 1, 5, 2, 1, 3)
+	PallyPower:SelectBuffsByClass(pallycount, 2, 5, 2, 1, 3)
+	PallyPower:SelectBuffsByClass(pallycount, 3, 2, 5, 1, 3)
+	PallyPower:SelectBuffsByClass(pallycount, 4, 2, 3, 1, 4)
+	PallyPower:SelectBuffsByClass(pallycount, 5, 2, 3, 1, 4)
+	PallyPower:SelectBuffsByClass(pallycount, 6, 3, 2, 1, 4)
+	PallyPower:SelectBuffsByClass(pallycount, 7, 2, 5, 1, 3)
+	PallyPower:SelectBuffsByClass(pallycount, 8, 2, 5, 1, 3)
+	PallyPower:SelectBuffsByClass(pallycount, 9, 2, 3, 1, 4)
+	--PallyPower:SelectBuffsByClass(pallycount, 10, 3, 2, 1, 4) Deathknight ftw
+	PallyPower:SelectBuffsByClass(pallycount, 11, 5, 2, 1, 3)
+
+end
+
+function PallyPower:SelectBuffsByClass(pallycount, class, wisdom, might, kings, sanc)
+-- l2code i r noob.
+	local pallys = {}
+	for name in pairs(AllPallys) do
+		table.insert(pallys, name)
+	end
+	local bufftable = {}
+	local buff = {spell = 1, rank = wisdom, }
+	table.insert(bufftable, buff)
+	local buff = {spell = 2, rank = might, }
+	table.insert(bufftable, buff)
+	local buff = {spell = 3, rank = kings, }
+	table.insert(bufftable, buff)
+	local buff = {spell = 4, rank = sanc, }
+	table.insert(bufftable, buff)
+
+	table.sort(bufftable, function(a,b) return a.rank<b.rank end)
+
+	if pallycount > 0 then
+		local pallycounter = 1
+		for i, v in pairs(bufftable) do
+			if pallycounter <= pallycount then
+				local nextspell = bufftable[i].spell
+				local buffer = PallyPower:BuffSelections(nextspell, class, pallys)
+				for i, v in pairs(pallys) do
+					if buffer == pallys[i] then table.remove(pallys, i) end
+				end
+				if buffer ~= "" then pallycounter = pallycounter + 1 end
+			end
+		end
+	end
+
+end
+
+function PallyPower:BuffSelections(buff, class, pallys)
+	local t = {}
+	if buff == 1 then t = WisdomPallys end
+	if buff == 2 then t = MightPallys end
+	if buff == 3 then t = KingsPallys end
+	if buff == 4 then t = SancPallys end
+
+	local Buffer = ""
+	testrank = 0
+	testtalent = 0
+	for i,v in pairs(t) do
+		if t[i].spellrank >= testrank and PallyPower:PallyAvailable(t[i].pallyname, pallys) then
+			testrank = t[i].spellrank
+			if t[i].spelltalents >= testtalent then			
+				testtalent = t[i].spelltalents
+				Buffer = t[i].pallyname
+			end
+		end
+	end
+	if Buffer ~= "" then
+			PallyPower_Assignments[Buffer][class] = buff
+			PallyPower:SendMessage("ASSIGN "..Buffer.." "..class.. " " ..buff)
+	else end
+	return Buffer
+end
+
+function PallyPower:PallyAvailable(pally, pallys)
+	local available = false
+	for i, v in pairs(pallys) do
+		if pallys[i] == pally then available = true end
+	end
+	return available
+end
+
+function PallyPower:AddPallyforRankings(name, rank, talent)
+    local newpally = {
+    	pallyname = name,
+    	spellrank = rank,
+    	spelltalents = talent
+    }
+	return newpally
+end
