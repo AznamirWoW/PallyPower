@@ -140,3 +140,14 @@ PallyPower.GSpells = {
 PallyPower.RFSpell = GetSpellInfo(25780) --BS["Righteous Fury"]
 
 PallyPower.HLSpell = GetSpellInfo(635)
+
+PallyPower.Skins = {
+    ["None"] = "Interface\\Tooltips\\UI-Tooltip-Background",
+	["Banto"] = "Interface\\AddOns\\PallyPower\\Skins\\Banto",
+	["BantoBarReverse"] = "Interface\\AddOns\\PallyPower\\Skins\\BantoBarReverse",
+	["Glaze"] = "Interface\\AddOns\\PallyPower\\Skins\\Glaze",
+	["Gloss"] = "Interface\\AddOns\\PallyPower\\Skins\\Gloss",
+	["Healbot"] = "Interface\\AddOns\\PallyPower\\Skins\\Healbot",
+	["oCB"] = "Interface\\AddOns\\PallyPower\\Skins\\oCB",
+	["Smooth"] = "Interface\\AddOns\\PallyPower\\Skins\\Smooth",
+	}

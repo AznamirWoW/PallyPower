@@ -1,4 +1,4 @@
-PallyPower = AceLibrary("AceAddon-2.0"):new("AceConsole-2.0","AceDB-2.0","AceEvent-2.0","AceDebug-2.0", "AceComm-2.0")
+PallyPower = AceLibrary("AceAddon-2.0"):new("AceConsole-2.0","AceDB-2.0","AceEvent-2.0","AceDebug-2.0")
 
 local dewdrop = AceLibrary("Dewdrop-2.0")
 local RL = AceLibrary("Roster-2.1")
@@ -1964,23 +1964,23 @@ end
 
 function PallyPower:ApplySkin(skinname)
 
-    PallyPowerAuto:SetBackdrop({bgFile = 'Interface\\AddOns\\PallyPower\\Skins\\'..skinname,
+    PallyPowerAuto:SetBackdrop({bgFile = PallyPower.Skins[skinname],
 		                  edgeFile='Interface\\Tooltips\\UI-Tooltip-Border',
 						  tile=false, tileSize = 8, edgeSize = 8,
 						  insets = { left = 2, right = 2, top = 2, bottom = 2}});
-    PallyPowerRF:SetBackdrop({bgFile = 'Interface\\AddOns\\PallyPower\\Skins\\'..skinname,
+    PallyPowerRF:SetBackdrop({bgFile = PallyPower.Skins[skinname],
 		                  edgeFile='Interface\\Tooltips\\UI-Tooltip-Border',
 						  tile=false, tileSize = 8, edgeSize = 8,
 						  insets = { left = 2, right = 2, top = 2, bottom = 2}});
 	for i = 1, PALLYPOWER_MAXCLASSES do
 		local cBtn = PallyPower.classButtons[i]
-		cBtn:SetBackdrop({bgFile = 'Interface\\AddOns\\PallyPower\\Skins\\'..skinname,
+		cBtn:SetBackdrop({bgFile = PallyPower.Skins[skinname],
 		                  edgeFile='Interface\\Tooltips\\UI-Tooltip-Border',
 						  tile=false, tileSize = 8, edgeSize = 8,
 						  insets = { left = 2, right = 2, top = 2, bottom = 2}});
 		for j = 1, PALLYPOWER_MAXPERCLASS do
 			local pBtn = PallyPower.playerButtons[i][j]
-			pBtn:SetBackdrop({bgFile = 'Interface\\AddOns\\PallyPower\\Skins\\'..skinname,
+			pBtn:SetBackdrop({bgFile = PallyPower.Skins[skinname],
 		                  edgeFile='Interface\\Tooltips\\UI-Tooltip-Border',
 						  tile=false, tileSize = 8, edgeSize = 8,
 						  insets = { left = 2, right = 2, top = 2, bottom = 2}});
