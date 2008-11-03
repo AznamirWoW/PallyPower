@@ -139,6 +139,7 @@ PallyPower.options = {
 					get = "skinButtons",
 					set = "skinButtons",
 					validate = {
+							"None",
 							"Banto",
 							"BantoBarReverse",
 							"Glaze",
