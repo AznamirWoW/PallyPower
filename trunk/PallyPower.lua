@@ -1431,13 +1431,13 @@ function PallyPower:UpdateButton(button, baseName, classID)
 	end
 
 	if (nhave == 0) then
-		button:SetBackdropColor(1.0, 0.0, 0.0, 0.5)
+		self:ApplyBackdrop(button, self.opt.cBuffNeedAll)
 	elseif (nneed > 0) then
-		button:SetBackdropColor(1.0, 1.0, 0.5, 0.5)
+ 		self:ApplyBackdrop(button, self.opt.cBuffNeedSome)
 	elseif (nspecial > 0) then
-		button:SetBackdropColor(0.0, 0.0, 1.0, 0.5)
+  		self:ApplyBackdrop(button, self.opt.cBuffNeedSpecial)
 	else
-		button:SetBackdropColor(0.0, 0.75, 0.0, 0.5)
+  		self:ApplyBackdrop(button, self.opt.cBuffGood)
 	end
 
 	return classExpire, classDuration, specialExpire, specialDuration, nhave, nneed, nspecial
@@ -1543,13 +1543,13 @@ function PallyPower:UpdatePButton(button, baseName, classID, playerID)
 		end
 
 		if (nspecial == 1) then
-			button:SetBackdropColor(0.0, 0.0, 1.0, 0.5)
+  			self:ApplyBackdrop(button, self.opt.cBuffNeedSpecial)
 		elseif (nhave == 0) then
-			button:SetBackdropColor(1.0, 0.0, 0.0, 0.5)
+   			self:ApplyBackdrop(button, self.opt.cBuffNeedAll)
 		--elseif (nneed == 1) then
 		--    button:SetBackdropColor(1.0, 1.0, 0.5, 0.5)
 		else
-			button:SetBackdropColor(0.0, 0.75, 0.0, 0.5)
+   			self:ApplyBackdrop(button, self.opt.cBuffGood)
 		end	
 
 		if unit.hasbuff then
@@ -1583,7 +1583,7 @@ function PallyPower:UpdatePButton(button, baseName, classID, playerID)
 		end
 		name:SetText(unit.name)
 	else
-		button:SetBackdropColor(0.0, 0.75, 0.0, 0.5)
+		self:ApplyBackdrop(button, self.opt.cBuffGood)
 		buffIcon:SetAlpha(0)
 		rng:SetAlpha(0)
 		dead:SetAlpha(0)
@@ -1622,13 +1622,13 @@ function PallyPower:ButtonsUpdate()
 	local time2 = _G["PallyPowerAutoTime2"]
 	local text = _G["PallyPowerAutoText"]
 	if (sumnhave == 0) then
-		autobutton:SetBackdropColor(1.0, 0.0, 0.0, 0.5)
+  		self:ApplyBackdrop(autobutton, self.opt.cBuffNeedAll)
 	elseif (sumnneed > 0) then
-		autobutton:SetBackdropColor(1.0, 1.0, 0.5, 0.5)
+  		self:ApplyBackdrop(autobutton, self.opt.cBuffNeedSome)
 	elseif (sumnspecial > 0) then
-		autobutton:SetBackdropColor(0.0, 0.0, 1.0, 0.5)
+		self:ApplyBackdrop(autobutton, self.opt.cBuffNeedSpecial)
 	else
-		autobutton:SetBackdropColor(0.0, 0.75, 0.0, 0.5)
+  		self:ApplyBackdrop(autobutton, self.opt.cBuffGood)
 	end
 	time:SetText(self:FormatTime(minClassExpire))
 	time:SetTextColor(self:GetSeverityColor(minClassExpire and minClassDuration and (minClassExpire/minClassDuration) or 0))
@@ -1644,9 +1644,9 @@ function PallyPower:ButtonsUpdate()
 	local time = _G["PallyPowerRFTime"]
 	local expire, duration = PallyPower:GetRFExpiration()
 	if expire == 9999 then
-		rfbutton:SetBackdropColor(1.0, 0.0, 0.0, 0.5)
+  		self:ApplyBackdrop(rfbutton, self.opt.cBuffNeedAll)
 	else
-		rfbutton:SetBackdropColor(0.0, 0.75, 0.0, 0.5)
+  		self:ApplyBackdrop(rfbutton, self.opt.cBuffGood)
 	end
 	time:SetText(self:FormatTime(expire))
 	time:SetTextColor(self:GetSeverityColor(expire/duration))
@@ -1986,6 +1986,11 @@ function PallyPower:ApplySkin(skinname)
 						  insets = { left = 2, right = 2, top = 2, bottom = 2}});
 		end
     end
+end
+
+-- button coloring: preset
+function PallyPower:ApplyBackdrop(button, preset)
+	button:SetBackdropColor(preset["r"], preset["g"], preset["b"], preset["t"])
 end
 
 
