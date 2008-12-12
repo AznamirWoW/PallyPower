@@ -2035,7 +2035,7 @@ function PallyPower:AutoAssign()
 	PallyPower:SelectBuffsByClass(pallycount, 7, 2, 5, 1, 3)
 	PallyPower:SelectBuffsByClass(pallycount, 8, 2, 5, 1, 3)
 	PallyPower:SelectBuffsByClass(pallycount, 9, 2, 3, 1, 4)
-	--PallyPower:SelectBuffsByClass(pallycount, 10, 3, 2, 1, 4) Deathknight ftw
+	PallyPower:SelectBuffsByClass(pallycount, 10, 3, 2, 1, 4)
 	PallyPower:SelectBuffsByClass(pallycount, 11, 5, 2, 1, 3)
 
 end
