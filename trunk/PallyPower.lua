@@ -1084,7 +1084,7 @@ function PallyPower:CreateLayout()
 	    					
 	    cButton:SetAttribute("_onleave", [[ 
 											elap=0
-											control:SetAnimating(true)
+											control:ChildUpdate("dohide")
 										]] 
 	    					)
 		cButton:SetAttribute("_onupdate", [[
@@ -1094,7 +1094,6 @@ function PallyPower:CreateLayout()
 									  		    elap = elap + elapsed
 									  		    if elap>=1 then
 									  		    	control:ChildUpdate("dohide")
-									  		    	control:SetAnimating(false)
 									  		    end
 									  		end
 										  ]]
