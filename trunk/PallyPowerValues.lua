@@ -48,6 +48,7 @@ PALLYPOWER_DEFAULT_VALUES = {
  	cBuffNeedSome    = {r = 1.0, g = 1.0, b = 0.5, t = 0.5},
  	cBuffNeedSpecial = {r = 0.0, g = 0.0, b = 1.0, t = 0.5},
 	cBuffGood        = {r = 0.0, g = 0.7, b = 0.0, t = 0.5},
+	seal = 0, -- default wisdom
 	};
 
 PallyPower_Credits1 = "Pally Power - by Aznamir";
@@ -155,3 +156,18 @@ PallyPower.Skins = {
 	["oCB"] = "Interface\\AddOns\\PallyPower\\Skins\\oCB",
 	["Smooth"] = "Interface\\AddOns\\PallyPower\\Skins\\Smooth",
 	}
+	
+PallyPower.Seals = {
+    [0] = "",
+    [1] = GetSpellInfo(20164), -- seal of justice
+	[2] = GetSpellInfo(20165), -- seal of light
+    [3] = GetSpellInfo(20166), -- seal of wisdom
+    [4] = GetSpellInfo(21084), -- seal of right
+    [5] = GetSpellInfo(53720), -- seal of martyr
+    [6] = GetSpellInfo(31801), -- seal of vengeance
+    [7] = GetSpellInfo(20375), -- seal of command
+    [8] = GetSpellInfo(53736), -- seal of corruption
+    [9] = GetSpellInfo(31892), -- seal of blood
+    [10] = "",
+
+}
