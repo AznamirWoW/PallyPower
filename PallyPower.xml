@@ -206,7 +206,19 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						</Anchor>
 					</Anchors>
 				</Texture>
-				<FontString name="$parentTime" inherits="GameFontHighlightSmall" text="30:00" justifyH="RIGHT">
+				<Texture name="$parentIconSeal" file="Interface/Icons/Spell_Holy_SealOfWisdom">
+					<Size>
+						<AbsDimension x="26" y="26" /> 
+					</Size>
+					<Anchors>
+						<Anchor point="TOPLEFT">
+							<Offset>
+								<AbsDimension x="32" y="-4" /> 
+							</Offset>
+						</Anchor>
+					</Anchors>
+				</Texture>
+				<FontString name="$parentTime1" inherits="GameFontHighlightSmall" text="30:00" justifyH="RIGHT">
 					<Size>
 						<AbsDimension x="35" y="16" /> 
 					</Size>
@@ -218,16 +230,29 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						</Anchor>
 					</Anchors>
 				</FontString>
+				<FontString name="$parentTime2" inherits="GameFontHighlightSmall" text="30:00" justifyH="RIGHT">
+					<Size>
+						<AbsDimension x="35" y="16" /> 
+					</Size>
+					<Anchors>
+						<Anchor point="BOTTOMRIGHT">
+							<Offset>
+								<AbsDimension x="-5" y="3" /> 
+							</Offset>
+						</Anchor>
+					</Anchors>
+				</FontString>
+
 			</Layer>
 		</Layers>
 		<Scripts>
-			<OnEnter>
-				--PallyPower.ButtonSetTooltip(this, nil);
-			</OnEnter>
-			<OnLeave>
-				--this.updateTooltip = nil;
-				--GameTooltip:Hide();
-			</OnLeave>
+			<OnMouseWheel>
+				if (arg1==-1) then
+					PallyPower:SealCycle()
+				else
+					PallyPower:SealCycleBackward()
+				end
+			</OnMouseWheel>
 		</Scripts>
 	</Button>
 	<Button name="PallyPowerPopupTemplate" virtual="true" frameStrata="LOW">

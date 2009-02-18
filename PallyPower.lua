@@ -1138,7 +1138,7 @@ function PallyPower:CreateLayout()
 	self.autoButton:RegisterForClicks("LeftButtonDown", "RightButtonDown")
 
 	self.rfButton = CreateFrame("Button", "PallyPowerRF", self.Header, "PallyPowerRFButtonTemplate")
-	self.rfButton:RegisterForClicks("LeftButtonDown")
+	self.rfButton:RegisterForClicks("LeftButtonDown", "RightButtonDown")
 
 	self:UpdateLayout()
 	self:Debug("Create Layout -- end")
@@ -1262,7 +1262,12 @@ function PallyPower:UpdateLayout()
 	rfb:SetAttribute("type1", "spell")
 	rfb:SetAttribute("unit1", "player")
 	rfb:SetAttribute("spell1", PallyPower.RFSpell)
-	if self:GetNumUnits() > 0 and self.opt.rfbuff and not (PallyPowerDB.disabled and PallyPowerDB.disabled.Default) and PP_IsPally then
+	rfb:SetAttribute("type2", "spell")
+	rfb:SetAttribute("unit2", "player")
+    rfb:SetAttribute("spell2", PallyPower.Seals[self.opt.seal])
+    PallyPower:SealAssign(self.opt.seal)
+	--if self:GetNumUnits() > 0 and self.opt.rfbuff and not 
+	if not (PallyPowerDB.disabled and PallyPowerDB.disabled.Default) and PP_IsPally then
 		rfb:Show()
 	else
 		rfb:Hide()
@@ -1498,6 +1503,22 @@ function PallyPower:GetRFExpiration()
 	return rfExpire, rfDuration
 end
 
+function PallyPower:GetSealExpiration()
+    local spell = PallyPower.Seals[self.opt.seal]
+    local j = 1
+    local sealExpire, sealDuration = 9999, 30*60
+	local buffName, _, _, _, _, buffDuration, buffExpire = UnitBuff("player", j)
+	while buffExpire do
+		if buffName == spell then
+			sealExpire = buffExpire - GetTime()
+			break
+		end
+		j = j + 1
+		buffName, _, _, _, _, buffDuration, buffExpire = UnitBuff("player", j)
+	end
+	return sealExpire, sealDuration
+end
+
 function PallyPower:UpdatePButton(button, baseName, classID, playerID)
 	--self:Print("Update PButton: %s, Class: %s, Player: %s", baseName, classID, playerID)
 	local button = _G[baseName]
@@ -1640,15 +1661,23 @@ function PallyPower:ButtonsUpdate()
 	end
 	
 	local rfbutton = _G["PallyPowerRF"]
-	local time = _G["PallyPowerRFTime"]
-	local expire, duration = PallyPower:GetRFExpiration()
-	if expire == 9999 then
+	local time1 = _G["PallyPowerRFTime1"] -- rf timer
+	local time2 = _G["PallyPowerRFTime2"] -- seal timer
+	local expire1, duration1 = PallyPower:GetRFExpiration()
+	local expire2, duration2 = PallyPower:GetSealExpiration()
+	
+	time1:SetText(self:FormatTime(expire1))
+	time1:SetTextColor(self:GetSeverityColor(expire1/duration1))
+	time2:SetText(self:FormatTime(expire2))
+	time2:SetTextColor(self:GetSeverityColor(expire2/duration2))
+	
+	if (expire1 == 9999 and self.opt.rfbuff) and (expire2 == 9999 and self.opt.seal == 0) then
   		self:ApplyBackdrop(rfbutton, self.opt.cBuffNeedAll)
-	else
+  	elseif (expire1 == 9999 and self.opt.rfbuff) or (expire2 == 9999 and self.opt.seal > 0) then
+  	    self:ApplyBackdrop(rfbutton, self.opt.cBuffNeedSome)
+	else                                               
   		self:ApplyBackdrop(rfbutton, self.opt.cBuffGood)
 	end
-	time:SetText(self:FormatTime(expire))
-	time:SetTextColor(self:GetSeverityColor(expire/duration))
 end
 
 function PallyPower:UpdateAnchor(displayedButtons)
@@ -1992,6 +2021,53 @@ function PallyPower:ApplyBackdrop(button, preset)
 	button:SetBackdropColor(preset["r"], preset["g"], preset["b"], preset["t"])
 end
 
+function PallyPower:SetSeal(seal)
+	self.opt.seal = seal
+end
+
+function PallyPower:SealCycle()
+	if InCombatLockdown() then return false end
+    if not self.opt.seal then
+    	self.opt.seal = 0
+    end
+    cur = self.opt.seal
+    for test=cur+1, 10 do
+    	cur = test
+    	if GetSpellInfo(PallyPower.Seals[cur]) then 
+			do break end
+		end
+    end
+    if cur == 10 then 
+		cur = 0 
+	end
+	PallyPower:SealAssign(cur)
+end
+
+function PallyPower:SealCycleBackward()
+	if InCombatLockdown() then return false end
+	if not self.opt.seal then 
+		self.opt.seal = 0
+	end
+	cur = self.opt.seal
+	if cur == 0 then 
+		cur = 10 
+	end
+	for test=cur-1, 0, -1 do
+	    cur = test
+		if GetSpellInfo(PallyPower.Seals[test]) then
+			do break end
+		end
+	end
+	PallyPower:SealAssign(cur)
+end
+
+function PallyPower:SealAssign(seal)
+	self.opt.seal = seal
+	local name, _, icon = GetSpellInfo(PallyPower.Seals[seal])
+	local sealIcon = _G["PallyPowerRFIconSeal"] -- seal icon
+	sealIcon:SetTexture(icon)
+	self.rfButton:SetAttribute("spell2", name)
+end
 
 -- Auto-Assign blessings by Maddeathelf
 
