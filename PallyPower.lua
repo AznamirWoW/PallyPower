@@ -1750,7 +1750,8 @@ function PallyPower:GetUnitAndSpellSmart(classID, mousebutton)
 		 	spell = PallyPower.Spells[spellID]
 			spell2 = PallyPower.GSpells[spellID]
 			gspell = PallyPower.GSpells[gspellID]
-			if not self:IsBuffActive(spell, spell2, unit.unitid) and IsSpellInRange(spell, unit.unitid) == 1 then
+			local buffExpire, buffDuration = self:IsBuffActive(spell, spell2, unit.unitid)
+			if (not buffExpire or buffExpire/buffDuration < 0.5) and IsSpellInRange(spell, unit.unitid) == 1 then
 				return unit.unitid, spell, gspell
 			end
 		end
