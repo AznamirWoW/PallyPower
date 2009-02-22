@@ -49,7 +49,7 @@ L:RegisterTranslations("enUS", function()
 		["WAIT_DESC"]		= "Whether to wait for all people to be in range and online to buff a class.",
 		["RESET"]		= "Reset Frames",
 		["RESET_DESC"]		= "Reset all PallyPower frames back to center",
-		["RFBUFF"] 		= "Righteous Fury",
+		["RFBUFF"] 		= "Righteous Fury / Seals",
 		["RFBUFF_DESC"] 	= "Righteous Fury monitoring enable/disable",
 		["FREEASSIGN"] 		= "Free assignment",
 		["FREEASSIGN_DESC"] 	= "Allow others to change your blessings without being leader/promoted",

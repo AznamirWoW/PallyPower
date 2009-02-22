@@ -16,6 +16,7 @@ PALLYPOWER_DEFAULT_VALUES = {
 	smartbuffs = true,
 	greaterbuffs = true,
 	rfbuff = true,
+	rf = true,
 	autobuff = {
 		autokey1 = ",",
 		autokey2 = "CTRL-,",
