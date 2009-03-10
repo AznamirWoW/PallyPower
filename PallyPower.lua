@@ -2113,19 +2113,19 @@ function PallyPower:AutoAssign()
 	
 	for name in pairs(AllPallys) do
 		if PallyPower:CanBuff(name, 1) then
-			table.insert(WisdomPallys, PallyPower:AddPallyforRankings(name, AllPallys[name][1].rank, AllPallys[name][1].talent))
+			table.insert(WisdomPallys, {pallyname = name, spellrank = AllPallys[name][1].rank, spelltalents =AllPallys[name][1].talent}) 
 		end
 		
 		if PallyPower:CanBuff(name, 2) then
-			table.insert(MightPallys, PallyPower:AddPallyforRankings(name, AllPallys[name][2].rank, AllPallys[name][2].talent))
+			table.insert(MightPallys, {pallyname = name, spellrank = AllPallys[name][2].rank, spelltalents =AllPallys[name][2].talent}) 
 		end
 	
 		if PallyPower:CanBuff(name, 3) then
-			table.insert(KingsPallys, PallyPower:AddPallyforRankings(name, AllPallys[name][3].rank, AllPallys[name][3].talent))
+			table.insert(KingsPallys, {pallyname = name, spellrank = AllPallys[name][3].rank, spelltalents =AllPallys[name][3].talent}) 
 		end
 	
 		if PallyPower:CanBuff(name, 4) then
-			table.insert(SancPallys, PallyPower:AddPallyforRankings(name, AllPallys[name][4].rank, AllPallys[name][4].talent))
+			table.insert(SancPallys, {pallyname = name, spellrank = AllPallys[name][4].rank, spelltalents =AllPallys[name][4].talent}) 
 		end
 	end
 	
@@ -2144,7 +2144,7 @@ function PallyPower:AutoAssign()
 	PallyPower:SelectBuffsByClass(pallycount, 7, 2, 5, 1, 3)
 	PallyPower:SelectBuffsByClass(pallycount, 8, 2, 5, 1, 3)
 	PallyPower:SelectBuffsByClass(pallycount, 9, 2, 3, 1, 4)
-	PallyPower:SelectBuffsByClass(pallycount, 10, 3, 2, 1, 4)
+	PallyPower:SelectBuffsByClass(pallycount, 10, 5, 2, 1, 3)
 	PallyPower:SelectBuffsByClass(pallycount, 11, 5, 2, 1, 3)
 
 end
@@ -2215,13 +2215,4 @@ function PallyPower:PallyAvailable(pally, pallys)
 		if pallys[i] == pally then available = true end
 	end
 	return available
-end
-
-function PallyPower:AddPallyforRankings(name, rank, talent)
-    local newpally = {
-    	pallyname = name,
-    	spellrank = rank,
-    	spelltalents = talent
-    }
-	return newpally
 end
