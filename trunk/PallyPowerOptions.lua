@@ -63,6 +63,17 @@ PallyPower.options = {
 				[true] = L["ENABLED"]
 			},
 		},
+  		auras = {
+			name = L["AURAS"],
+			type = "toggle",
+			desc = L["AURAS_DESC"],
+			get = "ToggleAuras",
+			set = "ToggleAuras",
+			map = {
+				[false]=L["DISABLED"],
+				[true] = L["ENABLED"]
+			},
+		},
   		freeassign = {
 			name = L["FREEASSIGN"],
 			type = "toggle",
@@ -355,3 +366,10 @@ function PallyPower:ToggleWaitPeople(value)
 	if type(value) == "nil" then return self.opt.autobuff.waitforpeople end
 	self.opt.autobuff.waitforpeople = value;
 end
+
+function PallyPower:ToggleAuras(value)
+	if type(value) == "nil" then return self.opt.auras end
+	self.opt.auras = value;
+	PallyPower:UpdateLayout();
+end
+

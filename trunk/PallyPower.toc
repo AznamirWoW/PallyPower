@@ -11,7 +11,8 @@
 ## X-Category: Paladin
 ## X-Embeds: Ace2, RosterLib, DewdropLib
 ## X-RelSite-Curse: 3738
-## SavedVariables: PallyPowerDB, PallyPower_Assignments, PallyPower_NormalAssignments, PallyPower_SavedPresets
+## SavedVariables: PallyPowerDB, PallyPower_Assignments, PallyPower_NormalAssignments, PallyPower_AuraAssignments, PallyPower_SavedPresets
+
 
 embeds.xml
 
