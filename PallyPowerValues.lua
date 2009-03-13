@@ -7,6 +7,7 @@ PALLYPOWER_MAXCLASSES = 11;
 PALLYPOWER_MAXPERCLASS = 8;
 PALLYPOWER_NORMALBLESSINGDURATION = 10*60;
 PALLYPOWER_GREATERBLESSINGDURATION = 30*60;
+PALLYPOWER_MAXAURAS = 7;
 
 PallyPower.CONFIG_DRAGHANDLE = L["DRAGHANDLE"];
 
@@ -17,6 +18,7 @@ PALLYPOWER_DEFAULT_VALUES = {
 	greaterbuffs = true,
 	rfbuff = true,
 	rf = true,
+	auras = true,
 	autobuff = {
 		autokey1 = ",",
 		autokey2 = "CTRL-,",
@@ -109,6 +111,18 @@ PallyPower.NormalBlessingIcons = {
 	[2] = "Interface\\Icons\\Spell_Holy_FistOfJustice",
 	[3] = "Interface\\Icons\\Spell_Magic_MageArmor",
 	[4] = "Interface\\Icons\\Spell_Nature_LightningShield"};
+
+PallyPower.AuraIcons = {
+    [-1] = "",
+	[1] = "Interface\\Icons\\Spell_Holy_DevotionAura",
+	[2] = "Interface\\Icons\\Spell_Holy_AuraOfLight",
+	[3] = "Interface\\Icons\\Spell_Holy_MindSooth",
+	[4] = "Interface\\Icons\\Spell_Shadow_SealOfKings",
+	[5] = "Interface\\Icons\\Spell_Frost_WizardMark",
+	[6] = "Interface\\Icons\\Spell_Fire_SealOfFire",
+	[7] = "Interface\\Icons\\Spell_Holy_CrusaderAura",
+};
+
 --
 -- Need to add localizations
 --
@@ -133,7 +147,7 @@ PallyPower.Spells = {
 	[2] = GetSpellInfo(19740), --BS["Blessing of Might"],
 	[3] = GetSpellInfo(20217), --BS["Blessing of Kings"],
 	[4] = GetSpellInfo(20911), --BS["Blessing of Sanctuary"],
-	};
+};
 
 PallyPower.GSpells = {
 	[0] = "",
@@ -141,7 +155,7 @@ PallyPower.GSpells = {
 	[2] = GetSpellInfo(25782), --BS["Greater Blessing of Might"],
 	[3] = GetSpellInfo(25898), --BS["Greater Blessing of Kings"],
 	[4] = GetSpellInfo(25899), --BS["Greater Blessing of Sanctuary"],
-	};
+};
 
 PallyPower.RFSpell = GetSpellInfo(25780) --BS["Righteous Fury"]
 
@@ -156,7 +170,7 @@ PallyPower.Skins = {
 	["Healbot"] = "Interface\\AddOns\\PallyPower\\Skins\\Healbot",
 	["oCB"] = "Interface\\AddOns\\PallyPower\\Skins\\oCB",
 	["Smooth"] = "Interface\\AddOns\\PallyPower\\Skins\\Smooth",
-	}
+};
 	
 PallyPower.Seals = {
     [0] = "",
@@ -170,5 +184,15 @@ PallyPower.Seals = {
     [8] = GetSpellInfo(53736), -- seal of corruption
     [9] = GetSpellInfo(31892), -- seal of blood
     [10] = "",
+};
 
-}
+PallyPower.Auras = {
+	[0] = "",
+	[1] = GetSpellInfo(465), --BS["Devotion Aura"],
+	[2] = GetSpellInfo(7294), --BS["Retribution Aura"],
+	[3] = GetSpellInfo(19746), --BS["Concentration Aura"],
+	[4] = GetSpellInfo(19876), --BS["Shadow Resistance Aura"],
+	[5] = GetSpellInfo(19888), --BS["Frost Resistance Aura"],
+	[6] = GetSpellInfo(19891), --BS["Fire Resistance Aura"],
+	[7] = GetSpellInfo(32223), --BS["Crusader Aura"],
+};

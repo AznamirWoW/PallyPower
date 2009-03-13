@@ -8,6 +8,7 @@ local classlist, classes = {}, {}
 LastCast = {}
 PallyPower_Assignments = {}
 PallyPower_NormalAssignments = {}
+PallyPower_AuraAssignments = {}
 
 PallyPower_SavedPresets = {}
 
@@ -361,6 +362,7 @@ function PallyPowerConfigGrid_Update()
 			local SkillInfo = AllPallys[name]
 			local BuffInfo = PallyPower_Assignments[name]
 			local NormalBuffInfo = PallyPower_NormalAssignments[name]
+	
 			getglobal(fname .. "Name"):SetText(name)
 
 			if PallyPower:CanControl(name) then
@@ -374,13 +376,15 @@ function PallyPowerConfigGrid_Update()
 			end
 			getglobal(fname .. "Symbols"):SetText(SkillInfo.symbols)
 			getglobal(fname .. "Symbols"):SetTextColor(1,1,0.5)
+			
+			-- display the rank/talents for the blessings...
 			for id = 1, 4 do
 				if SkillInfo[id] then
 					getglobal(fname.."Icon"..id):Show()
 					getglobal(fname.."Skill"..id):Show()
 					local txt = SkillInfo[id].rank
-					if SkillInfo[id].talent + 0 > 0 then 
-					txt = txt.. "+" .. SkillInfo[id].talent
+					if SkillInfo[id].talent and (SkillInfo[id].talent + 0 > 0) then 
+						txt = txt.. "+" .. SkillInfo[id].talent
 					end
 					getglobal(fname.."Skill"..id):SetText(txt)
 				else
@@ -389,9 +393,37 @@ function PallyPowerConfigGrid_Update()
 				end
 			end
 			for id = 5, 6 do
-					getglobal(fname.."Icon"..id):Hide()
-					getglobal(fname.."Skill"..id):Hide()
+				getglobal(fname.."Icon"..id):Hide()
+				getglobal(fname.."Skill"..id):Hide()
 			end
+			
+			-- display the rank/talents for only the 3 primary auras (devotion, retribution, concentration)
+			if not AllPallys[name].AuraInfo then
+				AllPallys[name].AuraInfo = {}
+			end
+			local AuraInfo = AllPallys[name].AuraInfo
+			for id = 1, 3 do
+				if AuraInfo[id] then
+					getglobal(fname.."AIcon"..id):Show()
+					getglobal(fname.."ASkill"..id):Show()
+					local txt = AuraInfo[id].rank
+					if AuraInfo[id].talent and (AuraInfo[id].talent + 0 > 0) then 
+						txt = txt.. "+" .. AuraInfo[id].talent
+					end
+					getglobal(fname.."ASkill"..id):SetText(txt)
+				else
+					getglobal(fname.."AIcon"..id):Hide()
+					getglobal(fname.."ASkill"..id):Hide()
+				end
+			end
+			
+			local aura = PallyPower_AuraAssignments[name]
+			if ( aura and aura > 0 ) then
+				getglobal(fname.."Aura1Icon"):SetTexture(PallyPower.AuraIcons[aura])
+			else
+				getglobal(fname.."Aura1Icon"):SetTexture(nil)
+			end
+			
 			for id = 1, PALLYPOWER_MAXCLASSES do
 				if BuffInfo and BuffInfo[id] then
 					getglobal(fname.."Class"..id.."Icon"):SetTexture(PallyPower.BlessingIcons[BuffInfo[id]])
@@ -403,11 +435,12 @@ function PallyPowerConfigGrid_Update()
 			i = i + 1
 			numPallys = numPallys + 1
 		end
-		PallyPowerConfigFrame:SetHeight(14 + 24 + 56 + (numPallys * 56) + 22 + 13 * numMaxClass)
+		PallyPowerConfigFrame:SetHeight(14 + 24 + 56 + (numPallys * 80) + 22 + 13 * numMaxClass)
 		getglobal("PallyPowerConfigFramePlayer1"):SetPoint("TOPLEFT", 8, -80 - 13 * numMaxClass)
 		for i = 1, PALLYPOWER_MAXCLASSES do
 			getglobal("PallyPowerConfigFrameClassGroup" .. i .. "Line"):SetHeight(56 + 13 * numMaxClass)
 		end
+		getglobal("PallyPowerConfigFrameAuraGroup1Line"):SetHeight(56 + 13 * numMaxClass)
 		for i = 1, PALLYPOWER_MAXPERCLASS do
 			local fname = "PallyPowerConfigFramePlayer" .. i
 			if i <= numPallys then
@@ -491,7 +524,7 @@ function PallyPower:PerformCycle(name, class, skipzero)
 
 	for test = cur+1, 5 do
 		if PallyPower:CanBuff(name, test) and (PallyPower:NeedsBuff(class, test) or shift) then
-		cur = test
+			cur = test
 			do break end
 		end
 	end
@@ -710,13 +743,42 @@ function PallyPower:ScanSpells()
 				RankInfo[i].talent = talent
 			end
 		end
+
 		AllPallys[self.player] = RankInfo
+		
+		local AuraInfo = {}
+		for i = 1, PALLYPOWER_MAXAURAS do -- find max ranks/talents for auaras
+			local spellName, spellRank = GetSpellInfo(PallyPower.Auras[i])
+			if spellName then
+				if not spellRank or spellRank == "" then -- spells without ranks
+					spellRank = PallyPower_Rank1		 -- Concentration, Crusader
+				end
+				local rank = select(3, string.find(spellRank, "(%d+)"))
+				local talent = 0
+				rank = tonumber(rank)
+				AuraInfo[i] = {}
+				AuraInfo[i].rank = rank
+				
+				if i == 1 then
+					talent = talent + select(5, GetTalentInfo(2, 11)) -- Improved Devotion Aura
+				elseif i == 2 then
+			    	talent = talent + select(5, GetTalentInfo(3, 17))  -- Improved Retrubution Aura
+			    elseif i == 3 then
+			    	talent = talent + select(5, GetTalentInfo(1, 9))  -- Improved Concentration Aura
+				end
+
+				AuraInfo[i].talent = talent
+			end
+		end
+		
+		AllPallys[self.player].AuraInfo = AuraInfo
+		
 		PP_IsPally = true
 	else
 		PP_IsPally = false
-		initalized=true
 	end
-		self:Debug("Scan Spells -- end")
+	initalized=true
+	self:Debug("Scan Spells -- end")
 end
 
 function PallyPower:ScanInventory()
@@ -772,6 +834,24 @@ function PallyPower:SendSelf()
 
 	self:SendMessage("SELF " .. s)
 
+	s = ""
+	local AuraInfo = AllPallys[self.player].AuraInfo
+	for i = 1, PALLYPOWER_MAXAURAS do
+		if not AuraInfo[i] then
+			s = s.."nn"
+		else
+			s = s .. string.format("%x%x", AuraInfo[i].rank, AuraInfo[i].talent)
+		end
+	end
+
+	if not PallyPower_AuraAssignments[self.player] then
+		PallyPower_AuraAssignments[self.player] = 0
+	end
+	
+	s = s .. "@" .. PallyPower_AuraAssignments[self.player]
+	
+	self:SendMessage("ASELF " .. s)
+
 	local AssignList = {}
 	local inraid = GetNumRaidMembers() > 0
 	if PallyPower_NormalAssignments[self.player] then
@@ -791,11 +871,13 @@ function PallyPower:SendSelf()
 	end
 	
 	self:SendMessage("SYMCOUNT " .. PP_Symbols)
+
 	if self.opt.freeassign then
 		self:SendMessage("FREEASSIGN YES")
 	else
 		self:SendMessage("FREEASSIGN NO")
 	end
+	
 	self:Debug("Send self -- end")
 end
 
@@ -870,6 +952,11 @@ function PallyPower:ClearAssignments(sender)
 					tnames[tname] = nil
 				end
 			end
+		end
+	end
+	for name, auras in pairs(PallyPower_AuraAssignments) do
+		if leader or name ==sender then
+			PallyPower_AuraAssignments[name] = 0
 		end
 	end
 end
@@ -958,6 +1045,36 @@ function PallyPower:ParseMessage(sender, msg)
 	if msg == "FREEASSIGN NO" and AllPallys[sender] then
 		AllPallys[sender].freeassign = false
 	end
+
+	if string.find(msg, "^ASELF") then
+		PallyPower_AuraAssignments[sender] = 0
+		AllPallys[sender].AuraInfo = { }
+		_, _, numbers, assign = string.find(msg, "ASELF ([0-9a-fn]*)@([0-9n]*)")
+		for i = 1, PALLYPOWER_MAXAURAS do
+			rank = string.sub(numbers, (i - 1) * 2 + 1, (i - 1) * 2 + 1)
+			talent = string.sub(numbers, (i - 1) * 2 + 2, (i - 1) * 2 + 2)
+			if rank ~= "n" then
+				AllPallys[sender].AuraInfo[i] = { }
+				AllPallys[sender].AuraInfo[i].rank = tonumber(rank,16)
+				AllPallys[sender].AuraInfo[i].talent = tonumber(talent,16)
+			end
+		end
+		if assign then
+			if assign == "n" or assign == "" then 
+				assign = 0
+			end
+			PallyPower_AuraAssignments[sender] = assign + 0
+		end
+	end
+
+	if string.find(msg, "^AASSIGN") then
+		_, _, name, aura = string.find(msg, "^AASSIGN (.*) (.*)")
+		if name ~= sender and not (leader or PallyPower.opt.freeassign) then return false end
+		if not PallyPower_AuraAssignments[name] then PallyPower_AuraAssignments[name] = {} end
+		aura = aura + 0
+		PallyPower_AuraAssignments[name] = aura
+	end
+
 end
 
 function PallyPower:FormatTime(time)
@@ -1140,6 +1257,9 @@ function PallyPower:CreateLayout()
 	self.rfButton = CreateFrame("Button", "PallyPowerRF", self.Header, "PallyPowerRFButtonTemplate")
 	self.rfButton:RegisterForClicks("LeftButtonDown", "RightButtonDown")
 
+	self.auraButton = CreateFrame("Button", "PallyPowerAura", self.Header, "PallyPowerAuraButtonTemplate")
+	self.auraButton:RegisterForClicks("LeftButtonDown")
+
 	self:UpdateLayout()
 	self:Debug("Create Layout -- end")
 end
@@ -1242,23 +1362,21 @@ function PallyPower:UpdateLayout()
 		end
 	end
 
+	local offset = 0
 	local autob = self.autoButton
  	autob:ClearAllPoints()
-	autob:SetPoint(pointOpposite, self.Header, "CENTER", 0, 0)
+	autob:SetPoint(pointOpposite, self.Header, "CENTER", 0, offset)
 	autob:SetAttribute("type", "spell")
 	if self:GetNumUnits() > 0 and self.opt.autobuff.autobutton and not (PallyPowerDB.disabled and PallyPowerDB.disabled.Default) and PP_IsPally then
 		autob:Show()
+		offset = offset - y
 	else
 		autob:Hide()
 	end
 
 	local rfb = self.rfButton
 	rfb:ClearAllPoints()
-	if self.opt.autobuff.autobutton then
-		rfb:SetPoint(pointOpposite, self.Header, "CENTER", 0, -y)
-	else
-  		rfb:SetPoint(pointOpposite, self.Header, "CENTER", 0, 0)
-	end
+	rfb:SetPoint(pointOpposite, self.Header, "CENTER", 0, offset)
 	rfb:SetAttribute("type1", "spell")
 	rfb:SetAttribute("unit1", "player")
 		--rfb:SetAttribute("spell1", PallyPower.RFSpell)
@@ -1269,8 +1387,21 @@ function PallyPower:UpdateLayout()
     PallyPower:SealAssign(self.opt.seal)
 	if self:GetNumUnits() > 0 and self.opt.rfbuff and not (PallyPowerDB.disabled and PallyPowerDB.disabled.Default) and PP_IsPally then
 		rfb:Show()
+		offset = offset - y
 	else
 		rfb:Hide()
+	end
+	
+	local auraBtn = self.auraButton
+	auraBtn:ClearAllPoints()
+	auraBtn:SetPoint(pointOpposite, self.Header, "CENTER", 0, offset)
+	auraBtn:SetAttribute("type1", "spell")
+	auraBtn:SetAttribute("unit1", "player")
+	if self:GetNumUnits() > 0 and self.opt.auras and not (PallyPowerDB.disabled and PallyPowerDB.disabled.Default) and PP_IsPally then
+		auraBtn:Show()
+		offset = offset - y
+	else
+		auraBtn:Hide()
 	end
 
 	local cbNum = 0
@@ -1685,6 +1816,8 @@ function PallyPower:ButtonsUpdate()
 	else                                               
   		self:ApplyBackdrop(rfbutton, self.opt.cBuffGood)
 	end
+	
+	PallyPower:UpdateAuraButton( PallyPower_AuraAssignments[self.player] )
 end
 
 function PallyPower:UpdateAnchor(displayedButtons)
@@ -2083,6 +2216,7 @@ function PallyPower:SealCycleBackward()
 	end
 end
 
+
 function PallyPower:RFAssign()
 	local name, _, icon = GetSpellInfo(PallyPower.RFSpell)
 	local rfIcon = _G["PallyPowerRFIcon"]
@@ -2111,21 +2245,29 @@ function PallyPower:AutoAssign()
 
 	PallyPowerConfig_Clear()
 	
+	PallyPower:AutoAssignBlessings()
+	
+	local precedence = { 1, 3, 2, 4, 5, 6 }	 -- devotion, concentration, retribution, shadow, frost, fire
+	PallyPower:AutoAssignAuras(precedence)
+	
+end
+
+function PallyPower:AutoAssignBlessings()
 	for name in pairs(AllPallys) do
 		if PallyPower:CanBuff(name, 1) then
-			table.insert(WisdomPallys, {pallyname = name, spellrank = AllPallys[name][1].rank, spelltalents =AllPallys[name][1].talent}) 
+			table.insert(WisdomPallys, {pallyname = name, spellrank = AllPallys[name][1].rank, spelltalents =AllPallys[name][1].talent})
 		end
 		
 		if PallyPower:CanBuff(name, 2) then
-			table.insert(MightPallys, {pallyname = name, spellrank = AllPallys[name][2].rank, spelltalents =AllPallys[name][2].talent}) 
+			table.insert(MightPallys, {pallyname = name, spellrank = AllPallys[name][2].rank, spelltalents =AllPallys[name][2].talent})
 		end
 	
 		if PallyPower:CanBuff(name, 3) then
-			table.insert(KingsPallys, {pallyname = name, spellrank = AllPallys[name][3].rank, spelltalents =AllPallys[name][3].talent}) 
+			table.insert(KingsPallys, {pallyname = name, spellrank = AllPallys[name][3].rank, spelltalents =AllPallys[name][3].talent})
 		end
 	
 		if PallyPower:CanBuff(name, 4) then
-			table.insert(SancPallys, {pallyname = name, spellrank = AllPallys[name][4].rank, spelltalents =AllPallys[name][4].talent}) 
+			table.insert(SancPallys, {pallyname = name, spellrank = AllPallys[name][4].rank, spelltalents =AllPallys[name][4].talent})
 		end
 	end
 	
@@ -2146,7 +2288,6 @@ function PallyPower:AutoAssign()
 	PallyPower:SelectBuffsByClass(pallycount, 9, 2, 3, 1, 4)
 	PallyPower:SelectBuffsByClass(pallycount, 10, 5, 2, 1, 3)
 	PallyPower:SelectBuffsByClass(pallycount, 11, 5, 2, 1, 3)
-
 end
 
 function PallyPower:SelectBuffsByClass(pallycount, class, wisdom, might, kings, sanc)
@@ -2216,3 +2357,173 @@ function PallyPower:PallyAvailable(pally, pallys)
 	end
 	return available
 end
+
+-- Aura assignment support follows...
+
+function PallyPowerAuraButton_OnClick(btn, mouseBtn)
+	if InCombatLockdown() then return false end
+	_, _, pnum = string.find(btn:GetName(), "PallyPowerConfigFramePlayer(.+)Aura1")
+	pnum = pnum + 0
+	pname = getglobal("PallyPowerConfigFramePlayer"..pnum.."Name"):GetText()
+	if not PallyPower:CanControl(pname) then return false end
+
+	if (mouseBtn == "RightButton") then
+		PallyPower_AuraAssignments[pname] = 0
+		PallyPower:SendMessage("AASSIGN "..pname.." 0")
+	else
+		PallyPower:PerformAuraCycle(pname)
+	end
+end
+
+function PallyPowerAuraButton_OnMouseWheel(btn, arg1)
+	if InCombatLockdown() then return false end
+	_,_,pnum = string.find(btn:GetName(), "PallyPowerConfigFramePlayer(.+)Aura1")
+	pnum = pnum + 0
+	pname = getglobal("PallyPowerConfigFramePlayer"..pnum.."Name"):GetText()
+	if not PallyPower:CanControl(pname) then return false end
+
+	if (arg1==-1) then  --mouse wheel down
+		PallyPower:PerformAuraCycle(pname)
+	else
+		PallyPower:PerformAuraCycleBackwards(pname)
+	end
+end
+
+function PallyPower:HasAura(name, test)
+	if (not AllPallys[name].AuraInfo[test]) or (AllPallys[name].AuraInfo[test].rank == 0) then
+		return false
+	end
+	return true
+end
+
+function PallyPower:PerformAuraCycle(name, skipzero)
+	if not PallyPower_AuraAssignments[name] then
+		PallyPower_AuraAssignments[name] = 0
+	end
+
+	cur = PallyPower_AuraAssignments[name]
+
+	for test = cur+1, PALLYPOWER_MAXAURAS do
+		if PallyPower:HasAura(name, test) then
+			cur = test
+			do break end
+		end
+	end
+	
+	if ( cur == PallyPower_AuraAssignments[name] ) then
+		if ( skipzero ) then
+			cur = 1	-- no gaurantees that this is even valid ...
+		else
+			cur = 0
+		end
+	end
+	
+	PallyPower_AuraAssignments[name] = cur
+	PallyPower:SendMessage("AASSIGN "..name.." "..cur)
+	
+end
+
+function PallyPower:PerformAuraCycleBackwards(name, skipzero)
+	if not PallyPower_AuraAssignments[name] then
+		PallyPower_AuraAssignments[name] = 0
+	end
+
+	cur = PallyPower_AuraAssignments[name] - 1
+	if cur < 0 or skipzero and cur < 1 then
+		cur = PALLYPOWER_MAXAURAS
+	end
+	
+	PallyPower_AuraAssignments[name] = 0
+
+	for test = cur, 0, -1 do
+		if PallyPower:HasAura(name, test) or (test == 0 and not skipzero) then
+			PallyPower_AuraAssignments[name] = test
+			PallyPower:SendMessage("AASSIGN "..name.." "..test)
+			do break end
+		end
+	end
+end
+
+function PallyPower:IsAuraActive(aura)
+    local bFound = false
+	local bSelfCast = false
+	
+	if ( aura and aura > 0 ) then
+		local spell = PallyPower.Auras[aura]
+		local j = 1
+		local buffName, _, _, _, _, _, buffExpire, isMine = UnitBuff("player", j)
+		while buffExpire do
+			if buffName == spell then
+				bFound = true
+				bSelfCast = (isMine == 1)
+				break
+			end
+			j = j + 1
+			buffName, _, _, _, _, _, buffExpire, isMine = UnitBuff("player", j)
+		end
+	end
+	
+	return bFound, bSelfCast
+end
+
+function PallyPower:UpdateAuraButton(aura)
+	if InCombatLockdown() then
+		return false
+	end
+	
+	local auraBtn = _G["PallyPowerAura"]
+	local auraIcon = _G["PallyPowerAuraIcon"]
+
+	if ( aura and aura > 0 ) then
+		local name, _, icon = GetSpellInfo(PallyPower.Auras[aura])
+		auraIcon:SetTexture(icon)
+		auraBtn:SetAttribute("spell", name)
+		
+		local active, selfCast = PallyPower:IsAuraActive(aura)
+		if ( active == false ) then
+			self:ApplyBackdrop(auraBtn, self.opt.cBuffNeedAll)
+		elseif ( selfCast == false ) then
+			self:ApplyBackdrop(auraBtn, self.opt.cBuffNeedSome)
+		else
+			self:ApplyBackdrop(auraBtn, self.opt.cBuffGood)
+		end
+	else
+		auraIcon:SetTexture(nil)
+		auraBtn:SetAttribute("spell", "")
+		self:ApplyBackdrop(auraBtn, self.opt.cBuffNeedAll)
+	end
+end
+
+function PallyPower:AutoAssignAuras(precedence)
+	local pallys = {}
+	for name in pairs(AllPallys) do
+		table.insert(pallys, name)
+	end
+
+	for _, aura in pairs(precedence) do
+		local assignee = ""
+		local testRank = 0
+		local testTalent = 0
+
+		for _, pally in pairs(pallys) do
+			if PallyPower:HasAura(pally, aura) and ( AllPallys[pally].AuraInfo[aura].rank >= testRank ) then
+				testRank = AllPallys[pally].AuraInfo[aura].rank
+				if AllPallys[pally].AuraInfo[aura].talent >= testTalent then
+					testTalent = AllPallys[pally].AuraInfo[aura].talent
+					assignee = pally
+				end
+			end
+		end
+
+		if assignee ~= "" then
+			for i, name in pairs(pallys) do
+				if assignee == name then 
+					table.remove(pallys, i)
+					PallyPower_AuraAssignments[assignee] = aura
+					PallyPower:SendMessage("AASSIGN "..assignee.." "..aura)
+				end
+			end
+		end		
+	end
+end
+
