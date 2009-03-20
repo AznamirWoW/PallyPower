@@ -1185,38 +1185,31 @@ function PallyPower:CreateLayout()
 		local cButton = CreateFrame("Button", "PallyPowerC" .. cbNum, self.Header, "SecureHandlerEnterLeaveTemplate, SecureHandlerStateTemplate, SecureActionButtonTemplate, PallyPowerButtonTemplate")
 		--cButton:SetID(cbNum)
  		-- new show/hide functionality 
-	    cButton:Execute([[others = table.new()]]); 
-	    cButton:SetAttribute("_onenter", [[ 
-	     									for _, other in ipairs(others) do
-	       										other:SetAttribute("state-active", self)
-	     									end 
-	     									control:ChildUpdate("doshow")
-										]] 
-	    					)
-
-	    cButton:SetAttribute("_onstate-active", [[
-	     									control:ChildUpdate("dohide")
-										]] 
-	    					)
-	    					
-	    cButton:SetAttribute("_onleave", [[ 
-											elap=0
-											control:ChildUpdate("dohide")
-										]] 
-	    					)
-		cButton:SetAttribute("_onupdate", [[
-		                                    if self:IsUnderMouse(true) then
-		                                        elap = 0
-									  		else
-									  		    elap = elap + elapsed
-									  		    if elap>=1 then
-									  		    	control:ChildUpdate("dohide")
-									  		    end
-									  		end
-										  ]]
-							)
-	    
-		--
+	    cButton:Execute([[others = table.new()]]);
+		cButton:Execute([[childs = table.new()]]); 
+	    cButton:SetAttribute("_onenter", [[  
+	                                         for _, other in ipairs(others) do  
+	                                             other:SetAttribute("state-inactive", self)  
+	                                          end  
+	                                          local leadChild;  
+	                                          for _, child in ipairs(childs) do  
+	                                              if child:GetAttribute("Display") == 1 then  
+	                                                  child:Show()  
+	                                                  if (leadChild) then  
+	                                                      leadChild:AddToAutoHide(child)   
+	                                                  else  
+	                                                      leadChild = child  
+	                                                      leadChild:RegisterAutoHide(2)   
+	                                                  end  
+	                                              end  
+	                                          end  
+	                                          if (leadChild) then  
+	                                              leadChild:AddToAutoHide(self)  
+	                                          end  
+	                                  ]]) 
+	 
+	    cButton:SetAttribute("_onstate-inactive", [[childs[1]:Hide()]]) 
+	  
 		cButton:RegisterForClicks("LeftButtonDown", "RightButtonDown")
 		cButton:EnableMouseWheel(1)
         self.classButtons[cbNum] = cButton
@@ -1224,11 +1217,31 @@ function PallyPower:CreateLayout()
 		-- create player buttons
 		self.playerButtons[cbNum] = {}
 		local pButtons = self.playerButtons[cbNum]
-
+        local leadChild
 		for pbNum = 1, PALLYPOWER_MAXPERCLASS do -- create player buttons for each class
 			local pButton = CreateFrame("Button","PallyPowerC".. cbNum .. "P" .. pbNum, UIParent, "SecureHandlerEnterLeaveTemplate, SecureActionButtonTemplate, PallyPowerPopupTemplate")
 			--pButton:SetID(cbNum)
-			pButton:SetParent(self.classButtons[cbNum])
+			pButton:SetParent(cButton)
+			  
+			SecureHandlerSetFrameRef(cButton, "child", pButton)
+	        SecureHandlerExecute(cButton, [[
+												local child = self:GetFrameRef("child")
+												childs[#childs+1] = child;
+											  ]])
+			if pbNum == 1 then
+				pButton:Execute([[siblings = table.new()]]);
+				pButton:SetAttribute("_onhide", [[for _, sibling in ipairs(siblings) do
+													sibling:Hide()
+												  end]])											
+				leadChild = pButton
+			else
+				SecureHandlerSetFrameRef(leadChild, "sibling", pButton)
+	        	SecureHandlerExecute(leadChild, [[
+												local sibling = self:GetFrameRef("sibling")
+												siblings[#siblings+1] = sibling;
+											  ]])
+			end
+			
 			pButton:RegisterForClicks("LeftButtonDown", "RightButtonDown")
 			pButton:EnableMouseWheel(1)
 			pButton:Hide();
@@ -1418,12 +1431,10 @@ function PallyPower:UpdateLayout()
 			for pbNum = 1, math.min(classlist[classIndex], PALLYPOWER_MAXPERCLASS) do
 				local pButton = pButtons[pbNum]
 				if not self.opt.display.hidePlayerButtons then
-					--pButton:SetAttribute("_childupdate-update", [[if class==self:GetID() then self:Show() else self:Hide(); end]])
-				    pButton:SetAttribute("_childupdate-doshow", [[self:Show()]])
+					pButton:SetAttribute("Display", 1)
 				else
-					pButton:SetAttribute("_childupdate-doshow", [[self:Hide()]])
+					pButton:SetAttribute("Display", 0)
 				end
-				pButton:SetAttribute("_childupdate-dohide", [[self:Hide()]])
 				pButton:SetAttribute("classID", classIndex)
 				pButton:SetAttribute("playerID", pbNum)
 				local unit  = self:GetUnit(classIndex, pbNum)
@@ -1441,8 +1452,7 @@ function PallyPower:UpdateLayout()
 			end -- by pbnum
 			for pbNum = classlist[classIndex]+1, PALLYPOWER_MAXPERCLASS do
 				local pButton = pButtons[pbNum]
-				pButton:SetAttribute("_childupdate-doshow", [[self:Hide()]])
-				pButton:SetAttribute("_childupdate-dohide", [[self:Hide()]])
+				pButton:SetAttribute("Display", 0)
 				pButton:SetAttribute("classID", 0)
 				pButton:SetAttribute("playerID", 0)
 			end
