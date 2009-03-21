@@ -732,12 +732,12 @@ function PallyPower:ScanSpells()
 			if spellName then
 				RankInfo[i] = {}
 				RankInfo[i].rank = rank
-				if i == 1 then
+				if i == 1 then  -- wisdom
 					talent = talent + select(5, GetTalentInfo(1, 10))
-				elseif i == 2 then
+				elseif i == 2 then -- might
 			    	talent = talent + select(5, GetTalentInfo(3, 5))
-			    elseif i == 3 then
-			    	talent = talent + select(5, GetTalentInfo(2, 2))
+			    --elseif i == 3 then -- kings
+			    --	talent = talent + select(5, GetTalentInfo(2, 2))
 				end
 
 				RankInfo[i].talent = talent
@@ -746,32 +746,31 @@ function PallyPower:ScanSpells()
 
 		AllPallys[self.player] = RankInfo
 		
-		local AuraInfo = {}
+		AllPallys[self.player].AuraInfo = {}
 		for i = 1, PALLYPOWER_MAXAURAS do -- find max ranks/talents for auaras
+			AllPallys[self.player].AuraInfo[i] = {}
+			
 			local spellName, spellRank = GetSpellInfo(PallyPower.Auras[i])
 			if spellName then
 				if not spellRank or spellRank == "" then -- spells without ranks
 					spellRank = PallyPower_Rank1		 -- Concentration, Crusader
 				end
-				local rank = select(3, string.find(spellRank, "(%d+)"))
-				local talent = 0
-				rank = tonumber(rank)
-				AuraInfo[i] = {}
-				AuraInfo[i].rank = rank
 				
+				AllPallys[self.player].AuraInfo[i].rank = tonumber(select(3, string.find(spellRank, "(%d+)")))
+				
+				local talent = 0
+
 				if i == 1 then
 					talent = talent + select(5, GetTalentInfo(2, 11)) -- Improved Devotion Aura
 				elseif i == 2 then
-			    	talent = talent + select(5, GetTalentInfo(3, 17))  -- Improved Retrubution Aura
+			    	talent = talent + select(5, GetTalentInfo(3, 14))  -- Sanctified Retribution
 			    elseif i == 3 then
 			    	talent = talent + select(5, GetTalentInfo(1, 9))  -- Improved Concentration Aura
 				end
 
-				AuraInfo[i].talent = talent
+				AllPallys[self.player].AuraInfo[i].talent = talent
 			end
 		end
-		
-		AllPallys[self.player].AuraInfo = AuraInfo
 		
 		PP_IsPally = true
 	else
@@ -894,6 +893,7 @@ end
 
 function PallyPower:SPELLS_CHANGED()
 	self:ScanSpells()
+	self:SendSelf()
 end
 
 function PallyPower:CHAT_MSG_ADDON(prefix, message, distribution, sender)
@@ -1827,7 +1827,9 @@ function PallyPower:ButtonsUpdate()
   		self:ApplyBackdrop(rfbutton, self.opt.cBuffGood)
 	end
 	
-	PallyPower:UpdateAuraButton( PallyPower_AuraAssignments[self.player] )
+	if self.opt.auras then
+		self:UpdateAuraButton( PallyPower_AuraAssignments[self.player] )
+	end
 end
 
 function PallyPower:UpdateAnchor(displayedButtons)
@@ -2255,10 +2257,10 @@ function PallyPower:AutoAssign()
 
 	PallyPowerConfig_Clear()
 	
-	PallyPower:AutoAssignBlessings()
+	self:AutoAssignBlessings()
 	
 	local precedence = { 1, 3, 2, 4, 5, 6 }	 -- devotion, concentration, retribution, shadow, frost, fire
-	PallyPower:AutoAssignAuras(precedence)
+	self:AutoAssignAuras(precedence)
 	
 end
 
@@ -2414,22 +2416,22 @@ function PallyPower:PerformAuraCycle(name, skipzero)
 	cur = PallyPower_AuraAssignments[name]
 
 	for test = cur+1, PALLYPOWER_MAXAURAS do
-		if PallyPower:HasAura(name, test) then
+		if self:HasAura(name, test) then
 			cur = test
 			do break end
 		end
 	end
 	
 	if ( cur == PallyPower_AuraAssignments[name] ) then
-		if ( skipzero ) then
-			cur = 1	-- no gaurantees that this is even valid ...
+		if skipzero and self:HasAura(name, 1) then
+			cur = 1	
 		else
 			cur = 0
 		end
 	end
 	
 	PallyPower_AuraAssignments[name] = cur
-	PallyPower:SendMessage("AASSIGN "..name.." "..cur)
+	self:SendMessage("AASSIGN "..name.." "..cur)
 	
 end
 
@@ -2439,16 +2441,14 @@ function PallyPower:PerformAuraCycleBackwards(name, skipzero)
 	end
 
 	cur = PallyPower_AuraAssignments[name] - 1
-	if cur < 0 or skipzero and cur < 1 then
+	if (cur < 0) or (skipzero and (cur < 1)) then
 		cur = PALLYPOWER_MAXAURAS
 	end
 	
-	PallyPower_AuraAssignments[name] = 0
-
 	for test = cur, 0, -1 do
-		if PallyPower:HasAura(name, test) or (test == 0 and not skipzero) then
+		if self:HasAura(name, test) or (test == 0 and not skipzero) then
 			PallyPower_AuraAssignments[name] = test
-			PallyPower:SendMessage("AASSIGN "..name.." "..test)
+			self:SendMessage("AASSIGN "..name.." "..test)
 			do break end
 		end
 	end
@@ -2461,15 +2461,15 @@ function PallyPower:IsAuraActive(aura)
 	if ( aura and aura > 0 ) then
 		local spell = PallyPower.Auras[aura]
 		local j = 1
-		local buffName, _, _, _, _, _, buffExpire, isMine = UnitBuff("player", j)
+		local buffName, _, _, _, _, _, buffExpire, castBy = UnitBuff("player", j)
 		while buffExpire do
 			if buffName == spell then
 				bFound = true
-				bSelfCast = (isMine == 1)
+				bSelfCast = (castBy == "player")
 				break
 			end
 			j = j + 1
-			buffName, _, _, _, _, _, buffExpire, isMine = UnitBuff("player", j)
+			buffName, _, _, _, _, _, buffExpire, castBy = UnitBuff("player", j)
 		end
 	end
 	
@@ -2477,31 +2477,55 @@ function PallyPower:IsAuraActive(aura)
 end
 
 function PallyPower:UpdateAuraButton(aura)
-	if InCombatLockdown() then
-		return false
-	end
-	
+	local pallys = {}
 	local auraBtn = _G["PallyPowerAura"]
 	local auraIcon = _G["PallyPowerAuraIcon"]
-
+	
 	if ( aura and aura > 0 ) then
+		for name in pairs(AllPallys) do
+			if (name ~= self.player) and (aura == PallyPower_AuraAssignments[name]) then
+				table.insert(pallys, name)
+			end
+		end
+
 		local name, _, icon = GetSpellInfo(PallyPower.Auras[aura])
-		auraIcon:SetTexture(icon)
-		auraBtn:SetAttribute("spell", name)
-		
-		local active, selfCast = PallyPower:IsAuraActive(aura)
-		if ( active == false ) then
-			self:ApplyBackdrop(auraBtn, self.opt.cBuffNeedAll)
-		elseif ( selfCast == false ) then
-			self:ApplyBackdrop(auraBtn, self.opt.cBuffNeedSome)
-		else
-			self:ApplyBackdrop(auraBtn, self.opt.cBuffGood)
+		if (not InCombatLockdown()) then
+			auraIcon:SetTexture(icon)
+			auraBtn:SetAttribute("spell", name)
 		end
 	else
-		auraIcon:SetTexture(nil)
-		auraBtn:SetAttribute("spell", "")
-		self:ApplyBackdrop(auraBtn, self.opt.cBuffNeedAll)
+		if (not InCombatLockdown()) then
+			auraIcon:SetTexture(nil)
+			auraBtn:SetAttribute("spell", "")
+		end
 	end
+	
+	-- only support two lines of text, so only deal with the first two players in the list...
+	local player1 = _G["PallyPowerAuraPlayer1"]
+	if pallys[1] then
+		player1:SetText(pallys[1])
+		player1:SetTextColor(1.0, 1.0, 1.0)
+	else
+		player1:SetText("")
+	end
+	
+	local player2 = _G["PallyPowerAuraPlayer2"]
+	if pallys[2] then
+		player2:SetText(pallys[2])
+		player2:SetTextColor(1.0, 1.0, 1.0)
+	else
+		player2:SetText("")
+	end
+	
+	local btnColour = self.opt.cBuffGood
+	local active, selfcast = self:IsAuraActive(aura)
+	if ( active == false ) then
+		btnColour = self.opt.cBuffNeedAll
+	elseif ( selfCast == false ) then
+		btnColour = self.opt.cBuffNeedSome
+	end
+
+	self:ApplyBackdrop(auraBtn, btnColour)
 end
 
 function PallyPower:AutoAssignAuras(precedence)
@@ -2516,7 +2540,7 @@ function PallyPower:AutoAssignAuras(precedence)
 		local testTalent = 0
 
 		for _, pally in pairs(pallys) do
-			if PallyPower:HasAura(pally, aura) and ( AllPallys[pally].AuraInfo[aura].rank >= testRank ) then
+			if self:HasAura(pally, aura) and ( AllPallys[pally].AuraInfo[aura].rank >= testRank ) then
 				testRank = AllPallys[pally].AuraInfo[aura].rank
 				if AllPallys[pally].AuraInfo[aura].talent >= testTalent then
 					testTalent = AllPallys[pally].AuraInfo[aura].talent
@@ -2530,7 +2554,7 @@ function PallyPower:AutoAssignAuras(precedence)
 				if assignee == name then 
 					table.remove(pallys, i)
 					PallyPower_AuraAssignments[assignee] = aura
-					PallyPower:SendMessage("AASSIGN "..assignee.." "..aura)
+					self:SendMessage("AASSIGN "..assignee.." "..aura)
 				end
 			end
 		end		
