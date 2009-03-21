@@ -288,6 +288,30 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
             </Anchor>
           </Anchors>
         </Texture>
+        <FontString name="$parentPlayer1" inherits="GameFontHighlightSmall" text="30:00" justifyH="RIGHT">
+          <Size>
+            <AbsDimension x="65" y="16" />
+          </Size>
+          <Anchors>
+            <Anchor point="TOPRIGHT">
+              <Offset>
+                <AbsDimension x="-5" y="-3" />
+              </Offset>
+            </Anchor>
+          </Anchors>
+        </FontString>
+        <FontString name="$parentPlayer2" inherits="GameFontHighlightSmall" text="30:00" justifyH="RIGHT">
+          <Size>
+            <AbsDimension x="65" y="16" />
+          </Size>
+          <Anchors>
+            <Anchor point="BOTTOMRIGHT">
+              <Offset>
+                <AbsDimension x="-5" y="3" />
+              </Offset>
+            </Anchor>
+          </Anchors>
+        </FontString>
       </Layer>
     </Layers>
     <Scripts>
