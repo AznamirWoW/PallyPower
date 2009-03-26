@@ -50,9 +50,11 @@ L:RegisterTranslations("koKR", function()
 		["RESET"]		= "프레임 초기화",
 		["RESET_DESC"]		= "PallyPower 프레임을 중앙으로 모두 초기화",
 		["RFBUFF"] 			= "정의의 격노 / 문장",
-		["RFBUFF_DESC"] 	= "정의의 격노 버튼 표시/숨기기",
+		["RFBUFF_DESC"] 	= "정의의 격노 모니터링 사용/사용 안함",
+		["AURAS"] 		= "오라",
+		["AURAS_DESC"] 	= "오라 모니터링 사용/사용 안함",
 		["FREEASSIGN"] 		= "자유 지정",
-		["FREEASSIGN_DESC"] 	= "승급되지 않은 다른 사람이 축복 변경 하는 것을 허용",
+		["FREEASSIGN_DESC"] 	= "승급되지 않은 다른 사람이 축복을 변경하는 것을 허용",
 		-- more to come
 		--- Variables
 		["DRAGHANDLE"] 		= "버프 바 이동 : 마우스 좌클릭+드래그\n잠금/해제 : 마우스 좌클릭\n옵션창 : 마우스 우클릭",

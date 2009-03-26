@@ -748,19 +748,20 @@ function PallyPower:ScanSpells()
 		
 		AllPallys[self.player].AuraInfo = {}
 		for i = 1, PALLYPOWER_MAXAURAS do -- find max ranks/talents for auaras
-			AllPallys[self.player].AuraInfo[i] = {}
-			
 			local spellName, spellRank = GetSpellInfo(PallyPower.Auras[i])
+			
 			if spellName then
+				AllPallys[self.player].AuraInfo[i] = {}
+				
 				if not spellRank or spellRank == "" then -- spells without ranks
 					spellRank = PallyPower_Rank1		 -- Concentration, Crusader
 				end
 				
-				AllPallys[self.player].AuraInfo[i].rank = tonumber(select(3, string.find(spellRank, "(%d+)")))
-				
 				local talent = 0
-
 				if i == 1 then
+					-- Lach22Mar08: Prot talent tree appears to be out-of-sync... 
+					-- Imp Dev. Aura should be 10, but wont return correct value unless 11 is used for the index...
+					-- I assume that they will correct if before release... 
 					talent = talent + select(5, GetTalentInfo(2, 11)) -- Improved Devotion Aura
 				elseif i == 2 then
 			    	talent = talent + select(5, GetTalentInfo(3, 14))  -- Sanctified Retribution
@@ -769,6 +770,7 @@ function PallyPower:ScanSpells()
 				end
 
 				AllPallys[self.player].AuraInfo[i].talent = talent
+				AllPallys[self.player].AuraInfo[i].rank = tonumber(select(3, string.find(spellRank, "(%d+)")))
 			end
 		end
 		
@@ -1828,7 +1830,7 @@ function PallyPower:ButtonsUpdate()
 	end
 	
 	if self.opt.auras then
-		self:UpdateAuraButton( PallyPower_AuraAssignments[self.player] )
+		PallyPower:UpdateAuraButton( PallyPower_AuraAssignments[self.player] )
 	end
 end
 
@@ -2257,10 +2259,10 @@ function PallyPower:AutoAssign()
 
 	PallyPowerConfig_Clear()
 	
-	self:AutoAssignBlessings()
+	PallyPower:AutoAssignBlessings()
 	
 	local precedence = { 1, 3, 2, 4, 5, 6 }	 -- devotion, concentration, retribution, shadow, frost, fire
-	self:AutoAssignAuras(precedence)
+	PallyPower:AutoAssignAuras(precedence)
 	
 end
 
@@ -2416,14 +2418,14 @@ function PallyPower:PerformAuraCycle(name, skipzero)
 	cur = PallyPower_AuraAssignments[name]
 
 	for test = cur+1, PALLYPOWER_MAXAURAS do
-		if self:HasAura(name, test) then
+		if PallyPower:HasAura(name, test) then
 			cur = test
 			do break end
 		end
 	end
 	
 	if ( cur == PallyPower_AuraAssignments[name] ) then
-		if skipzero and self:HasAura(name, 1) then
+		if skipzero and PallyPower:HasAura(name, 1) then
 			cur = 1	
 		else
 			cur = 0
@@ -2431,7 +2433,7 @@ function PallyPower:PerformAuraCycle(name, skipzero)
 	end
 	
 	PallyPower_AuraAssignments[name] = cur
-	self:SendMessage("AASSIGN "..name.." "..cur)
+	PallyPower:SendMessage("AASSIGN "..name.." "..cur)
 	
 end
 
@@ -2446,9 +2448,9 @@ function PallyPower:PerformAuraCycleBackwards(name, skipzero)
 	end
 	
 	for test = cur, 0, -1 do
-		if self:HasAura(name, test) or (test == 0 and not skipzero) then
+		if PallyPower:HasAura(name, test) or (test == 0 and not skipzero) then
 			PallyPower_AuraAssignments[name] = test
-			self:SendMessage("AASSIGN "..name.." "..test)
+			PallyPower:SendMessage("AASSIGN "..name.." "..test)
 			do break end
 		end
 	end
@@ -2466,7 +2468,7 @@ function PallyPower:IsAuraActive(aura)
 			if buffName == spell then
 				bFound = true
 				bSelfCast = (castBy == "player")
-				break
+				do break end
 			end
 			j = j + 1
 			buffName, _, _, _, _, _, buffExpire, castBy = UnitBuff("player", j)
@@ -2518,7 +2520,7 @@ function PallyPower:UpdateAuraButton(aura)
 	end
 	
 	local btnColour = self.opt.cBuffGood
-	local active, selfcast = self:IsAuraActive(aura)
+	local active, selfCast = self:IsAuraActive(aura)
 	if ( active == false ) then
 		btnColour = self.opt.cBuffNeedAll
 	elseif ( selfCast == false ) then
@@ -2540,7 +2542,7 @@ function PallyPower:AutoAssignAuras(precedence)
 		local testTalent = 0
 
 		for _, pally in pairs(pallys) do
-			if self:HasAura(pally, aura) and ( AllPallys[pally].AuraInfo[aura].rank >= testRank ) then
+			if PallyPower:HasAura(pally, aura) and ( AllPallys[pally].AuraInfo[aura].rank >= testRank ) then
 				testRank = AllPallys[pally].AuraInfo[aura].rank
 				if AllPallys[pally].AuraInfo[aura].talent >= testTalent then
 					testTalent = AllPallys[pally].AuraInfo[aura].talent
@@ -2554,7 +2556,7 @@ function PallyPower:AutoAssignAuras(precedence)
 				if assignee == name then 
 					table.remove(pallys, i)
 					PallyPower_AuraAssignments[assignee] = aura
-					self:SendMessage("AASSIGN "..assignee.." "..aura)
+					PallyPower:SendMessage("AASSIGN "..assignee.." "..aura)
 				end
 			end
 		end		
