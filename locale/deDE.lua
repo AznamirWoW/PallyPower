@@ -51,6 +51,8 @@ L:RegisterTranslations("deDE", function()
 		["RESET_DESC"]		= "Setzt die Position aller PallyPower-Fenster zurück in die Mitte des Bildschirms.",
 		["RFBUFF"] 			= "Zorn der Gerechtigkeit",
 		["RFBUFF_DESC"] 	= "Aktiviert/Deaktiviert die Überwachung von Zorn der Gerechtigkeit.",
+		["AURAS"] 		= "Auras",
+		["AURAS_DESC"] 	= "Auras monitoring enable/disable",
 		["FREEASSIGN"] 		= "Freie Zuteilung",
 		["FREEASSIGN_DESC"] 	= "Erlaubt anderen Spielern deine Segenzuteilung zu verändern, ohne Gruppenleiter oder Schlachtzug-Assistent zu sein.",
 		-- more to come

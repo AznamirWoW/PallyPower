@@ -51,6 +51,8 @@ L:RegisterTranslations("esES", function()
 		["RESET_DESC"]		= "Reset all PallyPower frames back to center",		
 		["RFBUFF"] 			= "Righeous Fury",
 		["RFBUFF_DESC"] 	= "Righeous Fury monitoring enable/disable",
+		["AURAS"] 		= "Auras",
+		["AURAS_DESC"] 	= "Auras monitoring enable/disable",
 		["FREEASSIGN"] 		= "Free assignment",
 		["FREEASSIGN_DESC"] 	= "Allow others to change your blessings without being leader/promoted",		
 		-- more to come
