@@ -40,6 +40,10 @@ function PallyPower:OnInitialize()
 	self.PreviousAutoBuffedUnit = nil
 end
 
+function PallyPower:OnProfileEnable()
+    self.opt = self.db.profile
+end
+
 function PallyPower:OnEnable()
 	-- events
 	self:ScanSpells()
@@ -1382,7 +1386,7 @@ function PallyPower:UpdateLayout()
  	autob:ClearAllPoints()
 	autob:SetPoint(pointOpposite, self.Header, "CENTER", 0, offset)
 	autob:SetAttribute("type", "spell")
-	if self:GetNumUnits() > 0 and self.opt.autobuff.autobutton and not (PallyPowerDB.disabled and PallyPowerDB.disabled.Default) and PP_IsPally then
+	if self:GetNumUnits() > 0 and self.opt.autobuff.autobutton and not self.opt.disabled and PP_IsPally then
 		autob:Show()
 		offset = offset - y
 	else
@@ -1400,7 +1404,7 @@ function PallyPower:UpdateLayout()
 	rfb:SetAttribute("unit2", "player")
     --rfb:SetAttribute("spell2", PallyPower.Seals[self.opt.seal])
     PallyPower:SealAssign(self.opt.seal)
-	if self:GetNumUnits() > 0 and self.opt.rfbuff and not (PallyPowerDB.disabled and PallyPowerDB.disabled.Default) and PP_IsPally then
+	if self:GetNumUnits() > 0 and self.opt.rfbuff and not self.opt.disabled and PP_IsPally then
 		rfb:Show()
 		offset = offset - y
 	else
@@ -1412,7 +1416,7 @@ function PallyPower:UpdateLayout()
 	auraBtn:SetPoint(pointOpposite, self.Header, "CENTER", 0, offset)
 	auraBtn:SetAttribute("type1", "spell")
 	auraBtn:SetAttribute("unit1", "player")
-	if self:GetNumUnits() > 0 and self.opt.auras and not (PallyPowerDB.disabled and PallyPowerDB.disabled.Default) and PP_IsPally then
+	if self:GetNumUnits() > 0 and self.opt.auras and not self.opt.disabled and PP_IsPally then
 		auraBtn:Show()
 		offset = offset - y
 	else

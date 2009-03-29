@@ -52,6 +52,7 @@ PALLYPOWER_DEFAULT_VALUES = {
  	cBuffNeedSpecial = {r = 0.0, g = 0.0, b = 1.0, t = 0.5},
 	cBuffGood        = {r = 0.0, g = 0.7, b = 0.0, t = 0.5},
 	seal = 0, -- default wisdom
+	disabled = false,
 	};
 
 PallyPower_Credits1 = "Pally Power - by Aznamir";
