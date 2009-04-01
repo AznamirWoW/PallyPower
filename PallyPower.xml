@@ -96,7 +96,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 	  </Scripts>
   </Button>
 
-  <Button name="PallyPowerAutoButtonTemplate" virtual="true" frameStrata="LOW" inherits="SecureActionButtonTemplate">
+  <Button name="PallyPowerAutoButtonTemplate" virtual="true" frameStrata="LOW">
 	  <Size>
 		  <AbsDimension x="100" y="34"/>
 	  </Size>
@@ -164,13 +164,6 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 		  </Layer>
 	  </Layers>
 	  <Scripts>
-		  <OnEnter>
-			  --PallyPower.ButtonSetTooltip(this, nil);
-		  </OnEnter>
-		  <OnLeave>
-			  --this.updateTooltip = nil;
-			  --GameTooltip:Hide();
-		  </OnLeave>
                   <PreClick>
 			  PallyPower:AutoBuff(button);
 		  </PreClick>
