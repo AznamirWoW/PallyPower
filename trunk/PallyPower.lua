@@ -46,6 +46,7 @@ end
 
 function PallyPower:OnEnable()
 	-- events
+	self.opt.disable = false
 	self:ScanSpells()
 	self:RegisterEvent("CHAT_MSG_ADDON")
 	self:RegisterEvent("CHAT_MSG_SYSTEM")
@@ -78,6 +79,7 @@ end
 
 function PallyPower:OnDisable()
 	-- events
+	self.opt.disable = true
 	for i = 1, PALLYPOWER_MAXCLASSES do
 		classlist[i] = 0
 		classes[i] = {}
@@ -1121,6 +1123,69 @@ function PallyPower:GetNumUnits()
 	return 0
 end
 
+function PallyPower:UpdateRoster_test()
+	-- unregister events
+	self:Debug("Update Roster")
+	self:CancelScheduledEvent("PallyPowerUpdateButtons")
+
+	local num = self:GetNumUnits()
+
+	for i = 1, PALLYPOWER_MAXCLASSES do
+		classlist[i] = 0
+		classes[i] = {}
+	end
+
+	local tmp1 = {}
+	tmp1.name = "Aznamir"
+	tmp1.class = "PALADIN"
+	tmp1.unitid = "player"
+    tmp1.visible = false
+	tmp1.hasbuff = false
+	tmp1.specialbuff = false
+	tmp1.dead = false
+	classlist[5] = classlist[5] +1
+	table.insert(classes[5], tmp1)
+	local tmp2 = {}
+	tmp2.name = "Paladin2"
+	tmp2.class = "PALADIN"
+	tmp2.unitid = "party1"
+    tmp2.visible = false
+	tmp2.hasbuff = false
+	tmp2.specialbuff = false
+	tmp2.dead = false
+	classlist[5] = classlist[5] +1
+	table.insert(classes[5], tmp2)
+	local tmp3 = {}
+	tmp3.name = "Warrior1"
+	tmp3.class = "WARRIOR"
+	tmp3.unitid = "party2"
+	tmp3.visible = false
+	tmp3.hasbuff = false
+	tmp3.specialbuff = false
+	tmp3.dead = false
+	classlist[1] = classlist[1] +1
+	table.insert(classes[1], tmp3)
+	local tmp4 = {}
+	tmp4.name = "Paladin3"
+	tmp4.class = "PALADIN"
+	tmp4.unitid = "party3"
+    tmp4.visible = false
+	tmp4.hasbuff = false
+	tmp4.specialbuff = false
+	tmp4.dead = false
+	classlist[5] = classlist[5] +1
+	table.insert(classes[5], tmp4)
+	
+	self:UpdateLayout()
+
+	if PP_IsPally then
+		-- register events
+		self:ScheduleRepeatingEvent("PallyPowerUpdateButtons", self.ButtonsUpdate, 2.0, self)
+	end
+	self:Debug("Update Roster - end")
+end
+
+
 function PallyPower:UpdateRoster()
 	-- unregister events
 	self:Debug("Update Roster")
@@ -1183,18 +1248,51 @@ function PallyPower:CreateLayout()
 	local p = _G["PallyPowerFrame"]
 	self.Header = p
 
+    self.autoButton = CreateFrame("Button", "PallyPowerAuto", self.Header, "SecureHandlerShowHideTemplate, SecureHandlerEnterLeaveTemplate, SecureHandlerStateTemplate, SecureActionButtonTemplate, PallyPowerAutoButtonTemplate")
+	self.autoButton:RegisterForClicks("LeftButtonDown", "RightButtonDown")
+
+	self.rfButton = CreateFrame("Button", "PallyPowerRF", self.Header, "PallyPowerRFButtonTemplate")
+	self.rfButton:RegisterForClicks("LeftButtonDown", "RightButtonDown")
+
+	self.auraButton = CreateFrame("Button", "PallyPowerAura", self.Header, "PallyPowerAuraButtonTemplate")
+	self.auraButton:RegisterForClicks("LeftButtonDown")
+
 	self.classButtons = {}
 	self.playerButtons = {}
 
+	self.autoButton:Execute([[childs = table.new()]]);
+	self.autoButton:SetAttribute("_onenter", [[
+											  local leadChild;  
+	                                          for _, child in ipairs(childs) do  
+	                                              if child:GetAttribute("Display") == 1 then  
+	                                                  child:Show()  
+	                                                  if (leadChild) then  
+	                                                      leadChild:AddToAutoHide(child)   
+	                                                  else  
+	                                                      leadChild = child  
+	                                                      leadChild:RegisterAutoHide(5)   
+	                                                  end  
+	                                              end  
+	                                          end  
+	                                          if (leadChild) then  
+	                                              leadChild:AddToAutoHide(self)  
+	                                          end  
+	                                  ]]) 
 	for cbNum = 1, PALLYPOWER_MAXCLASSES do
 	-- create class buttons
-		local cButton = CreateFrame("Button", "PallyPowerC" .. cbNum, self.Header, "SecureHandlerEnterLeaveTemplate, SecureHandlerStateTemplate, SecureActionButtonTemplate, PallyPowerButtonTemplate")
+		local cButton = CreateFrame("Button", "PallyPowerC" .. cbNum, self.Header, "SecureHandlerShowHideTemplate, SecureHandlerEnterLeaveTemplate, SecureHandlerStateTemplate, SecureActionButtonTemplate, PallyPowerButtonTemplate")
 		--cButton:SetID(cbNum)
  		-- new show/hide functionality 
-	    cButton:Execute([[others = table.new()]]);
-		cButton:Execute([[childs = table.new()]]); 
+ 		SecureHandlerSetFrameRef(self.autoButton, "child", cButton)
+	    SecureHandlerExecute(self.autoButton, [[
+												local child = self:GetFrameRef("child")
+												childs[#childs+1] = child;
+											  ]])
+											  
+	    cButton:Execute([[others = table.new()]])
+		cButton:Execute([[childs = table.new()]]) 
 	    cButton:SetAttribute("_onenter", [[  
-	                                         for _, other in ipairs(others) do  
+	                                          for _, other in ipairs(others) do  
 	                                             other:SetAttribute("state-inactive", self)  
 	                                          end  
 	                                          local leadChild;  
@@ -1214,7 +1312,17 @@ function PallyPower:CreateLayout()
 	                                          end  
 	                                  ]]) 
 	 
-	    cButton:SetAttribute("_onstate-inactive", [[childs[1]:Hide()]]) 
+	    cButton:SetAttribute("_onstate-inactive", [[
+													childs[1]:Hide()
+												 ]]) 
+	  
+	    if cbNum == 1 then
+	    	cButton:SetAttribute("_onhide", [[
+										    	for _, other in ipairs(others) do  
+	                                            	other:Hide()
+	                                          	end
+											]]) 
+		end
 	  
 		cButton:RegisterForClicks("LeftButtonDown", "RightButtonDown")
 		cButton:EnableMouseWheel(1)
@@ -1225,7 +1333,7 @@ function PallyPower:CreateLayout()
 		local pButtons = self.playerButtons[cbNum]
         local leadChild
 		for pbNum = 1, PALLYPOWER_MAXPERCLASS do -- create player buttons for each class
-			local pButton = CreateFrame("Button","PallyPowerC".. cbNum .. "P" .. pbNum, UIParent, "SecureHandlerEnterLeaveTemplate, SecureActionButtonTemplate, PallyPowerPopupTemplate")
+			local pButton = CreateFrame("Button","PallyPowerC".. cbNum .. "P" .. pbNum, UIParent, "SecureHandlerShowHideTemplate, SecureHandlerEnterLeaveTemplate, SecureActionButtonTemplate, PallyPowerPopupTemplate")
 			--pButton:SetID(cbNum)
 			pButton:SetParent(cButton)
 			  
@@ -1236,7 +1344,8 @@ function PallyPower:CreateLayout()
 											  ]])
 			if pbNum == 1 then
 				pButton:Execute([[siblings = table.new()]]);
-				pButton:SetAttribute("_onhide", [[for _, sibling in ipairs(siblings) do
+				pButton:SetAttribute("_onhide", [[
+												  for _, sibling in ipairs(siblings) do
 													sibling:Hide()
 												  end]])											
 				leadChild = pButton
@@ -1269,15 +1378,6 @@ function PallyPower:CreateLayout()
 			end
 		end
 	end
-
-	self.autoButton = CreateFrame("Button", "PallyPowerAuto", self.Header, "PallyPowerAutoButtonTemplate")
-	self.autoButton:RegisterForClicks("LeftButtonDown", "RightButtonDown")
-
-	self.rfButton = CreateFrame("Button", "PallyPowerRF", self.Header, "PallyPowerRFButtonTemplate")
-	self.rfButton:RegisterForClicks("LeftButtonDown", "RightButtonDown")
-
-	self.auraButton = CreateFrame("Button", "PallyPowerAura", self.Header, "PallyPowerAuraButtonTemplate")
-	self.auraButton:RegisterForClicks("LeftButtonDown")
 
 	self:UpdateLayout()
 	self:Debug("Create Layout -- end")
@@ -1386,7 +1486,7 @@ function PallyPower:UpdateLayout()
  	autob:ClearAllPoints()
 	autob:SetPoint(pointOpposite, self.Header, "CENTER", 0, offset)
 	autob:SetAttribute("type", "spell")
-	if self:GetNumUnits() > 0 and self.opt.autobuff.autobutton and not self.opt.disabled and PP_IsPally then
+	if self:GetNumUnits() > 0 and not self.opt.disabled and PP_IsPally then --and self.opt.autobuff.autobutton 
 		autob:Show()
 		offset = offset - y
 	else
@@ -1428,13 +1528,16 @@ function PallyPower:UpdateLayout()
 	local _, gspellID = PallyPower:GetSpellID(classIndex)
         if (classlist[classIndex] and classlist[classIndex] ~= 0 and (gspellID ~= 0 or PallyPower:NormalBlessingCount(classIndex) > 0)) then
 		cbNum = cbNum + 1
+		--self:Print("cbNum="..cbNum)
 		local cButton = self.classButtons[cbNum]
-			cButton:Show()
+			--cButton:Show()
+			cButton:SetAttribute("Display", 1)
 			cButton:SetAttribute("classID", classIndex)
 			cButton:SetAttribute("type1", "spell")
 			cButton:SetAttribute("type2", "spell")
 			local pButtons = self.playerButtons[cbNum]
 			for pbNum = 1, math.min(classlist[classIndex], PALLYPOWER_MAXPERCLASS) do
+				--self:Print("pbNum="..pbNum)
 				local pButton = pButtons[pbNum]
 				if not self.opt.display.hidePlayerButtons then
 					pButton:SetAttribute("Display", 1)
@@ -1467,11 +1570,13 @@ function PallyPower:UpdateLayout()
 	cbNum = cbNum + 1
 	for i = cbNum, PALLYPOWER_MAXCLASSES do
 		local cButton = self.classButtons[i]
+		cButton:SetAttribute("Display", 0)
 		cButton:SetAttribute("classID", 0)
 		cButton:Hide()
 		local pButtons = self.playerButtons[cbNum]
 		for pbNum = 1, PALLYPOWER_MAXPERCLASS do
 			local pButton = pButtons[pbNum]
+			pButton:SetAttribute("Display", 0)
 			pButton:SetAttribute("classID", 0)
 			pButton:SetAttribute("playerID", 0)
 			pButton:Hide()
