@@ -52,28 +52,6 @@ PallyPower.options = {
 				[true] = L["ENABLED"]
 			},
 		},
-  		rfbuff = {
-			name = L["RFBUFF"],
-			type = "toggle",
-			desc = L["RFBUFF_DESC"],
-			get = "ToggleRF",
-			set = "ToggleRF",
-			map = {
-				[false]=L["DISABLED"],
-				[true] = L["ENABLED"]
-			},
-		},
-  		auras = {
-			name = L["AURAS"],
-			type = "toggle",
-			desc = L["AURAS_DESC"],
-			get = "ToggleAuras",
-			set = "ToggleAuras",
-			map = {
-				[false]=L["DISABLED"],
-				[true] = L["ENABLED"]
-			},
-		},
   		freeassign = {
 			name = L["FREEASSIGN"],
 			type = "toggle",
@@ -85,59 +63,7 @@ PallyPower.options = {
 				[true] = L["ENABLED"]
 			},
 		},
-		autobuff = {
-			name = L["AUTOBUFF"],
-			type = "group",
-			desc = L["AUTOBUFF_DESC"],
-			args = {
-				autokey1 = {
-					name = L["AUTOKEY1"],
-					desc = L["AUTOKEY1_DESC"],
-					type = "text",
-					validate = "keybinding",
-					set = function(value)
-						PallyPower:UnbindKeys()
-						PallyPower.opt.autobuff.autokey1 = value
-						PallyPower:BindKeys()
-					end,
-					get = function() return PallyPower.opt.autobuff.autokey1 end
-				},
-				autokey2 = {
-					name = L["AUTOKEY2"],
-					desc = L["AUTOKEY2_DESC"],
-					type = "text",
-					validate = "keybinding",
-					set = function(value)
-						PallyPower:UnbindKeys()
-						PallyPower.opt.autobuff.autokey2 = value
-						PallyPower:BindKeys()
-					end,
-					get = function() return PallyPower.opt.autobuff.autokey2 end
-				},
-				autobutton = {
-					name = L["AUTOBTN"],
-					type = "toggle",
-					desc = L["AUTOBTN_DESC"],
-					set = "ToggleAutoButton",
-					get = "ToggleAutoButton",
-					map = {
-						[false] = L["DISABLED"], 
-						[true] = L["ENABLED"]
-					},
-				},
-				waitforpeople = {
-					name = L["WAIT"],
-					type = "toggle",
-					desc = L["WAIT_DESC"],
-					set = "ToggleWaitPeople",
-					get = "ToggleWaitPeople",
-					map = {
-						[false] = L["DISABLED"], 
-						[true] = L["ENABLED"]
-					},
-				},
-			},
-		},
+
 		display = {
 			name = L["DISP"],
 			type = "group",
@@ -228,6 +154,17 @@ PallyPower.options = {
 						[true] = L["ENABLED"]
 					},
 				},
+				cbuttons = {
+					name = L["HIDECB"],
+					type = "toggle",
+					desc = L["HIDECB_DESC"],
+					get = "ToggleClassButtons",
+					set = "ToggleClassButtons",
+					map = {
+						[false]=L["DISABLED"],
+						[true] = L["ENABLED"]
+					},
+				},
 				handle = {
 					name = L["HIDEDH"],
 					type = "toggle",
@@ -261,7 +198,81 @@ PallyPower.options = {
 						[true] = L["ENABLED"]
 					},
 				},
-
+				autobuff = {
+					name = L["AUTOBUFF"],
+					type = "group",
+					desc = L["AUTOBUFF_DESC"],
+					args = {
+						autokey1 = {
+							name = L["AUTOKEY1"],
+							desc = L["AUTOKEY1_DESC"],
+							type = "text",
+							validate = "keybinding",
+							set = function(value)
+									PallyPower:UnbindKeys()
+									PallyPower.opt.autobuff.autokey1 = value
+									PallyPower:BindKeys()
+								  end,
+							get = function() return PallyPower.opt.autobuff.autokey1 end
+						},
+						autokey2 = {
+							name = L["AUTOKEY2"],
+							desc = L["AUTOKEY2_DESC"],
+							type = "text",
+							validate = "keybinding",
+							set = function(value)
+									PallyPower:UnbindKeys()
+									PallyPower.opt.autobuff.autokey2 = value
+									PallyPower:BindKeys()
+								  end,
+							get = function() return PallyPower.opt.autobuff.autokey2 end
+						},
+						autobutton = {
+							name = L["AUTOBTN"],
+							type = "toggle",
+							desc = L["AUTOBTN_DESC"],
+							set = "ToggleAutoButton",
+							get = "ToggleAutoButton",
+							map = {
+								[false] = L["DISABLED"],
+								[true] = L["ENABLED"]
+							},
+						},
+						waitforpeople = {
+							name = L["WAIT"],
+							type = "toggle",
+							desc = L["WAIT_DESC"],
+							set = "ToggleWaitPeople",
+							get = "ToggleWaitPeople",
+							map = {
+								[false] = L["DISABLED"],
+								[true] = L["ENABLED"]
+							},
+						},
+					},
+				},
+				rfbuff = {
+					name = L["RFBUFF"],
+					type = "toggle",
+					desc = L["RFBUFF_DESC"],
+					get = "ToggleRF",
+					set = "ToggleRF",
+					map = {
+						[false]=L["DISABLED"],
+						[true] = L["ENABLED"]
+					},
+				},
+  				auras = {
+					name = L["AURAS"],
+					type = "toggle",
+					desc = L["AURAS_DESC"],
+					get = "ToggleAuras",
+					set = "ToggleAuras",
+					map = {
+						[false]=L["DISABLED"],
+						[true] = L["ENABLED"]
+					},
+				},
 			},      -- display args
 		}, -- main args
 	},
@@ -356,6 +367,12 @@ function PallyPower:TogglePlayerButtons(value)
 	PallyPower:UpdateLayout();
 end
 
+function PallyPower:ToggleClassButtons(value)
+	if type(value) == "nil" then return self.opt.hideClassButtons end
+	self.opt.hideClassButtons = value;
+	PallyPower:UpdateLayout();	
+end
+
 function PallyPower:ToggleAutoButton(value)
 	if type(value) == "nil" then return self.opt.autobuff.autobutton end
 	self.opt.autobuff.autobutton = value;
@@ -372,4 +389,3 @@ function PallyPower:ToggleAuras(value)
 	self.opt.auras = value;
 	PallyPower:UpdateLayout();
 end
-
