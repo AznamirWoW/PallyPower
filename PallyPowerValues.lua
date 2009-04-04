@@ -37,6 +37,7 @@ PALLYPOWER_DEFAULT_VALUES = {
         frameLocked = false,
 		hideDragHandle = false,
 		hidePlayerButtons = false,
+		hideClassButtons = false,
 		PlainButtons = false,
 		HideKeyText = false,
 		HideCount = false,

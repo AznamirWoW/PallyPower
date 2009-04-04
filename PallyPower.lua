@@ -1261,23 +1261,7 @@ function PallyPower:CreateLayout()
 	self.playerButtons = {}
 
 	self.autoButton:Execute([[childs = table.new()]]);
-	self.autoButton:SetAttribute("_onenter", [[
-											  local leadChild;  
-	                                          for _, child in ipairs(childs) do  
-	                                              if child:GetAttribute("Display") == 1 then  
-	                                                  child:Show()  
-	                                                  if (leadChild) then  
-	                                                      leadChild:AddToAutoHide(child)   
-	                                                  else  
-	                                                      leadChild = child  
-	                                                      leadChild:RegisterAutoHide(5)   
-	                                                  end  
-	                                              end  
-	                                          end  
-	                                          if (leadChild) then  
-	                                              leadChild:AddToAutoHide(self)  
-	                                          end  
-	                                  ]]) 
+	 
 	for cbNum = 1, PALLYPOWER_MAXCLASSES do
 	-- create class buttons
 		local cButton = CreateFrame("Button", "PallyPowerC" .. cbNum, self.Header, "SecureHandlerShowHideTemplate, SecureHandlerEnterLeaveTemplate, SecureHandlerStateTemplate, SecureActionButtonTemplate, PallyPowerButtonTemplate")
@@ -1315,15 +1299,6 @@ function PallyPower:CreateLayout()
 	    cButton:SetAttribute("_onstate-inactive", [[
 													childs[1]:Hide()
 												 ]]) 
-	  
-	    if cbNum == 1 then
-	    	cButton:SetAttribute("_onhide", [[
-										    	for _, other in ipairs(others) do  
-	                                            	other:Hide()
-	                                          	end
-											]]) 
-		end
-	  
 		cButton:RegisterForClicks("LeftButtonDown", "RightButtonDown")
 		cButton:EnableMouseWheel(1)
         self.classButtons[cbNum] = cButton
@@ -1527,10 +1502,47 @@ function PallyPower:UpdateLayout()
 	for classIndex = 1, PALLYPOWER_MAXCLASSES do
 	local _, gspellID = PallyPower:GetSpellID(classIndex)
         if (classlist[classIndex] and classlist[classIndex] ~= 0 and (gspellID ~= 0 or PallyPower:NormalBlessingCount(classIndex) > 0)) then
-		cbNum = cbNum + 1
-		--self:Print("cbNum="..cbNum)
-		local cButton = self.classButtons[cbNum]
+			cbNum = cbNum + 1
+			--self:Print("cbNum="..cbNum)
+			local cButton = self.classButtons[cbNum]
 			--cButton:Show()
+		  
+	    	if cbNum == 1 then
+				if self.opt.hideClassButtons then
+					self.autoButton:SetAttribute("_onenter", [[
+											  local leadChild;  
+	                                          for _, child in ipairs(childs) do  
+	                                              if child:GetAttribute("Display") == 1 then  
+	                                                  child:Show()  
+	                                                  if (leadChild) then  
+	                                                      leadChild:AddToAutoHide(child)   
+	                                                  else  
+	                                                      leadChild = child  
+	                                                      leadChild:RegisterAutoHide(5)   
+	                                                  end  
+	                                              end  
+	                                          end  
+	                                          if (leadChild) then  
+	                                              leadChild:AddToAutoHide(self)  
+	                                          end  
+	                                  ]])				
+	    			cButton:SetAttribute("_onhide", [[
+										    	for _, other in ipairs(others) do  
+	                                            	other:Hide()
+	                                          	end
+													]]) 
+				else
+					self.autoButton:SetAttribute("_onenter", [[
+	                                          for _, child in ipairs(childs) do  
+	                                              if child:GetAttribute("Display") == 1 then  
+	                                                  child:Show()  
+	                                              end  
+	                                          end  
+	                                  ]])				
+
+					cButton:SetAttribute("_onhide", nil)
+				end
+	  		end
 			cButton:SetAttribute("Display", 1)
 			cButton:SetAttribute("classID", classIndex)
 			cButton:SetAttribute("type1", "spell")
@@ -2261,6 +2273,10 @@ function PallyPower:ApplySkin(skinname)
 						  tile=false, tileSize = 8, edgeSize = 8,
 						  insets = { left = 2, right = 2, top = 2, bottom = 2}});
     PallyPowerRF:SetBackdrop({bgFile = PallyPower.Skins[skinname],
+		                  edgeFile='Interface\\Tooltips\\UI-Tooltip-Border',
+						  tile=false, tileSize = 8, edgeSize = 8,
+						  insets = { left = 2, right = 2, top = 2, bottom = 2}});
+	PallyPowerAura:SetBackdrop({bgFile = PallyPower.Skins[skinname],
 		                  edgeFile='Interface\\Tooltips\\UI-Tooltip-Border',
 						  tile=false, tileSize = 8, edgeSize = 8,
 						  insets = { left = 2, right = 2, top = 2, bottom = 2}});
