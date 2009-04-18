@@ -683,8 +683,8 @@ function PallyPower:NeedsBuff(class, test, playerName)
 	end
 
 	if self.opt.smartbuffs then
-		-- no wisdom for warriors and rogues
-		if (class == 1 or class==2) and test == 1 then
+		-- no wisdom for warriors, rogues and DKs
+		if (class == 1 or class == 2 or class == 10) and test == 1 then
 			return false
 		end
 		-- no salv for warriors except normal blessings
