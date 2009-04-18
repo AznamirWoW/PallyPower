@@ -27,7 +27,7 @@ PALLYPOWER_DEFAULT_VALUES = {
 	},
 	display = {
 		-- buttons
-		rows = 9,
+		rows = 11,
 		columns = 1,
 		gapping = 0,
 		buttonWidth = 100,
