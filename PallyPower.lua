@@ -1461,7 +1461,7 @@ function PallyPower:UpdateLayout()
  	autob:ClearAllPoints()
 	autob:SetPoint(pointOpposite, self.Header, "CENTER", 0, offset)
 	autob:SetAttribute("type", "spell")
-	if self:GetNumUnits() > 0 and not self.opt.disabled and PP_IsPally then --and self.opt.autobuff.autobutton 
+	if self:GetNumUnits() > 0 and not self.opt.disabled and PP_IsPally and (self.opt.autobuff.autobutton or self.opt.hideClassButtons) then
 		autob:Show()
 		offset = offset - y
 	else
@@ -1542,6 +1542,9 @@ function PallyPower:UpdateLayout()
 
 					cButton:SetAttribute("_onhide", nil)
 				end
+	  		end
+	  		if not self.opt.hideClassButtons then
+	  			cButton:Show()
 	  		end
 			cButton:SetAttribute("Display", 1)
 			cButton:SetAttribute("classID", classIndex)
