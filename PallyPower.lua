@@ -455,7 +455,7 @@ function PallyPowerConfigGrid_Update()
 				getglobal(fname):Hide()
 			end
 		end
-		getglobal("PallyPowerConfigFrameFreeAssign"):SetChecked(PallyPower.opt.freeassign)
+		PallyPowerConfigFrameFreeAssign:SetChecked(PallyPower.opt.freeassign)
 	end
 end
 
@@ -730,7 +730,7 @@ function PallyPower:ScanSpells()
 				spellName, spellRank = GetSpellInfo(PallyPower.Spells[i])
 			end
 			if not spellRank or spellRank == "" then -- spells without ranks
-				spellRank = PallyPower_Rank1		 -- BoK and BoS
+				spellRank = "1"		 -- BoK and BoS
 			end
 			local rank = select(3, string.find(spellRank, "(%d+)"))
 			local talent = 0
@@ -760,7 +760,7 @@ function PallyPower:ScanSpells()
 				AllPallys[self.player].AuraInfo[i] = {}
 				
 				if not spellRank or spellRank == "" then -- spells without ranks
-					spellRank = PallyPower_Rank1		 -- Concentration, Crusader
+					spellRank = "1"		 -- Concentration, Crusader
 				end
 				
 				local talent = 0
