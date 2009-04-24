@@ -131,16 +131,11 @@ PallyPower.AuraIcons = {
 PALLYPOWER_CLEAR = L["PP_CLEAR"];
 PALLYPOWER_REFRESH = L["PP_REFRESH"];
 PALLYPOWER_OPTIONS = L["PP_OPTIONS"];
+PALLYPOWER_AUTOASSIGN = L["AUTOASSIGN"]
+PALLYPOWER_FREEASSIGN = L["FREEASSIGN"]
 
 PALLYPOWER_ASSIGNMENTS1 = L["PP_RAS1"];
 PALLYPOWER_ASSIGNMENTS2 = L["PP_RAS2"];
-
-PallyPower_TalentSearch = L["PP_TSEARCH"];
-PallyPower_RankSearch = L["PP_RSEARCH"];
-PallyPower_BlessingNameSearch = L["PP_BNSEARCH"];
-PallyPower_Rank1 = L["PP_RANK1"];
-
-PallyPower_Symbol = L["PP_SYMBOL"];
 
 -- get translations directly
 PallyPower.Spells = {

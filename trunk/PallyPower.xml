@@ -1517,7 +1517,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				  </OnClick> 
 			  </Scripts>
 		  </Button>
-		  <Button name="$parentAutoAssign" inherits="GameMenuButtonTemplate" text="Auto-Assign" hidden="false">
+		  <Button name="$parentAutoAssign" inherits="GameMenuButtonTemplate" text="PALLYPOWER_AUTOASSIGN" hidden="false">
 			  <Size>
 				  <AbsDimension x="100" y="20" /> 
 			  </Size>
@@ -1725,7 +1725,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 	  </Frames>
 	  <Layers>
 		  <Layer level="OVERLAY">
-			  <FontString name="$parentFreeAssignText" inherits="GameFontHighlightSmall" text="Free assignment" justifyH="LEFT">
+			  <FontString name="$parentFreeAssignText" inherits="GameFontHighlightSmall" text="PALLYPOWER_FREEASSIGN" justifyH="LEFT">
 				  <Size>
 					  <AbsDimension x="100" y="16" /> 
 				  </Size>
