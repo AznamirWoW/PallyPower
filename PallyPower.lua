@@ -493,7 +493,7 @@ function PallyPower:Report(type)
 						else
 							blessings = ""
 						end
-						local _,_, spell = string.find(PallyPower.Spells[id], PallyPower_BlessingNameSearch)
+      					local spell = PallyPower.Spells[id]
 						blessings = blessings .. spell
 					end
 				end
