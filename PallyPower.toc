@@ -13,14 +13,16 @@
 ## X-RelSite-Curse: 3738
 ## SavedVariables: PallyPowerDB, PallyPower_Assignments, PallyPower_NormalAssignments, PallyPower_AuraAssignments, PallyPower_SavedPresets
 
-
+#@no-lib-strip@
 embeds.xml
+#@end-no-lib-strip@
 
 locale\enUS.lua
 locale\deDE.lua
 locale\frFR.lua
 locale\koKR.lua
 locale\esES.lua
+locale\esMX.lua
 locale\zhCN.lua
 locale\zhTW.lua
 
