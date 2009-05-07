@@ -2417,44 +2417,32 @@ function PallyPower:AutoAssignBlessings()
 	for i, v in pairs(AllPallys) do
 		pallycount = pallycount + 1
 	end
-	-- Class Priorities (class, wisdom, might, kings, sanc)
-
-	PallyPower:SelectBuffsByClass(pallycount, 1, 5, 2, 1, 3)
-	PallyPower:SelectBuffsByClass(pallycount, 2, 5, 2, 1, 3)
-	PallyPower:SelectBuffsByClass(pallycount, 3, 2, 5, 1, 3)
-	PallyPower:SelectBuffsByClass(pallycount, 4, 2, 3, 1, 4)
-	PallyPower:SelectBuffsByClass(pallycount, 5, 2, 3, 1, 4)
-	PallyPower:SelectBuffsByClass(pallycount, 6, 3, 2, 1, 4)
-	PallyPower:SelectBuffsByClass(pallycount, 7, 2, 5, 1, 3)
-	PallyPower:SelectBuffsByClass(pallycount, 8, 2, 5, 1, 3)
-	PallyPower:SelectBuffsByClass(pallycount, 9, 2, 3, 1, 4)
-	PallyPower:SelectBuffsByClass(pallycount, 10, 5, 2, 1, 3)
-	PallyPower:SelectBuffsByClass(pallycount, 11, 5, 2, 1, 3)
+	-- Class Priorities (class, priority list)  1 - wis, 2 - might, 3 - kings, 4 - sanct
+	PallyPower:SelectBuffsByClass(pallycount, 1, {3, 2, 4})  	-- warrior
+	PallyPower:SelectBuffsByClass(pallycount, 2, {3, 2, 4})  	-- rogue
+	PallyPower:SelectBuffsByClass(pallycount, 3, {3, 1, 4})  	-- priest
+	PallyPower:SelectBuffsByClass(pallycount, 4, {3, 1, 2, 4}) 	-- druid
+	PallyPower:SelectBuffsByClass(pallycount, 5, {3, 1, 2, 4}) 	-- paladin
+	PallyPower:SelectBuffsByClass(pallycount, 6, {3, 2, 1, 4}) 	-- hunter
+	PallyPower:SelectBuffsByClass(pallycount, 7, {3, 1, 4}) 	-- mage
+	PallyPower:SelectBuffsByClass(pallycount, 8, {3, 1, 4}) 	-- lock
+	PallyPower:SelectBuffsByClass(pallycount, 9, {3, 1, 2, 4}) 	-- shaman
+	PallyPower:SelectBuffsByClass(pallycount, 10, {3, 2, 4}) 	-- dk
+	PallyPower:SelectBuffsByClass(pallycount, 11, {3, 2, 1, 4}) -- pets
 end
 
-function PallyPower:SelectBuffsByClass(pallycount, class, wisdom, might, kings, sanc)
+function PallyPower:SelectBuffsByClass(pallycount, class, prioritylist)
 -- l2code i r noob.
 	local pallys = {}
 	for name in pairs(AllPallys) do
 		table.insert(pallys, name)
 	end
-	local bufftable = {}
-	local buff = {spell = 1, rank = wisdom, }
-	table.insert(bufftable, buff)
-	local buff = {spell = 2, rank = might, }
-	table.insert(bufftable, buff)
-	local buff = {spell = 3, rank = kings, }
-	table.insert(bufftable, buff)
-	local buff = {spell = 4, rank = sanc, }
-	table.insert(bufftable, buff)
-
-	table.sort(bufftable, function(a,b) return a.rank<b.rank end)
-
+	local bufftable = prioritylist
+	
 	if pallycount > 0 then
 		local pallycounter = 1
-		for i, v in pairs(bufftable) do
+		for i, nextspell in pairs(bufftable) do
 			if pallycounter <= pallycount then
-				local nextspell = bufftable[i].spell
 				local buffer = PallyPower:BuffSelections(nextspell, class, pallys)
 				for i, v in pairs(pallys) do
 					if buffer == pallys[i] then table.remove(pallys, i) end
