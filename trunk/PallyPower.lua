@@ -200,9 +200,9 @@ function PallyPowerGrid_NormalBlessingMenu(btn, mouseBtn, pname, class)
 			local blessings = {["0"] = string.format("%s%s%s", pre, "(none)", suf)}
 			for index, blessing in ipairs(PallyPower.Spells) do
 				if PallyPower:CanBuff(pally, index) then
-					if PallyPower:NeedsBuff(class, index, pname) then
+					--if PallyPower:NeedsBuff(class, index, pname) then
 						blessings[tostring(index)] = string.format("%s%s%s", pre, blessing, suf)
-					end
+					--end
 				end
 			end
 			tempoptions.args[pally] = {
