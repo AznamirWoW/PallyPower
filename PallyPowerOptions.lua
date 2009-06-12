@@ -69,6 +69,18 @@ PallyPower.options = {
 			type = "group",
 			desc = L["DISP_DESC"],
 			args = {
+			    layout = {
+					name = "Layout",
+					type = "text",
+					desc = "Custom Layout",
+					get = "layout",
+					set = "layout",
+					validate = {
+						"Standard",
+						"Layout 1",
+						"Layout 2",
+					},
+				},
 				skin = {
 					name = L["SKIN"],
 					type = "text",
@@ -298,6 +310,14 @@ function PallyPower:skinButtons(value)
 	end
 end
 
+function PallyPower:layout(value)
+	if not value then
+		return self.opt.layout;
+	else
+    	self.opt.layout = value;
+		PallyPower:UpdateLayout();
+	end
+end
 function PallyPower:displayRows(value)
 	if not value then return self.opt.display.rows end
 	self.opt.display.rows = value;
