@@ -1372,7 +1372,11 @@ end
 function PallyPower:UpdateLayout()
 	self:Debug("Update Layout -- begin")
 	if InCombatLockdown() then return false end
+	
 	PallyPowerFrame:SetScale(self.opt.buffscale)
+	
+	if self.opt.layout == "Standard" then
+	
 	local rows = self.opt.display.rows
 	local columns = self.opt.display.columns
 	local gapping = self.opt.display.gapping
@@ -1496,6 +1500,89 @@ function PallyPower:UpdateLayout()
 		offset = offset - y
 	else
 		auraBtn:Hide()
+	end
+
+	else
+	-- custom layout
+		local x = self.opt.display.buttonWidth
+		local y = self.opt.display.buttonHeight
+		local point = "TOPLEFT"
+		local pointOpposite = "BOTTOMLEFT"
+		local layout = PallyPower.Layouts[self.opt.layout]
+		
+		for cbNum = 1, PALLYPOWER_MAXCLASSES do -- position class buttons
+		    cx = layout.c[cbNum].x
+		    cy = layout.c[cbNum].y
+			local cButton = self.classButtons[cbNum]
+			-- set visual attributes
+			self:SetButton("PallyPowerC" .. cbNum)
+			-- set position
+			cButton.x = cx * x
+			cButton.y = cy * y
+			cButton:ClearAllPoints()
+			cButton:SetPoint(point, self.Header, "CENTER", cButton.x, cButton.y)
+
+			local pButtons = self.playerButtons[cbNum]
+			for pbNum = 1, PALLYPOWER_MAXPERCLASS do -- position player buttons
+			    px = layout.c[cbNum].p[pbNum].x
+			    py = layout.c[cbNum].p[pbNum].y
+				local pButton = pButtons[pbNum]
+				self:SetPButton("PallyPowerC".. cbNum .. "P" .. pbNum)
+			--pButton:SetAttribute("showstates", tostring(cbNum))
+				pButton:ClearAllPoints()
+				pButton:SetPoint(	point, self.Header, "CENTER",
+									cButton.x + px * x,
+									cButton.y + py * y
+								)
+			end
+		end
+
+
+		local ox = layout.ab.x * x
+		local oy = layout.ab.y * y
+		local autob = self.autoButton
+ 		autob:ClearAllPoints()
+		autob:SetPoint(point, self.Header, "CENTER", ox, oy)
+		autob:SetAttribute("type", "spell")
+		if self:GetNumUnits() > 0 and not self.opt.disabled and PP_IsPally and (self.opt.autobuff.autobutton or self.opt.hideClassButtons) then
+			autob:Show()
+		else
+			autob:Hide()
+		end
+
+    	ox = layout.rf.x * x
+		oy = layout.rf.y * y
+
+		local rfb = self.rfButton
+		rfb:ClearAllPoints()
+		rfb:SetPoint(point, self.Header, "CENTER", ox, oy)
+		rfb:SetAttribute("type1", "spell")
+		rfb:SetAttribute("unit1", "player")
+		--rfb:SetAttribute("spell1", PallyPower.RFSpell)
+		PallyPower:RFAssign(self.opt.rf)
+		rfb:SetAttribute("type2", "spell")
+		rfb:SetAttribute("unit2", "player")
+	    --rfb:SetAttribute("spell2", PallyPower.Seals[self.opt.seal])
+	    PallyPower:SealAssign(self.opt.seal)
+		if self:GetNumUnits() > 0 and self.opt.rfbuff and not self.opt.disabled and PP_IsPally then
+			rfb:Show()
+		else
+			rfb:Hide()
+		end
+
+        ox = layout.au.x * x
+		oy = layout.au.y * y
+
+		local auraBtn = self.auraButton
+		auraBtn:ClearAllPoints()
+		auraBtn:SetPoint(point, self.Header, "CENTER", ox, oy)
+		auraBtn:SetAttribute("type1", "spell")
+		auraBtn:SetAttribute("unit1", "player")
+		if self:GetNumUnits() > 0 and self.opt.auras and not self.opt.disabled and PP_IsPally then
+			auraBtn:Show()
+		else
+			auraBtn:Hide()
+		end
 	end
 
 	local cbNum = 0
