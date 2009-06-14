@@ -1,6 +1,6 @@
 ﻿local L = AceLibrary("AceLocale-2.2"):new("PallyPower")
 
-L:RegisterTranslations("enUS", function() return {
+L:RegisterTranslations("ruRU", function() return {
 	AURAS = "Ауры",
 	AURAS_DESC = "Вкл/Откл мониторинг аур",
 	AUTOASSIGN = "Автоназначение",
