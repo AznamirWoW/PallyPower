@@ -79,6 +79,7 @@ PallyPower.options = {
 						"Standard",
 						"Layout 1",
 						"Layout 2",
+						"Layout 3",
 					},
 				},
 				skin = {
