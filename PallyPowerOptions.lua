@@ -80,6 +80,7 @@ PallyPower.options = {
 						"Layout 1",
 						"Layout 2",
 						"Layout 3",
+						"Layout 4",
 					},
 				},
 				skin = {

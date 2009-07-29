@@ -252,10 +252,10 @@ end
 
 function PallyPowerGridButton_OnClick(btn, mouseBtn)
 	if InCombatLockdown() then return false end
-	_, _, pnum, class = string.find(btn:GetName(), "PallyPowerConfigFramePlayer(.+)Class(.+)")
+	local _, _, pnum, class = string.find(btn:GetName(), "PallyPowerConfigFramePlayer(.+)Class(.+)")
 	pnum = pnum + 0
 	class = class + 0
-	pname = getglobal("PallyPowerConfigFramePlayer"..pnum.."Name"):GetText()
+	local pname = getglobal("PallyPowerConfigFramePlayer"..pnum.."Name"):GetText()
 	if not PallyPower:CanControl(pname) then return false end
 
 	if (mouseBtn == "RightButton") then
@@ -268,10 +268,10 @@ end
 
 function PallyPowerGridButton_OnMouseWheel(btn, arg1)
 	if InCombatLockdown() then return false end
-	_,_,pnum,class = string.find(btn:GetName(), "PallyPowerConfigFramePlayer(.+)Class(.+)")
+	local _, _, pnum, class = string.find(btn:GetName(), "PallyPowerConfigFramePlayer(.+)Class(.+)")
 	pnum = pnum + 0
 	class = class + 0
-	pname = getglobal("PallyPowerConfigFramePlayer"..pnum.."Name"):GetText()
+	local pname = getglobal("PallyPowerConfigFramePlayer"..pnum.."Name"):GetText()
 	if not PallyPower:CanControl(pname) then return false end
 
 	if (arg1==-1) then  --mouse wheel down
@@ -512,7 +512,7 @@ function PallyPower:Report(type)
 end
 
 function PallyPower:PerformCycle(name, class, skipzero)
-	shift = IsShiftKeyDown()
+	local shift = IsShiftKeyDown()
 
 	if shift then class = 4 end
 
@@ -555,7 +555,7 @@ function PallyPower:PerformCycle(name, class, skipzero)
 end
 
 function PallyPower:PerformCycleBackwards(name, class, skipzero)
-	shift=IsShiftKeyDown()
+	local shift=IsShiftKeyDown()
 
 	if shift then class=4 end
 
@@ -721,7 +721,7 @@ end
 
 function PallyPower:ScanSpells()
 	self:Debug("Scan Spells -- begin")
-	_, class=UnitClass("player")
+	local _, class=UnitClass("player")
 	if (class == "PALADIN") then
 		local RankInfo = {}
 		for i = 1, 4 do -- find max spell ranks
@@ -1089,8 +1089,8 @@ function PallyPower:FormatTime(time)
 	if not time or time < 0 or time == 9999 then
 		return ""
 	end
-	mins = floor(time / 60)
-	secs = time - (mins * 60)
+	local mins = floor(time / 60)
+	local secs = time - (mins * 60)
 	return string.format("%d:%02d", mins, secs)
 end
 
@@ -1377,130 +1377,130 @@ function PallyPower:UpdateLayout()
 	
 	if self.opt.layout == "Standard" then
 	
-	local rows = self.opt.display.rows
-	local columns = self.opt.display.columns
-	local gapping = self.opt.display.gapping
-	local buttonWidth = self.opt.display.buttonWidth
-	local buttonHeight = self.opt.display.buttonHeight
-	local centerShiftX = 0
-	local centerShiftY = 0
-	local point = "BOTTOMLEFT"
-	local pointOpposite = "TOPLEFT"
-	local x = (buttonWidth + gapping)
-	local y = (buttonHeight + gapping)
-	local displayedButtons = math.min(self:CountClasses(),rows, columns)
-	local displayedColumns = math.min(displayedButtons, columns)
-	local displayedRows = math.floor((displayedButtons - 1) / columns) + 1
+		local rows = self.opt.display.rows
+		local columns = self.opt.display.columns
+		local gapping = self.opt.display.gapping
+		local buttonWidth = self.opt.display.buttonWidth
+		local buttonHeight = self.opt.display.buttonHeight
+		local centerShiftX = 0
+		local centerShiftY = 0
+		local point = "BOTTOMLEFT"
+		local pointOpposite = "TOPLEFT"
+		local x = (buttonWidth + gapping)
+		local y = (buttonHeight + gapping)
+		local displayedButtons = math.min(self:CountClasses(),rows, columns)
+		local displayedColumns = math.min(displayedButtons, columns)
+		local displayedRows = math.floor((displayedButtons - 1) / columns) + 1
 
-	if (self.opt.display.alignClassButtons == "1") then
-		point = "BOTTOMLEFT"
-		pointOpposite = "TOPLEFT"
-	elseif (self.opt.display.alignClassButtons == "3") then
-		x = x * -1
-		point = "BOTTOMRIGHT"
-		pointOpposite = "TOPRIGHT"
-	elseif (self.opt.display.alignClassButtons == "7") then
-		x = x * -1
-		y = y * -1
-		point = "TOPRIGHT"
-		pointOpposite = "BOTTOMRIGHT"
-	elseif (self.opt.display.alignClassButtons == "9") then
-		y = y * -1
-		point = "TOPLEFT"
-		pointOpposite = "BOTTOMLEFT"
-	end
+		if (self.opt.display.alignClassButtons == "1") then
+			point = "BOTTOMLEFT"
+			pointOpposite = "TOPLEFT"
+		elseif (self.opt.display.alignClassButtons == "3") then
+			x = x * -1
+			point = "BOTTOMRIGHT"
+			pointOpposite = "TOPRIGHT"
+		elseif (self.opt.display.alignClassButtons == "7") then
+			x = x * -1
+			y = y * -1
+			point = "TOPRIGHT"
+			pointOpposite = "BOTTOMRIGHT"
+		elseif (self.opt.display.alignClassButtons == "9") then
+			y = y * -1
+			point = "TOPLEFT"
+			pointOpposite = "BOTTOMLEFT"
+		end
 
-	for cbNum = 1, PALLYPOWER_MAXCLASSES do -- position class buttons
-		local cButton = self.classButtons[cbNum]
-		-- set visual attributes
-		self:SetButton("PallyPowerC" .. cbNum)
-		-- set position
-		cButton.x = (math.fmod(cbNum - 1, columns) * x + centerShiftX)
-		cButton.y = math.floor((cbNum - 1) / columns) * y + centerShiftY
-		cButton:ClearAllPoints()
-		cButton:SetPoint(point, self.Header, "CENTER", cButton.x, cButton.y)
+		for cbNum = 1, PALLYPOWER_MAXCLASSES do -- position class buttons
+			local cButton = self.classButtons[cbNum]
+			-- set visual attributes
+			self:SetButton("PallyPowerC" .. cbNum)
+			-- set position
+			cButton.x = (math.fmod(cbNum - 1, columns) * x + centerShiftX)
+			cButton.y = math.floor((cbNum - 1) / columns) * y + centerShiftY
+			cButton:ClearAllPoints()
+			cButton:SetPoint(point, self.Header, "CENTER", cButton.x, cButton.y)
 
-		local pButtons = self.playerButtons[cbNum]
-		for pbNum = 1, PALLYPOWER_MAXPERCLASS do -- position player buttons
-			local pButton = pButtons[pbNum]
-			self:SetPButton("PallyPowerC".. cbNum .. "P" .. pbNum)
-			--pButton:SetAttribute("showstates", tostring(cbNum))
-			pButton:ClearAllPoints()
-			if (self.opt.display.alignPlayerButtons == "bottom") then
-				pButton:SetPoint(	point, self.Header, "CENTER",
-									cButton.x,
-									cButton.y - pbNum * (buttonHeight + gapping)
-								)
-			elseif (self.opt.display.alignPlayerButtons == "left") then
-				pButton:SetPoint(	point, self.Header, "CENTER",
-									cButton.x - pbNum * (buttonWidth + gapping),
-									cButton.y
-								)
-			elseif (self.opt.display.alignPlayerButtons == "right") then
-				pButton:SetPoint(	point, self.Header, "CENTER",
-									cButton.x + pbNum * (buttonWidth + gapping),
-									cButton.y
-								)
-			elseif (self.opt.display.alignPlayerButtons == "top") then
-				pButton:SetPoint(	point, self.Header, "CENTER",
-									cButton.x,
-									cButton.y + pbNum * (buttonHeight + gapping)
-								)
-			elseif (self.opt.display.alignPlayerButtons == "compact-right") then
-				pButton:SetPoint(	point, self.Header, "CENTER",
-									cButton.x + (buttonWidth + gapping),
-									cButton.y + (pbNum - 1) * (buttonHeight + gapping)
-								)
-			elseif (self.opt.display.alignPlayerButtons == "compact-left") then
-				pButton:SetPoint(	point, self.Header, "CENTER",
-									cButton.x - (buttonWidth + gapping),
-									cButton.y + (pbNum - 1) * (buttonHeight + gapping)
-								)
+			local pButtons = self.playerButtons[cbNum]
+			for pbNum = 1, PALLYPOWER_MAXPERCLASS do -- position player buttons
+				local pButton = pButtons[pbNum]
+				self:SetPButton("PallyPowerC".. cbNum .. "P" .. pbNum)
+				--pButton:SetAttribute("showstates", tostring(cbNum))
+				pButton:ClearAllPoints()
+				if (self.opt.display.alignPlayerButtons == "bottom") then
+					pButton:SetPoint(	point, self.Header, "CENTER",
+										cButton.x,
+										cButton.y - pbNum * (buttonHeight + gapping)
+									)
+				elseif (self.opt.display.alignPlayerButtons == "left") then
+					pButton:SetPoint(	point, self.Header, "CENTER",
+										cButton.x - pbNum * (buttonWidth + gapping),
+										cButton.y
+									)
+				elseif (self.opt.display.alignPlayerButtons == "right") then
+					pButton:SetPoint(	point, self.Header, "CENTER",
+										cButton.x + pbNum * (buttonWidth + gapping),
+										cButton.y
+									)
+				elseif (self.opt.display.alignPlayerButtons == "top") then
+					pButton:SetPoint(	point, self.Header, "CENTER",
+										cButton.x,
+										cButton.y + pbNum * (buttonHeight + gapping)
+									)
+				elseif (self.opt.display.alignPlayerButtons == "compact-right") then
+					pButton:SetPoint(	point, self.Header, "CENTER",
+										cButton.x + (buttonWidth + gapping),
+										cButton.y + (pbNum - 1) * (buttonHeight + gapping)
+									)
+				elseif (self.opt.display.alignPlayerButtons == "compact-left") then
+					pButton:SetPoint(	point, self.Header, "CENTER",
+										cButton.x - (buttonWidth + gapping),
+										cButton.y + (pbNum - 1) * (buttonHeight + gapping)
+									)
+				end
 			end
 		end
-	end
 
-	local offset = 0
-	local autob = self.autoButton
- 	autob:ClearAllPoints()
-	autob:SetPoint(pointOpposite, self.Header, "CENTER", 0, offset)
-	autob:SetAttribute("type", "spell")
-	if self:GetNumUnits() > 0 and not self.opt.disabled and PP_IsPally and (self.opt.autobuff.autobutton or self.opt.hideClassButtons) then
-		autob:Show()
-		offset = offset - y
-	else
-		autob:Hide()
-	end
+		local offset = 0
+		local autob = self.autoButton
+		autob:ClearAllPoints()
+		autob:SetPoint(pointOpposite, self.Header, "CENTER", 0, offset)
+		autob:SetAttribute("type", "spell")
+		if self:GetNumUnits() > 0 and not self.opt.disabled and PP_IsPally and (self.opt.autobuff.autobutton or self.opt.hideClassButtons) then
+			autob:Show()
+			offset = offset - y
+		else
+			autob:Hide()
+		end
 
-	local rfb = self.rfButton
-	rfb:ClearAllPoints()
-	rfb:SetPoint(pointOpposite, self.Header, "CENTER", 0, offset)
-	rfb:SetAttribute("type1", "spell")
-	rfb:SetAttribute("unit1", "player")
-		--rfb:SetAttribute("spell1", PallyPower.RFSpell)
-	PallyPower:RFAssign(self.opt.rf)
-	rfb:SetAttribute("type2", "spell")
-	rfb:SetAttribute("unit2", "player")
-    --rfb:SetAttribute("spell2", PallyPower.Seals[self.opt.seal])
-    PallyPower:SealAssign(self.opt.seal)
-	if self:GetNumUnits() > 0 and self.opt.rfbuff and not self.opt.disabled and PP_IsPally then
-		rfb:Show()
-		offset = offset - y
-	else
-		rfb:Hide()
-	end
-	
-	local auraBtn = self.auraButton
-	auraBtn:ClearAllPoints()
-	auraBtn:SetPoint(pointOpposite, self.Header, "CENTER", 0, offset)
-	auraBtn:SetAttribute("type1", "spell")
-	auraBtn:SetAttribute("unit1", "player")
-	if self:GetNumUnits() > 0 and self.opt.auras and not self.opt.disabled and PP_IsPally then
-		auraBtn:Show()
-		offset = offset - y
-	else
-		auraBtn:Hide()
-	end
+		local rfb = self.rfButton
+		rfb:ClearAllPoints()
+		rfb:SetPoint(pointOpposite, self.Header, "CENTER", 0, offset)
+		rfb:SetAttribute("type1", "spell")
+		rfb:SetAttribute("unit1", "player")
+			--rfb:SetAttribute("spell1", PallyPower.RFSpell)
+		PallyPower:RFAssign(self.opt.rf)
+		rfb:SetAttribute("type2", "spell")
+		rfb:SetAttribute("unit2", "player")
+		--rfb:SetAttribute("spell2", PallyPower.Seals[self.opt.seal])
+		PallyPower:SealAssign(self.opt.seal)
+		if self:GetNumUnits() > 0 and self.opt.rfbuff and not self.opt.disabled and PP_IsPally then
+			rfb:Show()
+			offset = offset - y
+		else
+			rfb:Hide()
+		end
+		
+		local auraBtn = self.auraButton
+		auraBtn:ClearAllPoints()
+		auraBtn:SetPoint(pointOpposite, self.Header, "CENTER", 0, offset)
+		auraBtn:SetAttribute("type1", "spell")
+		auraBtn:SetAttribute("unit1", "player")
+		if self:GetNumUnits() > 0 and self.opt.auras and not self.opt.disabled and PP_IsPally then
+			auraBtn:Show()
+			offset = offset - y
+		else
+			auraBtn:Hide()
+		end
 
 	else
 	-- custom layout
@@ -2421,7 +2421,7 @@ end
 
 function PallyPower:SealCycleBackward()
 	if InCombatLockdown() then return false end
-	shift = IsShiftKeyDown()
+	local shift = IsShiftKeyDown()
 	
 	if shift then
 		self.opt.rf = not self.opt.rf
@@ -2549,8 +2549,8 @@ function PallyPower:BuffSelections(buff, class, pallys)
 	if buff == 4 then t = SancPallys end
 
 	local Buffer = ""
-	testrank = 0
-	testtalent = 0
+	local testrank = 0
+	local testtalent = 0
 	for i,v in pairs(t) do
 		if t[i].spellrank >= testrank and PallyPower:PallyAvailable(t[i].pallyname, pallys) then
 			testrank = t[i].spellrank
@@ -2579,9 +2579,9 @@ end
 
 function PallyPowerAuraButton_OnClick(btn, mouseBtn)
 	if InCombatLockdown() then return false end
-	_, _, pnum = string.find(btn:GetName(), "PallyPowerConfigFramePlayer(.+)Aura1")
+	local _, _, pnum = string.find(btn:GetName(), "PallyPowerConfigFramePlayer(.+)Aura1")
 	pnum = pnum + 0
-	pname = getglobal("PallyPowerConfigFramePlayer"..pnum.."Name"):GetText()
+	local pname = getglobal("PallyPowerConfigFramePlayer"..pnum.."Name"):GetText()
 	if not PallyPower:CanControl(pname) then return false end
 
 	if (mouseBtn == "RightButton") then
@@ -2594,9 +2594,9 @@ end
 
 function PallyPowerAuraButton_OnMouseWheel(btn, arg1)
 	if InCombatLockdown() then return false end
-	_,_,pnum = string.find(btn:GetName(), "PallyPowerConfigFramePlayer(.+)Aura1")
+	local _, _, pnum = string.find(btn:GetName(), "PallyPowerConfigFramePlayer(.+)Aura1")
 	pnum = pnum + 0
-	pname = getglobal("PallyPowerConfigFramePlayer"..pnum.."Name"):GetText()
+	local pname = getglobal("PallyPowerConfigFramePlayer"..pnum.."Name"):GetText()
 	if not PallyPower:CanControl(pname) then return false end
 
 	if (arg1==-1) then  --mouse wheel down
@@ -2618,7 +2618,7 @@ function PallyPower:PerformAuraCycle(name, skipzero)
 		PallyPower_AuraAssignments[name] = 0
 	end
 
-	cur = PallyPower_AuraAssignments[name]
+	local cur = PallyPower_AuraAssignments[name]
 
 	for test = cur+1, PALLYPOWER_MAXAURAS do
 		if PallyPower:HasAura(name, test) then
@@ -2645,7 +2645,7 @@ function PallyPower:PerformAuraCycleBackwards(name, skipzero)
 		PallyPower_AuraAssignments[name] = 0
 	end
 
-	cur = PallyPower_AuraAssignments[name] - 1
+	local cur = PallyPower_AuraAssignments[name] - 1
 	if (cur < 0) or (skipzero and (cur < 1)) then
 		cur = PALLYPOWER_MAXAURAS
 	end
