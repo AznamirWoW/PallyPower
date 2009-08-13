@@ -891,10 +891,15 @@ end
 function PallyPower:SendMessage(msg)
 	self:Debug("Sending message")
 	local type
-	if GetNumRaidMembers() == 0 then
-		type = "PARTY"
+	local inInstance, instanceType = IsInInstance()
+	if inInstance and instanceType == "pvp" then
+		type = "BATTLEGROUND"
 	else
-		type = "RAID"
+		if GetNumRaidMembers() == 0 then
+			type = "PARTY"
+		else
+			type = "RAID"
+		end
 	end
 	SendAddonMessage(PallyPower.commPrefix, msg, type, self.player)
 end
@@ -906,7 +911,7 @@ end
 
 function PallyPower:CHAT_MSG_ADDON(prefix, message, distribution, sender)
 	self:Debug("CHAT_MSG_ADDON event")
-	if prefix == PallyPower.commPrefix and (distribution == "PARTY" or distribution == "RAID") then
+	if prefix == PallyPower.commPrefix and (distribution == "PARTY" or distribution == "RAID" or distribution == "BATTLEGROUND") then
 		if not ChatControl[sender] then
 			ChatControl[sender]={}
 			ChatControl[sender].time=0
