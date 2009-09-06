@@ -51,7 +51,7 @@ function PallyPower:OnEnable()
 	self:RegisterEvent("CHAT_MSG_ADDON")
 	self:RegisterEvent("CHAT_MSG_SYSTEM")
 	self:RegisterEvent("PLAYER_REGEN_ENABLED")
-	self:RegisterEvent("SPELLS_CHANGED")
+	self:RegisterBucketEvent("SPELLS_CHANGED", 1, "SPELLS_CHANGED") 
 	self:RegisterBucketEvent("RosterLib_RosterUpdated", 1, "UpdateRoster")
 	self:ScheduleRepeatingEvent("PallyPowerInventoryScan", self.InventoryScan, 60, self)
 	self:UpdateRoster()
@@ -932,6 +932,11 @@ function PallyPower:CHAT_MSG_SYSTEM()
 	if string.find(arg1, ERR_RAID_YOU_JOINED) then
 		self:SendSelf()
 		self:SendMessage("REQ")
+	elseif string.find(arg1, ERR_RAID_YOU_LEFT) or string.find(arg1, ERR_LEFT_GROUP_YOU) or string.find(arg1, ERR_GROUP_DISBANDED) then
+		AllPallys = {}
+		PallyPower:ScanSpells()
+		PallyPower:ScanInventory()
+		PallyPower:UpdateLayout()
 	end
 end
 
