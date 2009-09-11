@@ -18,6 +18,7 @@ embeds.xml
 #@end-no-lib-strip@
 
 locale\enUS.lua
+locale\ruRU.lua
 locale\deDE.lua
 locale\frFR.lua
 locale\koKR.lua
