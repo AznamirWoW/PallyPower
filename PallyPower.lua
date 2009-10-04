@@ -3,6 +3,12 @@ PallyPower = AceLibrary("AceAddon-2.0"):new("AceConsole-2.0","AceDB-2.0","AceEve
 local dewdrop = AceLibrary("Dewdrop-2.0")
 local RL = AceLibrary("Roster-2.1")
 local L = AceLibrary("AceLocale-2.2"):new("PallyPower")
+local tinsert = table.insert
+local tremove = table.remove
+local tsort = table.sort
+local sfind = string.find
+local ssub = string.sub
+local sformat = string.format
 
 local classlist, classes = {}, {}
 LastCast = {}
@@ -13,7 +19,7 @@ PallyPower_AuraAssignments = {}
 PallyPower_SavedPresets = {}
 
 AllPallys = {}
-
+SyncList = {}
 ChatControl = {}
 
 local initalized = false
@@ -120,6 +126,7 @@ end
 
 function PallyPowerConfig_Refresh()
 	AllPallys = {}
+	SyncList = {}
 	PallyPower:ScanSpells()
 	PallyPower:ScanInventory()
 	PallyPower:SendSelf()
@@ -197,16 +204,16 @@ function PallyPowerGrid_NormalBlessingMenu(btn, mouseBtn, pname, class)
 				pre = ""
 				suf = ""
 			end
-			local blessings = {["0"] = string.format("%s%s%s", pre, "(none)", suf)}
+			local blessings = {["0"] = sformat("%s%s%s", pre, "(none)", suf)}
 			for index, blessing in ipairs(PallyPower.Spells) do
 				if PallyPower:CanBuff(pally, index) then
 					--if PallyPower:NeedsBuff(class, index, pname) then
-						blessings[tostring(index)] = string.format("%s%s%s", pre, blessing, suf)
+						blessings[tostring(index)] = sformat("%s%s%s", pre, blessing, suf)
 					--end
 				end
 			end
 			tempoptions.args[pally] = {
-				name = string.format("%s%s%s", pre, pally, suf),
+				name = sformat("%s%s%s", pre, pally, suf),
 				type = "text",
 				desc = pally,
 				order = 5,
@@ -235,7 +242,7 @@ end
 
 function PallyPowerPlayerButton_OnClick(btn, mouseBtn)
 	if InCombatLockdown() then return false end
-	local _, _, class, pnum = string.find(btn:GetName(), "PallyPowerConfigFrameClassGroup(.+)PlayerButton(.+)")
+	local _, _, class, pnum = sfind(btn:GetName(), "PallyPowerConfigFrameClassGroup(.+)PlayerButton(.+)")
 	local pname = getglobal("PallyPowerConfigFrameClassGroup"..class.."PlayerButton"..pnum.."Text"):GetText()
 	class = tonumber(class)
 	PallyPowerGrid_NormalBlessingMenu(btn, mouseBtn, pname, class)
@@ -243,7 +250,7 @@ end
 
 function PallyPowerPlayerButton_OnMouseWheel(btn, arg1)
 	if InCombatLockdown() then return false end
-	local _, _, class, pnum = string.find(btn:GetName(), "PallyPowerConfigFrameClassGroup(.+)PlayerButton(.+)")
+	local _, _, class, pnum = sfind(btn:GetName(), "PallyPowerConfigFrameClassGroup(.+)PlayerButton(.+)")
 	local pname = getglobal("PallyPowerConfigFrameClassGroup"..class.."PlayerButton"..pnum.."Text"):GetText()
 	class = tonumber(class)
 
@@ -252,7 +259,7 @@ end
 
 function PallyPowerGridButton_OnClick(btn, mouseBtn)
 	if InCombatLockdown() then return false end
-	local _, _, pnum, class = string.find(btn:GetName(), "PallyPowerConfigFramePlayer(.+)Class(.+)")
+	local _, _, pnum, class = sfind(btn:GetName(), "PallyPowerConfigFramePlayer(.+)Class(.+)")
 	pnum = pnum + 0
 	class = class + 0
 	local pname = getglobal("PallyPowerConfigFramePlayer"..pnum.."Name"):GetText()
@@ -268,7 +275,7 @@ end
 
 function PallyPowerGridButton_OnMouseWheel(btn, arg1)
 	if InCombatLockdown() then return false end
-	local _, _, pnum, class = string.find(btn:GetName(), "PallyPowerConfigFramePlayer(.+)Class(.+)")
+	local _, _, pnum, class = sfind(btn:GetName(), "PallyPowerConfigFramePlayer(.+)Class(.+)")
 	pnum = pnum + 0
 	class = class + 0
 	local pname = getglobal("PallyPowerConfigFramePlayer"..pnum.."Name"):GetText()
@@ -308,7 +315,7 @@ function PlayerButton_DragStop(frame)
 		frame:StopMovingOrSizing()
 		for i = 1, PALLYPOWER_MAXCLASSES do
 		    if MouseIsOver(getglobal("PallyPowerConfigFrameClassGroup"..i.."ClassButton")) then
-			local _, _, pclass, pnum = string.find(movingPlayerFrame:GetName(), "PallyPowerConfigFrameClassGroup(.+)PlayerButton(.+)")
+			local _, _, pclass, pnum = sfind(movingPlayerFrame:GetName(), "PallyPowerConfigFrameClassGroup(.+)PlayerButton(.+)")
 			pclass, pnum = tonumber(pclass), tonumber(pnum)
 			local unit = classes[pclass][pnum]
 			PallyPower:AssignPlayerAsClass(unit.name, pclass, i)
@@ -362,7 +369,7 @@ function PallyPowerConfigGrid_Update()
 			end
 		end
 		PallyPowerConfigFrame:SetScale(PallyPower.opt.configscale)
-		for name in pairs(AllPallys) do
+		for i, name in pairs(SyncList) do
 			local fname = "PallyPowerConfigFramePlayer" .. i
 
 			local SkillInfo = AllPallys[name]
@@ -615,11 +622,11 @@ function PallyPower:AssignPlayerAsClass(pname, pclass, tclass)
 	for pally, classes in pairs(PallyPower_Assignments) do
 		if AllPallys[pally] and classes[tclass] and classes[tclass] > 0 then
 			target[classes[tclass]] = pally
-			table.insert(targetsorted, classes[tclass])
+			tinsert(targetsorted, classes[tclass])
 		end
 	end
 	-- Sort blessings because we want to look at might > wisdom > the rest
-	table.sort(targetsorted, function(a,b) return a == 2 or a == 1 and b ~= 2 end)
+	tsort(targetsorted, function(a,b) return a == 2 or a == 1 and b ~= 2 end)
 	-- Find greater blessings we have
 	for pally, info in pairs(AllPallys) do
 		if PallyPower_Assignments[pally] and PallyPower_Assignments[pally][pclass] then
@@ -732,7 +739,7 @@ function PallyPower:ScanSpells()
 			if not spellRank or spellRank == "" then -- spells without ranks
 				spellRank = "1"		 -- BoK and BoS
 			end
-			local rank = select(3, string.find(spellRank, "(%d+)"))
+			local rank = select(3, sfind(spellRank, "(%d+)"))
 			local talent = 0
 			rank = tonumber(rank)
 			if spellName then
@@ -749,9 +756,10 @@ function PallyPower:ScanSpells()
 				RankInfo[i].talent = talent
 			end
 		end
-
-		AllPallys[self.player] = RankInfo
 		
+		self:SyncAdd(self.player)
+		
+		AllPallys[self.player] = RankInfo
 		AllPallys[self.player].AuraInfo = {}
 		for i = 1, PALLYPOWER_MAXAURAS do -- find max ranks/talents for auaras
 			local spellName, spellRank = GetSpellInfo(PallyPower.Auras[i])
@@ -776,7 +784,7 @@ function PallyPower:ScanSpells()
 				end
 
 				AllPallys[self.player].AuraInfo[i].talent = talent
-				AllPallys[self.player].AuraInfo[i].rank = tonumber(select(3, string.find(spellRank, "(%d+)")))
+				AllPallys[self.player].AuraInfo[i].rank = tonumber(select(3, sfind(spellRank, "(%d+)")))
 			end
 		end
 		
@@ -847,7 +855,7 @@ function PallyPower:SendSelf()
 		if not AuraInfo[i] then
 			s = s.."nn"
 		else
-			s = s .. string.format("%x%x", AuraInfo[i].rank, AuraInfo[i].talent)
+			s = s .. sformat("%x%x", AuraInfo[i].rank, AuraInfo[i].talent)
 		end
 	end
 
@@ -864,7 +872,7 @@ function PallyPower:SendSelf()
 	if PallyPower_NormalAssignments[self.player] then
 		for class_id, tnames in pairs(PallyPower_NormalAssignments[self.player]) do
 			for tname, blessing_id in pairs(tnames) do
-				table.insert(AssignList, string.format("%s %s %s %s", self.player, class_id, tname, blessing_id))
+				tinsert(AssignList, sformat("%s %s %s %s", self.player, class_id, tname, blessing_id))
 			end
 		end
 	end
@@ -929,11 +937,12 @@ end
 
 function PallyPower:CHAT_MSG_SYSTEM()
 	self:Debug("CHAT_MSG_SYSTEM event")
-	if string.find(arg1, ERR_RAID_YOU_JOINED) then
+	if sfind(arg1, ERR_RAID_YOU_JOINED) then
 		self:SendSelf()
 		self:SendMessage("REQ")
-	elseif string.find(arg1, ERR_RAID_YOU_LEFT) or string.find(arg1, ERR_LEFT_GROUP_YOU) or string.find(arg1, ERR_GROUP_DISBANDED) then
+	elseif sfind(arg1, ERR_RAID_YOU_LEFT) or sfind(arg1, ERR_LEFT_GROUP_YOU) or sfind(arg1, ERR_GROUP_DISBANDED) then
 		AllPallys = {}
+		SyncList = {}
 		PallyPower:ScanSpells()
 		PallyPower:ScanInventory()
 		PallyPower:UpdateLayout()
@@ -979,8 +988,29 @@ function PallyPower:ClearAssignments(sender)
 	end
 end
 
+function PallyPower:SyncClear()
+	SyncList = {}
+end
+
+function PallyPower:SyncAdd(name)
+	local chk = 0
+	for i, v in ipairs(SyncList) do
+		if v == name then 
+			chk = 1
+		end
+	end
+	if chk == 0 then
+		tinsert(SyncList, name)
+		tsort(SyncList, function (a, b) return a < b end)
+	end
+	
+	--for i, v in ipairs(SyncList) do
+	--	self:Print(i, v)
+	--end
+end
+
 function PallyPower:ParseMessage(sender, msg)
---    self:Print("Received from: %s, message: %s", sender, msg)
+    --self:Print("Received from: %s, message: %s", sender, msg)
 	if sender == self.player then return end
 
 	local leader = self:CheckRaidLeader(sender)
@@ -988,31 +1018,35 @@ function PallyPower:ParseMessage(sender, msg)
 		self:SendSelf()
 	end
 
-	if string.find(msg, "^SELF") then
+	if sfind(msg, "^SELF") then
 		PallyPower_NormalAssignments[sender] = {}
 		PallyPower_Assignments[sender] = { }
 		AllPallys[sender] = { }
-		_, _, numbers, assign = string.find(msg, "SELF ([0-9n]*)@([0-9n]*)")
+		
+		self:SyncAdd(sender)
+		
+		_, _, numbers, assign = sfind(msg, "SELF ([0-9n]*)@([0-9n]*)")
 		for i = 1, 6 do
-			rank = string.sub(numbers, (i - 1) * 2 + 1, (i - 1) * 2 + 1)
-			talent = string.sub(numbers, (i - 1) * 2 + 2, (i - 1) * 2 + 2)
+			rank = ssub(numbers, (i - 1) * 2 + 1, (i - 1) * 2 + 1)
+			talent = ssub(numbers, (i - 1) * 2 + 2, (i - 1) * 2 + 2)
 			if rank ~= "n" then
 				AllPallys[sender][i] = { }
 				AllPallys[sender][i].rank = tonumber(rank)
 				AllPallys[sender][i].talent = tonumber(talent)
 			end
 		end
+		-- sort here
 		if assign then
 			for i = 1, PALLYPOWER_MAXCLASSES do
-				tmp =string.sub(assign, i, i)
+				tmp =ssub(assign, i, i)
 				if tmp == "n" or tmp == "" then tmp = 0 end
 				PallyPower_Assignments[sender][i] = tmp + 0
 			end
 		end
 	end
 
-	if string.find(msg, "^ASSIGN") then
-		_, _, name, class, skill = string.find(msg, "^ASSIGN (.*) (.*) (.*)")
+	if sfind(msg, "^ASSIGN") then
+		_, _, name, class, skill = sfind(msg, "^ASSIGN (.*) (.*) (.*)")
 		if name ~= sender and not (leader or PallyPower.opt.freeassign) then return false end
 		if not PallyPower_Assignments[name] then PallyPower_Assignments[name] = {} end
 		class = class + 0
@@ -1020,8 +1054,8 @@ function PallyPower:ParseMessage(sender, msg)
 		PallyPower_Assignments[name][class] = skill
 	end
 
-	if string.find(msg, "^NASSIGN") then
-		for pname, class, tname, skill in string.gmatch(string.sub(msg, 9), "([^@]*) ([^@]*) ([^@]*) ([^@]*)") do
+	if sfind(msg, "^NASSIGN") then
+		for pname, class, tname, skill in string.gmatch(ssub(msg, 9), "([^@]*) ([^@]*) ([^@]*) ([^@]*)") do
 			if pname ~= sender and not (leader or PallyPower.opt.freeassign) then return end
 			if not PallyPower_NormalAssignments[pname] then PallyPower_NormalAssignments[pname] = {} end
 			class = class + 0
@@ -1032,8 +1066,8 @@ function PallyPower:ParseMessage(sender, msg)
 		end
 	end
 
-	if string.find(msg, "^MASSIGN") then
-		_, _, name, skill = string.find(msg, "^MASSIGN (.*) (.*)")
+	if sfind(msg, "^MASSIGN") then
+		_, _, name, skill = sfind(msg, "^MASSIGN (.*) (.*)")
 		if name ~= sender and not (leader or PallyPower.opt.freeassign) then return false end
 		if not PallyPower_Assignments[name] then PallyPower_Assignments[name] = {} end
 		skill = skill + 0
@@ -1042,8 +1076,8 @@ function PallyPower:ParseMessage(sender, msg)
 		end
 	end
 
-	if string.find(msg, "^SYMCOUNT") then
-		_, _, count = string.find(msg, "^SYMCOUNT ([0-9]*)")
+	if sfind(msg, "^SYMCOUNT") then
+		_, _, count = sfind(msg, "^SYMCOUNT ([0-9]*)")
 		if AllPallys[sender] then
 			AllPallys[sender].symbols = count
 		else
@@ -1051,7 +1085,7 @@ function PallyPower:ParseMessage(sender, msg)
 		end
 	end
 
-	if string.find(msg, "^CLEAR") then
+	if sfind(msg, "^CLEAR") then
 		if leader then
 			self:ClearAssignments(sender)
 		end
@@ -1064,13 +1098,13 @@ function PallyPower:ParseMessage(sender, msg)
 		AllPallys[sender].freeassign = false
 	end
 
-	if string.find(msg, "^ASELF") then
+	if sfind(msg, "^ASELF") then
 		PallyPower_AuraAssignments[sender] = 0
 		AllPallys[sender].AuraInfo = { }
-		_, _, numbers, assign = string.find(msg, "ASELF ([0-9a-fn]*)@([0-9n]*)")
+		_, _, numbers, assign = sfind(msg, "ASELF ([0-9a-fn]*)@([0-9n]*)")
 		for i = 1, PALLYPOWER_MAXAURAS do
-			rank = string.sub(numbers, (i - 1) * 2 + 1, (i - 1) * 2 + 1)
-			talent = string.sub(numbers, (i - 1) * 2 + 2, (i - 1) * 2 + 2)
+			rank = ssub(numbers, (i - 1) * 2 + 1, (i - 1) * 2 + 1)
+			talent = ssub(numbers, (i - 1) * 2 + 2, (i - 1) * 2 + 2)
 			if rank ~= "n" then
 				AllPallys[sender].AuraInfo[i] = { }
 				AllPallys[sender].AuraInfo[i].rank = tonumber(rank,16)
@@ -1085,8 +1119,8 @@ function PallyPower:ParseMessage(sender, msg)
 		end
 	end
 
-	if string.find(msg, "^AASSIGN") then
-		_, _, name, aura = string.find(msg, "^AASSIGN (.*) (.*)")
+	if sfind(msg, "^AASSIGN") then
+		_, _, name, aura = sfind(msg, "^AASSIGN (.*) (.*)")
 		if name ~= sender and not (leader or PallyPower.opt.freeassign) then return false end
 		if not PallyPower_AuraAssignments[name] then PallyPower_AuraAssignments[name] = {} end
 		aura = aura + 0
@@ -1101,7 +1135,7 @@ function PallyPower:FormatTime(time)
 	end
 	local mins = floor(time / 60)
 	local secs = time - (mins * 60)
-	return string.format("%d:%02d", mins, secs)
+	return sformat("%d:%02d", mins, secs)
 end
 
 function PallyPower:GetClassID(class)
@@ -1154,7 +1188,7 @@ function PallyPower:UpdateRoster_test()
 	tmp1.specialbuff = false
 	tmp1.dead = false
 	classlist[5] = classlist[5] +1
-	table.insert(classes[5], tmp1)
+	tinsert(classes[5], tmp1)
 	local tmp2 = {}
 	tmp2.name = "Paladin2"
 	tmp2.class = "PALADIN"
@@ -1164,7 +1198,7 @@ function PallyPower:UpdateRoster_test()
 	tmp2.specialbuff = false
 	tmp2.dead = false
 	classlist[5] = classlist[5] +1
-	table.insert(classes[5], tmp2)
+	tinsert(classes[5], tmp2)
 	local tmp3 = {}
 	tmp3.name = "Warrior1"
 	tmp3.class = "WARRIOR"
@@ -1174,7 +1208,7 @@ function PallyPower:UpdateRoster_test()
 	tmp3.specialbuff = false
 	tmp3.dead = false
 	classlist[1] = classlist[1] +1
-	table.insert(classes[1], tmp3)
+	tinsert(classes[1], tmp3)
 	local tmp4 = {}
 	tmp4.name = "Paladin3"
 	tmp4.class = "PALADIN"
@@ -1184,7 +1218,7 @@ function PallyPower:UpdateRoster_test()
 	tmp4.specialbuff = false
 	tmp4.dead = false
 	classlist[5] = classlist[5] +1
-	table.insert(classes[5], tmp4)
+	tinsert(classes[5], tmp4)
 	
 	self:UpdateLayout()
 
@@ -1218,7 +1252,7 @@ function PallyPower:UpdateRoster()
 					tmp.specialbuff = false
 					tmp.dead = false
 					classlist[i] = classlist[i] + 1
-					table.insert(classes[i], tmp)
+					tinsert(classes[i], tmp)
 				end
 			end
 		end
@@ -1355,7 +1389,7 @@ function PallyPower:CreateLayout()
 			if (cbOther ~= cbNum) then
 				local oButton = self.classButtons[cbOther];
  				SecureHandlerSetFrameRef(cButton, "other", oButton)
-	        	--SecureHandlerExecute(cButton, [[table.insert(others, self:GetAttribute('frameref-other'));]]);  
+	        	--SecureHandlerExecute(cButton, [[tinsert(others, self:GetAttribute('frameref-other'));]]);  
 	        	SecureHandlerExecute(cButton, [[
 												local other = self:GetFrameRef("other")
 												others[#others+1] = other;
@@ -2455,7 +2489,6 @@ function PallyPower:SealCycleBackward()
 	end
 end
 
-
 function PallyPower:RFAssign()
 	local name, _, icon = GetSpellInfo(PallyPower.RFSpell)
 	local rfIcon = _G["PallyPowerRFIcon"]
@@ -2483,7 +2516,7 @@ local WisdomPallys, MightPallys, KingsPallys,  SancPallys = {}, {}, {}, {}
 function PallyPower:AutoAssign()
 
 	PallyPowerConfig_Clear()
-	
+	WisdomPallys, MightPallys, KingsPallys,  SancPallys = {}, {}, {}, {}	
 	PallyPower:AutoAssignBlessings()
 	
 	local precedence = { 1, 3, 2, 4, 5, 6 }	 -- devotion, concentration, retribution, shadow, frost, fire
@@ -2491,29 +2524,58 @@ function PallyPower:AutoAssign()
 	
 end
 
+function PallyPower:CalcSkillRanks1(name)
+	local wisdom, might, kings, sanct
+	if AllPallys[name][1] then
+		wisdom = tonumber(AllPallys[name][1].rank) + tonumber(AllPallys[name][1].talent)/12
+	else
+		wisdom = 0
+	end
+	if  AllPallys[name][2] then
+		might  = tonumber(AllPallys[name][2].rank) + tonumber(AllPallys[name][2].talent)/10
+	else	
+		might = 0
+	end
+	if AllPallys[name][3] then
+		kings  = tonumber(AllPallys[name][3].rank)
+	else
+		kings = 0
+	end
+	if AllPallys[name][4] then
+		sanct  = tonumber(AllPallys[name][4].rank)
+	else
+		sanct = 0
+	end
+	
+	return wisdom, might, kings, sanct
+end
+
 function PallyPower:AutoAssignBlessings()
+	local pallycount = 0
 	for name in pairs(AllPallys) do
-		if PallyPower:CanBuff(name, 1) then
-			table.insert(WisdomPallys, {pallyname = name, spellrank = AllPallys[name][1].rank, spelltalents =AllPallys[name][1].talent})
+		pallycount = pallycount + 1
+		
+		local wisdom, might, kings, sanct = PallyPower:CalcSkillRanks1(name) 
+		--self:Print("Adding")
+		--self:Print(name, wisdom, might, kings, sanct)
+		if wisdom then
+			tinsert(WisdomPallys, {pallyname = name, skill = wisdom, other = might + kings + sanct})
 		end
 		
-		if PallyPower:CanBuff(name, 2) then
-			table.insert(MightPallys, {pallyname = name, spellrank = AllPallys[name][2].rank, spelltalents =AllPallys[name][2].talent})
+		if might then
+			tinsert(MightPallys, {pallyname = name, skill = might, other = wisdom + kings + sanct})
 		end
-	
-		if PallyPower:CanBuff(name, 3) then
-			table.insert(KingsPallys, {pallyname = name, spellrank = AllPallys[name][3].rank, spelltalents =AllPallys[name][3].talent})
+		
+		if kings then
+			tinsert(KingsPallys, {pallyname = name, skill = kings, other = wisdom + might + sanct})
 		end
-	
-		if PallyPower:CanBuff(name, 4) then
-			table.insert(SancPallys, {pallyname = name, spellrank = AllPallys[name][4].rank, spelltalents =AllPallys[name][4].talent})
+		
+		if sanct then
+			tinsert(SancPallys, {pallyname = name, skill = sanct, other = wisdom + might + kings})
 		end
+
 	end
-	
-	local pallycount = 0	
-	for i, v in pairs(AllPallys) do
-		pallycount = pallycount + 1
-	end
+
 	-- Class Priorities (class, priority list)  1 - wis, 2 - might, 3 - kings, 4 - sanct
 	PallyPower:SelectBuffsByClass(pallycount, 1, {3, 2, 4})  	-- warrior
 	PallyPower:SelectBuffsByClass(pallycount, 2, {3, 2, 4})  	-- rogue
@@ -2530,19 +2592,24 @@ end
 
 function PallyPower:SelectBuffsByClass(pallycount, class, prioritylist)
 -- l2code i r noob.
+    --self:Print(">Assignment for class: ".. class)
 	local pallys = {}
 	for name in pairs(AllPallys) do
-		table.insert(pallys, name)
+		tinsert(pallys, name)
 	end
 	local bufftable = prioritylist
 	
 	if pallycount > 0 then
 		local pallycounter = 1
 		for i, nextspell in pairs(bufftable) do
+			--self:Print(pallycounter, pallycount)
 			if pallycounter <= pallycount then
 				local buffer = PallyPower:BuffSelections(nextspell, class, pallys)
 				for i, v in pairs(pallys) do
-					if buffer == pallys[i] then table.remove(pallys, i) end
+					if buffer == pallys[i] then 
+						--self:Print("removing buffer: " .. buffer)
+						tremove(pallys, i) 
+					end
 				end
 				if buffer ~= "" then pallycounter = pallycounter + 1 end
 			end
@@ -2552,6 +2619,7 @@ function PallyPower:SelectBuffsByClass(pallycount, class, prioritylist)
 end
 
 function PallyPower:BuffSelections(buff, class, pallys)
+	--self:Print(">>Looking for buffer for: " .. buff)
 	local t = {}
 	if buff == 1 then t = WisdomPallys end
 	if buff == 2 then t = MightPallys end
@@ -2561,15 +2629,35 @@ function PallyPower:BuffSelections(buff, class, pallys)
 	local Buffer = ""
 	local testrank = 0
 	local testtalent = 0
-	for i,v in pairs(t) do
-		if t[i].spellrank >= testrank and PallyPower:PallyAvailable(t[i].pallyname, pallys) then
-			testrank = t[i].spellrank
-			if t[i].spelltalents >= testtalent then			
-				testtalent = t[i].spelltalents
-				Buffer = t[i].pallyname
-			end
+	--self:Print("  before sort")
+	--for i, v in ipairs(t) do
+	--	self:Print("    " .. v.pallyname,v.skill, v.other)
+	--end
+	
+	tsort(t, function(a, b) return a.skill > b.skill or (a.skill == b.skill and a.other < b.other) end)
+	
+	--self:Print("  after sort")
+	--for i, v in ipairs(t) do
+	--	self:Print("    " .. v.pallyname,v.skill, v.other)
+	--end
+	
+	for i, v in ipairs(t) do
+		if PallyPower:PallyAvailable(v.pallyname, pallys) and v.skill > 0 then
+			--self:Print(">>>Selected Buffer: "..v.pallyname)
+			Buffer = v.pallyname
+			break
 		end
-	end
+	end 
+		
+	--for i,v in pairs(t) do
+--		if t[i].spellrank >= testrank and PallyPower:PallyAvailable(t[i].pallyname, pallys) then
+			--testrank = t[i].spellrank
+			--if t[i].spelltalents >= testtalent then			
+--				testtalent = t[i].spelltalents
+				--Buffer = t[i].pallyname
+			--end
+		--end
+	--end
 	if Buffer ~= "" then
 			PallyPower_Assignments[Buffer][class] = buff
 			PallyPower:SendMessage("ASSIGN "..Buffer.." "..class.. " " ..buff)
@@ -2589,7 +2677,7 @@ end
 
 function PallyPowerAuraButton_OnClick(btn, mouseBtn)
 	if InCombatLockdown() then return false end
-	local _, _, pnum = string.find(btn:GetName(), "PallyPowerConfigFramePlayer(.+)Aura1")
+	local _, _, pnum = sfind(btn:GetName(), "PallyPowerConfigFramePlayer(.+)Aura1")
 	pnum = pnum + 0
 	local pname = getglobal("PallyPowerConfigFramePlayer"..pnum.."Name"):GetText()
 	if not PallyPower:CanControl(pname) then return false end
@@ -2604,7 +2692,7 @@ end
 
 function PallyPowerAuraButton_OnMouseWheel(btn, arg1)
 	if InCombatLockdown() then return false end
-	local _, _, pnum = string.find(btn:GetName(), "PallyPowerConfigFramePlayer(.+)Aura1")
+	local _, _, pnum = sfind(btn:GetName(), "PallyPowerConfigFramePlayer(.+)Aura1")
 	pnum = pnum + 0
 	local pname = getglobal("PallyPowerConfigFramePlayer"..pnum.."Name"):GetText()
 	if not PallyPower:CanControl(pname) then return false end
@@ -2699,7 +2787,7 @@ function PallyPower:UpdateAuraButton(aura)
 	if ( aura and aura > 0 ) then
 		for name in pairs(AllPallys) do
 			if (name ~= self.player) and (aura == PallyPower_AuraAssignments[name]) then
-				table.insert(pallys, name)
+				tinsert(pallys, name)
 			end
 		end
 
@@ -2746,7 +2834,7 @@ end
 function PallyPower:AutoAssignAuras(precedence)
 	local pallys = {}
 	for name in pairs(AllPallys) do
-		table.insert(pallys, name)
+		tinsert(pallys, name)
 	end
 
 	for _, aura in pairs(precedence) do
@@ -2767,7 +2855,7 @@ function PallyPower:AutoAssignAuras(precedence)
 		if assignee ~= "" then
 			for i, name in pairs(pallys) do
 				if assignee == name then 
-					table.remove(pallys, i)
+					tremove(pallys, i)
 					PallyPower_AuraAssignments[assignee] = aura
 					PallyPower:SendMessage("AASSIGN "..assignee.." "..aura)
 				end
