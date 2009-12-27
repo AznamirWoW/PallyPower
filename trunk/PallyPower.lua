@@ -925,7 +925,7 @@ function PallyPower:CHAT_MSG_ADDON(prefix, message, distribution, sender)
 			ChatControl[sender].time=0
 		end
 		if message == "REQ" then
-			if (GetTime() - ChatControl[sender].time) < 1 then 
+			if (GetTime() - ChatControl[sender].time) < 15 then 
 				return
 			else
 				ChatControl[sender].time = GetTime()
