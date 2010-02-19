@@ -64,5 +64,7 @@ L:RegisterTranslations("enUS", function() return {
 	SKIN_DESC = "Apply a custom background to buff buttons",
 	WAIT = "Wait for all people",
 	WAIT_DESC = "Whether to wait for all people to be in range and online to buff a class.",
+	IGNOREEXTRA = "Ignore groups 6-8",
+	IGNOREEXTRADESC = "Ignore people on stand-by placed in groups 6 to 8",
 	}
 end)

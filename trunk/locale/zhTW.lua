@@ -64,5 +64,7 @@ L:RegisterTranslations("zhTW", function() return {
 	SKIN_DESC = "套用自訂的背景到祝福按鈕上",
 	WAIT = "等待所有隊友",
 	WAIT_DESC = "是否等待所有隊友都在線上且於祝福範圍內才施放祝福",
+	IGNOREEXTRA = "Ignore groups 6-8",
+	IGNOREEXTRADESC = "Ignore people on stand-by placed in groups 6 to 8",
 }
 end)

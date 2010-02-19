@@ -64,5 +64,7 @@ L:RegisterTranslations("frFR", function() return {
 	SKIN_DESC = "Appliquer un arrière-plan personnalisé aux boutons de buff",
 	WAIT = "Attendre que tout le monde soit là",
 	WAIT_DESC = "Attendre que tout le monde soit à portée et connecté pour buffer la classe",
+	IGNOREEXTRA = "Ignore groups 6-8",
+	IGNOREEXTRADESC = "Ignore people on stand-by placed in groups 6 to 8",
 }
 end)

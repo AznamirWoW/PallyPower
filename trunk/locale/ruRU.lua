@@ -64,5 +64,7 @@ L:RegisterTranslations("ruRU", function() return {
 	SKIN_DESC = "Назначить нестандартный фон для кнопок баффов",
 	WAIT = "Ожидание всех игроков",
 	WAIT_DESC = "Ожидать ли наличия всех игроков в пределах досягаемости для классового благословления.",
+	IGNOREEXTRA = "Ignore groups 6-8",
+	IGNOREEXTRADESC = "Ignore people on stand-by placed in groups 6 to 8",
 }
 end)

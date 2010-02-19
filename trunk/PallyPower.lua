@@ -1236,6 +1236,7 @@ function PallyPower:UpdateRoster()
 	self:CancelScheduledEvent("PallyPowerUpdateButtons")
 
 	local num = self:GetNumUnits()
+	local skip = self.opt.extras
 
 	for i = 1, PALLYPOWER_MAXCLASSES do
 		classlist[i] = 0
@@ -1245,7 +1246,7 @@ function PallyPower:UpdateRoster()
 	if num > 0 then -- and PP_IsPally then
 		for unit in RL:IterateRoster(true) do
 			for i = 1, PALLYPOWER_MAXCLASSES do
-				if unit.class == self.ClassID[i] then
+				if (unit.class == self.ClassID[i] and unit.subgroup < 6) or (unit.class == self.ClassID[i] and not skip)then
 					local tmp = unit
 					tmp.visible = false
 					tmp.hasbuff = false
@@ -2552,42 +2553,50 @@ end
 
 function PallyPower:AutoAssignBlessings()
 	local pallycount = 0
+	local pc = 0
+	
 	for name in pairs(AllPallys) do
+		pc = pc + 1
+	end
+	
+	if pc > 4 then pc = 4 end
+	
+	for name in pairs(AllPallys) do	
 		pallycount = pallycount + 1
-		
 		local wisdom, might, kings, sanct = PallyPower:CalcSkillRanks1(name) 
 		--self:Print("Adding")
 		--self:Print(name, wisdom, might, kings, sanct)
 		if wisdom then
-			tinsert(WisdomPallys, {pallyname = name, skill = wisdom, other = might + kings + sanct})
+			tinsert(WisdomPallys, {pallyname = name, skill = wisdom})
 		end
 		
 		if might then
-			tinsert(MightPallys, {pallyname = name, skill = might, other = wisdom + kings + sanct})
+			tinsert(MightPallys, {pallyname = name, skill = might})
 		end
 		
 		if kings then
-			tinsert(KingsPallys, {pallyname = name, skill = kings, other = wisdom + might + sanct})
+			tinsert(KingsPallys, {pallyname = name, skill = kings})
 		end
 		
 		if sanct then
-			tinsert(SancPallys, {pallyname = name, skill = sanct, other = wisdom + might + kings})
+			tinsert(SancPallys, {pallyname = name, skill = sanct})
 		end
-
 	end
+	-- get template for the number of available paladins in the raid
+	local pt = PallyPower.Templates[pc]
 
-	-- Class Priorities (class, priority list)  1 - wis, 2 - might, 3 - kings, 4 - sanct
-	PallyPower:SelectBuffsByClass(pallycount, 1, {3, 2, 4})  	-- warrior
-	PallyPower:SelectBuffsByClass(pallycount, 2, {3, 2, 4})  	-- rogue
-	PallyPower:SelectBuffsByClass(pallycount, 3, {3, 1, 4})  	-- priest
-	PallyPower:SelectBuffsByClass(pallycount, 4, {3, 1, 2, 4}) 	-- druid
-	PallyPower:SelectBuffsByClass(pallycount, 5, {3, 1, 2, 4}) 	-- paladin
-	PallyPower:SelectBuffsByClass(pallycount, 6, {3, 2, 1, 4}) 	-- hunter
-	PallyPower:SelectBuffsByClass(pallycount, 7, {3, 1, 4}) 	-- mage
-	PallyPower:SelectBuffsByClass(pallycount, 8, {3, 1, 4}) 	-- lock
-	PallyPower:SelectBuffsByClass(pallycount, 9, {3, 1, 2, 4}) 	-- shaman
-	PallyPower:SelectBuffsByClass(pallycount, 10, {3, 2, 4}) 	-- dk
-	PallyPower:SelectBuffsByClass(pallycount, 11, {3, 2, 1, 4}) -- pets
+	-- assign based on the class templates
+	PallyPower:SelectBuffsByClass(pallycount, 1, pt[1])  	-- warrior
+	PallyPower:SelectBuffsByClass(pallycount, 2, pt[2])  	-- rogue
+	PallyPower:SelectBuffsByClass(pallycount, 3, pt[3])  	-- priest
+	PallyPower:SelectBuffsByClass(pallycount, 4, pt[4]) 	-- druid
+	PallyPower:SelectBuffsByClass(pallycount, 5, pt[5]) 	-- paladin
+	PallyPower:SelectBuffsByClass(pallycount, 6, pt[6]) 	-- hunter
+	PallyPower:SelectBuffsByClass(pallycount, 7, pt[7]) 	-- mage
+	PallyPower:SelectBuffsByClass(pallycount, 8, pt[8]) 	-- lock
+	PallyPower:SelectBuffsByClass(pallycount, 9, pt[9]) 	-- shaman
+	PallyPower:SelectBuffsByClass(pallycount, 10, pt[10]) 	-- dk
+	PallyPower:SelectBuffsByClass(pallycount, 11, pt[11]) 	-- pets
 end
 
 function PallyPower:SelectBuffsByClass(pallycount, class, prioritylist)
@@ -2634,7 +2643,7 @@ function PallyPower:BuffSelections(buff, class, pallys)
 	--	self:Print("    " .. v.pallyname,v.skill, v.other)
 	--end
 	
-	tsort(t, function(a, b) return a.skill > b.skill or (a.skill == b.skill and a.other < b.other) end)
+	tsort(t, function(a, b) return a.skill > b.skill end)
 	
 	--self:Print("  after sort")
 	--for i, v in ipairs(t) do

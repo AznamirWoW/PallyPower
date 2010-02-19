@@ -287,6 +287,17 @@ PallyPower.options = {
 						[true] = L["ENABLED"]
 					},
 				},
+				extras = {
+					name = L["IGNOREEXTRA"],
+					type = "toggle",
+					desc = L["IGNOREEXTRADESC"],
+					get = "ToggleExtras",
+					set = "ToggleExtras",
+					map = {
+						[false]=L["DISABLED"],
+						[true] =L["ENABLED"]
+					},
+				},
 			},      -- display args
 		}, -- main args
 	},
@@ -410,4 +421,10 @@ function PallyPower:ToggleAuras(value)
 	if type(value) == "nil" then return self.opt.auras end
 	self.opt.auras = value;
 	PallyPower:UpdateLayout();
+end
+
+function PallyPower:ToggleExtras(value)
+	if type(value) == "nil" then return self.opt.extras end
+	self.opt.extras = value;
+	PallyPower:UpdateRoster();
 end
