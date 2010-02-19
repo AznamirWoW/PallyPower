@@ -64,6 +64,8 @@ L:RegisterTranslations("koKR", function() return {
 	SKIN_DESC = "버프 버튼에 사용자 배경을 적용합니다.",
 	WAIT = "버프 대기",
 	WAIT_DESC = "모든 사람이 사거리에 안에 있고 버프 직업이 온라인 상태가 될 때까지 대기",
+	IGNOREEXTRA = "Ignore groups 6-8",
+	IGNOREEXTRADESC = "Ignore people on stand-by placed in groups 6 to 8",
 }
 
 end)

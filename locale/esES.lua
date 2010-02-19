@@ -64,5 +64,7 @@ L:RegisterTranslations("esES", function() return {
 	SKIN_DESC = "Aplicar un fondo personalizao a los botones de bufos",
 	WAIT = "Esperar a todos los jugadores",
 	WAIT_DESC = "Esperar o no a que todos los jugadores estén en rango y online antes de bufar a una clase.",
+	IGNOREEXTRA = "Ignore groups 6-8",
+	IGNOREEXTRADESC = "Ignore people on stand-by placed in groups 6 to 8",
 }
 end)

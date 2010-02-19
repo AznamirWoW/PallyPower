@@ -64,5 +64,7 @@ L:RegisterTranslations("zhCN", function() return {
 	SKIN_DESC = "Apply a custom background to buff buttons", -- Requires localization
 	WAIT = "等待所有队友",
 	WAIT_DESC = "是否等待所有队友都在线且都在祝福范围内才施放祝福",
+	IGNOREEXTRA = "Ignore groups 6-8",
+	IGNOREEXTRADESC = "Ignore people on stand-by placed in groups 6 to 8",
 }
 end)

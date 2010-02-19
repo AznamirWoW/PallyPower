@@ -1,4 +1,4 @@
-local L = AceLibrary("AceLocale-2.2"):new("PallyPower")
+L = AceLibrary("AceLocale-2.2"):new("PallyPower")
 
 L:RegisterTranslations("esMX", function() return {
 	AURAS = "Auras",
@@ -64,6 +64,7 @@ L:RegisterTranslations("esMX", function() return {
 	SKIN_DESC = "Aplicar un fondo personalizado a botones de buff",
 	WAIT = "Esperar a todos",
 	WAIT_DESC = "Esperar a que todos de una clase esten en rango y en linea para buff.", -- Needs review
+	IGNOREEXTRA = "Ignore groups 6-8",
+	IGNOREEXTRADESC = "Ignore people on stand-by placed in groups 6 to 8",
 }
-
 end)
