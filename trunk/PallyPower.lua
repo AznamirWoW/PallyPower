@@ -2559,6 +2559,8 @@ function PallyPower:AutoAssignBlessings()
 		pc = pc + 1
 	end
 	
+	if pc == 0 then return end
+	
 	if pc > 4 then pc = 4 end
 	
 	for name in pairs(AllPallys) do	

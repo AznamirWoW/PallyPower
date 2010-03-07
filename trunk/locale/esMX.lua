@@ -1,4 +1,4 @@
-L = AceLibrary("AceLocale-2.2"):new("PallyPower")
+local L = AceLibrary("AceLocale-2.2"):new("PallyPower")
 
 L:RegisterTranslations("esMX", function() return {
 	AURAS = "Auras",
