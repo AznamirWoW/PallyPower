@@ -70,9 +70,9 @@ PallyPower.options = {
 			desc = L["DISP_DESC"],
 			args = {
 			    layout = {
-					name = "Layout",
+					name = L["LAYOUT"],
 					type = "text",
-					desc = "Custom Layout",
+					desc = L["LAYOUT_DESC"],
 					get = "layout",
 					set = "layout",
 					validate = {
@@ -132,9 +132,9 @@ PallyPower.options = {
 					set = "displayGapping",	
 				},
 				edges = {
-					name = "Display Button Edges",
+					name = L["DISPEDGES"],
 					type = "toggle",
-					desc = "Display Button Edges",
+					desc = L["DISPEDGES_DESC"],
 					get = "ToggleEdges",
 					set = "ToggleEdges",
 					map = {
@@ -294,9 +294,9 @@ PallyPower.options = {
 							},
 						},
 						seal = {
-							name = "Seal",
+							name = L["SEAL"],
 							type = "range",
-							desc = "Seal",
+							desc = L["SEAL_DESC"],
 							get = "ToggleSeal",
 							set = "ToggleSeal",
 							min = 1,
@@ -304,9 +304,9 @@ PallyPower.options = {
 							step = 1,
 						},
 						rfury = {
-							name = "Righteous Fury",
+							name = L["RFUSE"],
 							type = "toggle",
-							desc = "Righteous Fury",
+							desc = L["RFUSE_DESC"],
 							get = "ToggleRF",
 							set = "ToggleRF",
 							map = {
