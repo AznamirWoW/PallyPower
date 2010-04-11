@@ -131,6 +131,17 @@ PallyPower.options = {
 					get = "displayGapping",
 					set = "displayGapping",	
 				},
+				edges = {
+					name = "Display Button Edges",
+					type = "toggle",
+					desc = "Display Button Edges",
+					get = "ToggleEdges",
+					set = "ToggleEdges",
+					map = {
+						[false]= L["DISABLED"], 
+						[true] = L["ENABLED"]
+					},
+				},
 				calign = {
 					name = L["DISPCL"],
 					type = "text",
@@ -266,18 +277,46 @@ PallyPower.options = {
 						},
 					},
 				},
-				rfbuff = {
+				rfs ={
 					name = L["RFBUFF"],
-					type = "toggle",
-					desc = L["RFBUFF_DESC"],
-					get = "ToggleRF",
-					set = "ToggleRF",
-					map = {
-						[false]=L["DISABLED"],
-						[true] = L["ENABLED"]
+					type = "group",
+					desc = L["RFBUFF"],
+					args = {
+						rfbuff = {
+							name = L["RFBUFF"],
+							type = "toggle",
+							desc = L["RFBUFF_DESC"],
+							get = "ToggleRFButton",
+							set = "ToggleRFButton",
+							map = {
+								[false]=L["DISABLED"],
+								[true] = L["ENABLED"]
+							},
+						},
+						seal = {
+							name = "Seal",
+							type = "range",
+							desc = "Seal",
+							get = "ToggleSeal",
+							set = "ToggleSeal",
+							min = 1,
+							max = 9,
+							step = 1,
+						},
+						rfury = {
+							name = "Righteous Fury",
+							type = "toggle",
+							desc = "Righteous Fury",
+							get = "ToggleRF",
+							set = "ToggleRF",
+							map = {
+								[false]=L["DISABLED"],
+								[true] = L["ENABLED"]
+							},
+						},
 					},
 				},
-  				auras = {
+				auras = {
 					name = L["AURAS"],
 					type = "toggle",
 					desc = L["AURAS_DESC"],
@@ -317,11 +356,17 @@ end
 
 function PallyPower:skinButtons(value)
 	if not value then
-		return self.opt.skin;
+		return self.opt.skin
 	else
-    	self.opt.skin = value;
-		PallyPower:ApplySkin(value);
+    	self.opt.skin = value
+		PallyPower:ApplySkin(value)
 	end
+end
+
+function PallyPower:ToggleEdges(value)
+	if type(value) == "nil" then return self.opt.display.edges end
+	self.opt.display.edges = value
+	PallyPower:ApplySkin(self.opt.skin)	
 end
 
 function PallyPower:layout(value)
@@ -367,10 +412,22 @@ function PallyPower:ToggleSmartBuffs(value)
 	self.opt.smartbuffs = value;
 end
 
-function PallyPower:ToggleRF(value)
+function PallyPower:ToggleRFButton(value)
 	if type(value) == "nil" then return self.opt.rfbuff end
 	self.opt.rfbuff = value
 	PallyPower:UpdateLayout()
+end
+
+function PallyPower:ToggleRF(value)
+	if type(value) == "nil" then return self.opt.rf end
+	self.opt.rf = value
+	PallyPower:RFAssign(self.opt.rf)
+end
+
+function PallyPower:ToggleSeal(value)
+	if type(value) == "nil" then return self.opt.seal end
+	self.opt.seal = value
+	PallyPower:SealAssign(self.opt.seal)
 end
 
 function PallyPower:ToggleFA(value)

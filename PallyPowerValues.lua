@@ -17,7 +17,6 @@ PALLYPOWER_DEFAULT_VALUES = {
 	smartbuffs = true,
 	greaterbuffs = true,
 	rfbuff = true,
-	rf = true,
 	auras = true,
 	extras = false,
 	autobuff = {
@@ -30,11 +29,12 @@ PALLYPOWER_DEFAULT_VALUES = {
 		-- buttons
 		rows = 11,
 		columns = 1,
-		gapping = 0,
+		gapping = 2,
 		buttonWidth = 100,
 		buttonHeight = 34,
 		alignClassButtons = "9",
 		alignPlayerButtons = "compact-left",
+		edges = true,
         frameLocked = false,
 		hideDragHandle = false,
 		hidePlayerButtons = false,
@@ -53,7 +53,10 @@ PALLYPOWER_DEFAULT_VALUES = {
  	cBuffNeedSome    = {r = 1.0, g = 1.0, b = 0.5, t = 0.5},
  	cBuffNeedSpecial = {r = 0.0, g = 0.0, b = 1.0, t = 0.5},
 	cBuffGood        = {r = 0.0, g = 0.7, b = 0.0, t = 0.5},
-	seal = 0, -- default wisdom
+	-- default assignments
+	seal = 0, 	-- wisdom
+	aura = 1, 	-- devotion
+	rf = false, -- RF off
 	disabled = false,
 	layout = "Standard",
 	};
@@ -170,7 +173,10 @@ PallyPower.Skins = {
 	["oCB"] = "Interface\\AddOns\\PallyPower\\Skins\\oCB",
 	["Smooth"] = "Interface\\AddOns\\PallyPower\\Skins\\Smooth",
 };
-	
+
+PallyPower.Edge = 'Interface\\Tooltips\\UI-Tooltip-Border'
+--PallyPower.Edge = ''	
+
 PallyPower.Seals = {
     [0] = "",
     [1] = GetSpellInfo(20164), -- seal of justice

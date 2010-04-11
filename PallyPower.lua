@@ -48,6 +48,9 @@ end
 
 function PallyPower:OnProfileEnable()
     self.opt = self.db.profile
+	PallyPower:UpdateLayout()
+	--PallyPower:RFAssign(self.opt.rf)
+	--PallyPower:SealAssign(self.opt.seal)
 end
 
 function PallyPower:OnEnable()
@@ -57,6 +60,7 @@ function PallyPower:OnEnable()
 	self:RegisterEvent("CHAT_MSG_ADDON")
 	self:RegisterEvent("CHAT_MSG_SYSTEM")
 	self:RegisterEvent("PLAYER_REGEN_ENABLED")
+	self:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
 	self:RegisterBucketEvent("SPELLS_CHANGED", 1, "SPELLS_CHANGED") 
 	self:RegisterBucketEvent("RosterLib_RosterUpdated", 1, "UpdateRoster")
 	self:ScheduleRepeatingEvent("PallyPowerInventoryScan", self.InventoryScan, 60, self)
@@ -917,6 +921,14 @@ function PallyPower:SPELLS_CHANGED()
 	self:SendSelf()
 end
 
+function PallyPower:ACTIVE_TALENT_GROUP_CHANGED()
+	if GetActiveTalentGroup() == 1 then
+		PallyPower:SetProfile("Default")
+	else
+		PallyPower:SetProfile("Secondary")
+	end
+end
+
 function PallyPower:CHAT_MSG_ADDON(prefix, message, distribution, sender)
 	self:Debug("CHAT_MSG_ADDON event")
 	if prefix == PallyPower.commPrefix and (distribution == "PARTY" or distribution == "RAID" or distribution == "BATTLEGROUND") then
@@ -1522,12 +1534,12 @@ function PallyPower:UpdateLayout()
 		rfb:SetPoint(pointOpposite, self.Header, "CENTER", 0, offset)
 		rfb:SetAttribute("type1", "spell")
 		rfb:SetAttribute("unit1", "player")
-			--rfb:SetAttribute("spell1", PallyPower.RFSpell)
 		PallyPower:RFAssign(self.opt.rf)
+		
 		rfb:SetAttribute("type2", "spell")
 		rfb:SetAttribute("unit2", "player")
-		--rfb:SetAttribute("spell2", PallyPower.Seals[self.opt.seal])
 		PallyPower:SealAssign(self.opt.seal)
+
 		if self:GetNumUnits() > 0 and self.opt.rfbuff and not self.opt.disabled and PP_IsPally then
 			rfb:Show()
 			offset = offset - y
@@ -1538,8 +1550,11 @@ function PallyPower:UpdateLayout()
 		local auraBtn = self.auraButton
 		auraBtn:ClearAllPoints()
 		auraBtn:SetPoint(pointOpposite, self.Header, "CENTER", 0, offset)
+		
 		auraBtn:SetAttribute("type1", "spell")
 		auraBtn:SetAttribute("unit1", "player")
+		
+		
 		if self:GetNumUnits() > 0 and self.opt.auras and not self.opt.disabled and PP_IsPally then
 			auraBtn:Show()
 			offset = offset - y
@@ -1601,14 +1616,15 @@ function PallyPower:UpdateLayout()
 		local rfb = self.rfButton
 		rfb:ClearAllPoints()
 		rfb:SetPoint(point, self.Header, "CENTER", ox, oy)
+		
 		rfb:SetAttribute("type1", "spell")
 		rfb:SetAttribute("unit1", "player")
-		--rfb:SetAttribute("spell1", PallyPower.RFSpell)
 		PallyPower:RFAssign(self.opt.rf)
+
 		rfb:SetAttribute("type2", "spell")
 		rfb:SetAttribute("unit2", "player")
-	    --rfb:SetAttribute("spell2", PallyPower.Seals[self.opt.seal])
 	    PallyPower:SealAssign(self.opt.seal)
+
 		if self:GetNumUnits() > 0 and self.opt.rfbuff and not self.opt.disabled and PP_IsPally then
 			rfb:Show()
 		else
@@ -1621,8 +1637,11 @@ function PallyPower:UpdateLayout()
 		local auraBtn = self.auraButton
 		auraBtn:ClearAllPoints()
 		auraBtn:SetPoint(point, self.Header, "CENTER", ox, oy)
+		
 		auraBtn:SetAttribute("type1", "spell")
 		auraBtn:SetAttribute("unit1", "player")
+		
+		
 		if self:GetNumUnits() > 0 and self.opt.auras and not self.opt.disabled and PP_IsPally then
 			auraBtn:Show()
 		else
@@ -2402,31 +2421,37 @@ function PallyPower:LoadPreset(preset)
 end
 
 function PallyPower:ApplySkin(skinname)
+	local edge
+	if self.opt.display.edges then 
+		edge = PallyPower.Edge
+	else
+		edge = nil
+	end
 
     PallyPowerAuto:SetBackdrop({bgFile = PallyPower.Skins[skinname],
-		                  edgeFile='Interface\\Tooltips\\UI-Tooltip-Border',
+		                  edgeFile= edge,
 						  tile=false, tileSize = 8, edgeSize = 8,
-						  insets = { left = 2, right = 2, top = 2, bottom = 2}});
+						  insets = { left = 0, right = 0, top = 0, bottom = 0}});
     PallyPowerRF:SetBackdrop({bgFile = PallyPower.Skins[skinname],
-		                  edgeFile='Interface\\Tooltips\\UI-Tooltip-Border',
+		                  edgeFile= edge,
 						  tile=false, tileSize = 8, edgeSize = 8,
-						  insets = { left = 2, right = 2, top = 2, bottom = 2}});
+						  insets = { left = 0, right = 0, top = 0, bottom = 0}});
 	PallyPowerAura:SetBackdrop({bgFile = PallyPower.Skins[skinname],
-		                  edgeFile='Interface\\Tooltips\\UI-Tooltip-Border',
+		                  edgeFile= edge,
 						  tile=false, tileSize = 8, edgeSize = 8,
-						  insets = { left = 2, right = 2, top = 2, bottom = 2}});
+						  insets = { left = 0, right = 0, top = 0, bottom = 0}});
 	for i = 1, PALLYPOWER_MAXCLASSES do
 		local cBtn = PallyPower.classButtons[i]
 		cBtn:SetBackdrop({bgFile = PallyPower.Skins[skinname],
-		                  edgeFile='Interface\\Tooltips\\UI-Tooltip-Border',
+		                  edgeFile= edge,
 						  tile=false, tileSize = 8, edgeSize = 8,
-						  insets = { left = 2, right = 2, top = 2, bottom = 2}});
+						  insets = { left = 0, right = 0, top = 0, bottom = 0}});
 		for j = 1, PALLYPOWER_MAXPERCLASS do
 			local pBtn = PallyPower.playerButtons[i][j]
 			pBtn:SetBackdrop({bgFile = PallyPower.Skins[skinname],
-		                  edgeFile='Interface\\Tooltips\\UI-Tooltip-Border',
+		                  edgeFile= edge,
 						  tile=false, tileSize = 8, edgeSize = 8,
-						  insets = { left = 2, right = 2, top = 2, bottom = 2}});
+						  insets = { left = 0, right = 0, top = 0, bottom = 0}});
 		end
     end
 end
@@ -2511,7 +2536,6 @@ function PallyPower:SealAssign(seal)
 end
 
 -- Auto-Assign blessings by Maddeathelf
-
 local WisdomPallys, MightPallys, KingsPallys,  SancPallys = {}, {}, {}, {}
 
 function PallyPower:AutoAssign()
