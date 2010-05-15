@@ -53,10 +53,23 @@ PALLYPOWER_DEFAULT_VALUES = {
  	cBuffNeedSome    = {r = 1.0, g = 1.0, b = 0.5, t = 0.5},
  	cBuffNeedSpecial = {r = 0.0, g = 0.0, b = 1.0, t = 0.5},
 	cBuffGood        = {r = 0.0, g = 0.7, b = 0.0, t = 0.5},
+	sets = { 
+		["primary"] = {
+						seal = 0, 	-- wisdom
+						aura = 1, 	-- devotion
+						rf = false, -- RF off
+						buffs = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,}
+					},
+		["secondary"] = {
+						seal = 0, 	-- wisdom
+						aura = 1, 	-- devotion
+						rf = false, -- RF off
+						buffs = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,}
+					},
+	},
 	-- default assignments
-	seal = 0, 	-- wisdom
-	aura = 1, 	-- devotion
-	rf = false, -- RF off
+	seal = 0,
+	aura = 1,
 	disabled = false,
 	layout = "Standard",
 	};

@@ -106,6 +106,15 @@ end
 --  Config Window functionality
 --
 
+function PallyPower:Purge()
+	PallyPower_Assignments = nil
+	PallyPower_NormalAssignments = nil
+	PallyPower_AuraAssignments = nil
+	PallyPower_Assignments = {}
+	PallyPower_NormalAssignments = {}
+	PallyPower_AuraAssignments = {}
+end
+
 function PallyPowerConfig_Clear()
 	if InCombatLockdown() then return false end
 	PallyPower:ClearAssignments(UnitName("player"))
@@ -922,10 +931,31 @@ function PallyPower:SPELLS_CHANGED()
 end
 
 function PallyPower:ACTIVE_TALENT_GROUP_CHANGED()
-	if GetActiveTalentGroup() == 1 then
-		PallyPower:SetProfile("Default")
-	else
-		PallyPower:SetProfile("Secondary")
+	local i, old, new
+	local _, class=UnitClass("player")
+	if (class == "PALADIN") then
+		if GetActiveTalentGroup() == 1 then
+			old = "secondary"
+			new = "primary"
+		else
+			old = "primary"
+			new = "secondary"
+		end
+		
+		self.opt.sets[old].seal = self.opt.seal
+		self.opt.seal = self.opt.sets[new].seal
+			
+		self.opt.sets[old].aura = PallyPower_AuraAssignments[self.player]
+		PallyPower_AuraAssignments[self.player] = self.opt.sets[new].aura
+			
+		self.opt.sets[old].rf = self.opt.rf
+		self.opt.rf = self.opt.sets[new].rf
+			
+		for i = 1, PALLYPOWER_MAXCLASSES do
+			self.opt.sets[old].buffs[i]=PallyPower_Assignments[self.player][i]
+			PallyPower_Assignments[self.player][i] = self.opt.sets[new].buffs[i]
+		end
+		PallyPower:UpdateLayout()
 	end
 end
 
@@ -1553,7 +1583,7 @@ function PallyPower:UpdateLayout()
 		
 		auraBtn:SetAttribute("type1", "spell")
 		auraBtn:SetAttribute("unit1", "player")
-		
+		PallyPower:UpdateAuraButton(PallyPower_AuraAssignments[self.player])
 		
 		if self:GetNumUnits() > 0 and self.opt.auras and not self.opt.disabled and PP_IsPally then
 			auraBtn:Show()
@@ -1640,7 +1670,7 @@ function PallyPower:UpdateLayout()
 		
 		auraBtn:SetAttribute("type1", "spell")
 		auraBtn:SetAttribute("unit1", "player")
-		
+		PallyPower:UpdateAuraButton(PallyPower_AuraAssignments[self.player])
 		
 		if self:GetNumUnits() > 0 and self.opt.auras and not self.opt.disabled and PP_IsPally then
 			auraBtn:Show()
