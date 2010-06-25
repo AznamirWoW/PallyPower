@@ -15,6 +15,7 @@ PALLYPOWER_DEFAULT_VALUES = {
 	buffscale = 0.90,
 	configscale = 0.90,
 	smartbuffs = true,
+	smartpets = true,
 	greaterbuffs = true,
 	rfbuff = true,
 	auras = true,

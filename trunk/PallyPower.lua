@@ -1279,6 +1279,9 @@ function PallyPower:UpdateRoster()
 
 	local num = self:GetNumUnits()
 	local skip = self.opt.extras
+	
+	local tmp
+	local family
 
 	for i = 1, PALLYPOWER_MAXCLASSES do
 		classlist[i] = 0
@@ -1287,15 +1290,31 @@ function PallyPower:UpdateRoster()
 
 	if num > 0 then -- and PP_IsPally then
 		for unit in RL:IterateRoster(true) do
-			for i = 1, PALLYPOWER_MAXCLASSES do
-				if (unit.class == self.ClassID[i] and unit.subgroup < 6) or (unit.class == self.ClassID[i] and not skip)then
-					local tmp = unit
-					tmp.visible = false
-					tmp.hasbuff = false
-					tmp.specialbuff = false
-					tmp.dead = false
-					classlist[i] = classlist[i] + 1
-					tinsert(classes[i], tmp)
+			if unit.subgroup < 6 or not skip then
+				tmp = unit
+				-- trying to assign pets back to normal classes
+				if self.opt.smartpets then
+					family = UnitCreatureFamily(tmp.unitid)
+					if family then
+						if family == "Ghoul" then 
+							tmp.class = "ROGUE" 
+						elseif family == "Imp" or family == "Felhunter" or family == "Succubus" then 
+							tmp.class = "WARLOCK"
+						else
+							tmp.class = "WARRIOR"
+						end
+					end
+				end
+			
+				for i = 1, PALLYPOWER_MAXCLASSES do
+					if tmp.class == self.ClassID[i] then
+						tmp.visible = false
+						tmp.hasbuff = false
+						tmp.specialbuff = false
+						tmp.dead = false
+						classlist[i] = classlist[i] + 1
+						tinsert(classes[i], tmp)
+					end
 				end
 			end
 		end
