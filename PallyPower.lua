@@ -1279,7 +1279,6 @@ function PallyPower:UpdateRoster()
 
 	local num = self:GetNumUnits()
 	local skip = self.opt.extras
-	
 	local tmp
 	local family
 
@@ -1296,9 +1295,9 @@ function PallyPower:UpdateRoster()
 				if self.opt.smartpets then
 					family = UnitCreatureFamily(tmp.unitid)
 					if family then
-						if family == "Ghoul" then 
+						if family == L["PET_GHOUL"] then 
 							tmp.class = "ROGUE" 
-						elseif family == "Imp" or family == "Felhunter" or family == "Succubus" then 
+						elseif family == L["PET_IMP"] or family == L["PET_FELHUNTER"] or family == L["PET_SUCCUBUS"] then 
 							tmp.class = "WARLOCK"
 						else
 							tmp.class = "WARRIOR"
