@@ -1292,8 +1292,9 @@ function PallyPower:UpdateRoster()
 			if unit.subgroup < 6 or not skip then
 				tmp = unit
 				-- trying to assign pets back to normal classes
-				if self.opt.smartpets then
+				if self.opt.smartpets and tmp.class == "PET" then
 					family = UnitCreatureFamily(tmp.unitid)
+					--PallyPower:Print(tmp.name, tmp.class, family)
 					if family then
 						if family == L["PET_GHOUL"] then 
 							tmp.class = "ROGUE" 
@@ -1303,6 +1304,7 @@ function PallyPower:UpdateRoster()
 							tmp.class = "WARRIOR"
 						end
 					end
+					--PallyPower:Print(tmp.class)
 				end
 			
 				for i = 1, PALLYPOWER_MAXCLASSES do
