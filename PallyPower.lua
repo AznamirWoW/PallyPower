@@ -1,10 +1,10 @@
 PallyPower = AceLibrary("AceAddon-2.0"):new("AceConsole-2.0","AceDB-2.0","AceEvent-2.0","AceDebug-2.0")
 
 local dewdrop = AceLibrary("Dewdrop-2.0")
-local RL = AceLibrary("Roster-2.1")
 local L = AceLibrary("AceLocale-2.2"):new("PallyPower")
 local tinsert = table.insert
 local tremove = table.remove
+local twipe = table.wipe
 local tsort = table.sort
 local sfind = string.find
 local ssub = string.sub
@@ -25,6 +25,27 @@ ChatControl = {}
 local initalized = false
 PP_Symbols = 0
 PP_IsPally = false
+
+-- unit tables
+local party_units = {}
+local raid_units = {}
+local leaders = {}
+local roster = {}
+
+do
+	table.insert(party_units, "player")
+	table.insert(party_units, "pet")
+
+	for i = 1, MAX_PARTY_MEMBERS do
+		table.insert(party_units, ("party%d"):format(i))
+		table.insert(party_units, ("partypet%d"):format(i))
+	end
+	
+	for i = 1, MAX_RAID_MEMBERS do
+		table.insert(raid_units, ("raid%d"):format(i))
+		table.insert(raid_units, ("raidpet%d"):format(i))
+	end
+end
 
 function PallyPower:OnInitialize()
 	self:RegisterDB("PallyPowerDB")
@@ -62,7 +83,7 @@ function PallyPower:OnEnable()
 	self:RegisterEvent("PLAYER_REGEN_ENABLED")
 	self:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
 	self:RegisterBucketEvent("SPELLS_CHANGED", 1, "SPELLS_CHANGED") 
-	self:RegisterBucketEvent("RosterLib_RosterUpdated", 1, "UpdateRoster")
+	self:RegisterBucketEvent({"RAID_ROSTER_UPDATE", "PARTY_MEMBERS_CHANGED", "UNIT_PET"}, 1, "UpdateRoster")
 	self:ScheduleRepeatingEvent("PallyPowerInventoryScan", self.InventoryScan, 60, self)
 	self:UpdateRoster()
 	self:BindKeys()
@@ -1000,8 +1021,9 @@ function PallyPower:CanControl(name)
 end
 
 function PallyPower:CheckRaidLeader(nick)
-	local unit = RL:GetUnitObjectFromName(nick)
-	return unit and unit.rank >= 1
+	--local unit = RL:GetUnitObjectFromName(nick)
+	--return unit and unit.rank >= 1
+	return leaders[nick]
 end
 
 function PallyPower:ClearAssignments(sender)
@@ -1227,7 +1249,7 @@ function PallyPower:UpdateRoster_test()
 	tmp1.unitid = "player"
     tmp1.visible = false
 	tmp1.hasbuff = false
-	tmp1.specialbuff = false
+	tmp1. = false
 	tmp1.dead = false
 	classlist[5] = classlist[5] +1
 	tinsert(classes[5], tmp1)
@@ -1237,7 +1259,7 @@ function PallyPower:UpdateRoster_test()
 	tmp2.unitid = "party1"
     tmp2.visible = false
 	tmp2.hasbuff = false
-	tmp2.specialbuff = false
+	tmp2. = false
 	tmp2.dead = false
 	classlist[5] = classlist[5] +1
 	tinsert(classes[5], tmp2)
@@ -1247,7 +1269,7 @@ function PallyPower:UpdateRoster_test()
 	tmp3.unitid = "party2"
 	tmp3.visible = false
 	tmp3.hasbuff = false
-	tmp3.specialbuff = false
+	tmp3. = false
 	tmp3.dead = false
 	classlist[1] = classlist[1] +1
 	tinsert(classes[1], tmp3)
@@ -1257,7 +1279,7 @@ function PallyPower:UpdateRoster_test()
 	tmp4.unitid = "party3"
     tmp4.visible = false
 	tmp4.hasbuff = false
-	tmp4.specialbuff = false
+	tmp4. = false
 	tmp4.dead = false
 	classlist[5] = classlist[5] +1
 	tinsert(classes[5], tmp4)
@@ -1277,36 +1299,76 @@ function PallyPower:UpdateRoster()
 	self:Debug("Update Roster")
 	self:CancelScheduledEvent("PallyPowerUpdateButtons")
 
-	local num = self:GetNumUnits()
+	local units
+	local num = 0
+	local isInRaid
+	
 	local skip = self.opt.extras
-	local tmp
-	local family
+	local smartpets = self.opt.smartpets
 
 	for i = 1, PALLYPOWER_MAXCLASSES do
 		classlist[i] = 0
 		classes[i] = {}
 	end
+	
+	if GetNumRaidMembers() == 0 then
+		isInRaid = false
+		units = party_units
+	else
+		isInRaid = true
+		units = raid_units
+	end
+	
+	twipe(roster)
+	twipe(leaders)
 
-	if num > 0 then -- and PP_IsPally then
-		for unit in RL:IterateRoster(true) do
-			if unit.subgroup < 6 or not skip then
-				tmp = unit
-				-- trying to assign pets back to normal classes
-				if self.opt.smartpets and tmp.class == "PET" then
-					family = UnitCreatureFamily(tmp.unitid)
-					--PallyPower:Print(tmp.name, tmp.class, family)
+	for _, unitid in ipairs(units) do
+		--PallyPower:Print(unitid)
+		if unitid and UnitExists(unitid) then
+			local tmp = {}
+			num = num + 1
+			tmp.unitid = unitid
+			tmp.name = UnitName(unitid)
+			
+			local isPet = unitid:find("pet")
+			
+			if isPet then
+				tmp.class = "PET"
+			else 
+				tmp.class = select(2, UnitClass(unitid))
+			end
+			
+			if isInRaid then
+				local n = select(3, unitid:find("(%d+)"))
+				--PallyPower:Print("n="..n)
+				tmp.rank, tmp.subgroup = select(2, GetRaidRosterInfo(n))
+			else
+				tmp.rank = UnitIsPartyLeader(unitid) and 2 or 0
+				tmp.subgroup = 1
+			end
+			
+			if tmp.rank > 0 then
+				leaders[tmp.name] = true
+			end
+			
+			if tmp.subgroup < 6 or not skip then
+				if smartpets and isPet then
+					local family = UnitCreatureFamily(unitid)
 					if family then
-						if family == L["PET_GHOUL"] then 
-							tmp.class = "ROGUE" 
-						elseif family == L["PET_IMP"] or family == L["PET_FELHUNTER"] or family == L["PET_SUCCUBUS"] then 
-							tmp.class = "WARLOCK"
-						else
-							tmp.class = "WARRIOR"
+						if family == L["PET_GHOUL"] then
+							tmp.class = "ROGUE"
+						elseif family == L["PET_IMP"] or family == L["PET_FELHUNTER"] or family == L["PET_SUCCUBUS"] then
+                            tmp.class = "WARLOCK"
+                        else
+                            tmp.class = "WARRIOR"
 						end
 					end
-					--PallyPower:Print(tmp.class)
 				end
-			
+				
+				--PallyPower:Print(tmp.name, tmp.class, tmp.rank, tmp.subgroup)		
+				
+				tinsert(roster, tmp)
+				
 				for i = 1, PALLYPOWER_MAXCLASSES do
 					if tmp.class == self.ClassID[i] then
 						tmp.visible = false
@@ -1327,6 +1389,7 @@ function PallyPower:UpdateRoster()
 		-- register events
 		self:ScheduleRepeatingEvent("PallyPowerUpdateButtons", self.ButtonsUpdate, 2.0, self)
 	end
+	
 	self:Debug("Update Roster - end")
 end
 
@@ -1763,6 +1826,8 @@ function PallyPower:UpdateLayout()
 				pButton:SetAttribute("classID", classIndex)
 				pButton:SetAttribute("playerID", pbNum)
 				local unit  = self:GetUnit(classIndex, pbNum)
+				--PallyPower:Print(unit.name)
+				--PallyPower:Print(unit.unitid)
 				local spellID, gspellID = self:GetSpellID(classIndex, unit.name)
 				local spell = PallyPower.Spells[spellID]
 				local gspell = PallyPower.GSpells[spellID]
@@ -2330,8 +2395,9 @@ function PallyPower:AutoBuff(mousebutton)
 		local groupCount = {}
 		local HLspell = PallyPower.HLSpell
 		if (GetNumRaidMembers() > 0) then
-			for unit in RL:IterateRoster(false) do
-				local subgroup = select(3, GetRaidRosterInfo(select(3, unit.unitid:find("(%d+)"))))
+			for _, unit in ipairs(roster) do
+				--local subgroup = select(3, GetRaidRosterInfo(select(3, unit.unitid:find("(%d+)"))))
+				local subgroup = unit.subgroup
 				groupCount[subgroup] = (groupCount[subgroup] or 0) + 1
 			end
 		end
@@ -2391,7 +2457,8 @@ function PallyPower:AutoBuff(mousebutton)
 		end
 	else
 		local minExpire, minUnit, minSpell = 9999, nil, nil
-		for unit in RL:IterateRoster(true) do
+		--for unit in RL:IterateRoster(true) do
+		for _, unit in ipairs(roster) do
 			local spellID, gspellID = self:GetSpellID(self:GetClassID(unit.class), unit.name)
 			local spell = PallyPower.Spells[spellID]
 			local spell2 = PallyPower.GSpells[spellID]
