@@ -10,7 +10,6 @@
 <Script file="libs\AceDebug-2.0\AceDebug-2.0.lua"/>
 <Script file="libs\AceEvent-2.0\AceEvent-2.0.lua"/>
 <Script file="libs\AceLocale-2.2\AceLocale-2.2.lua"/>
-<Script file="libs\RosterLib\Roster-2.1.lua"/>
 <Script file="libs\DewdropLib\Dewdrop-2.0.lua"/>
 
 </Ui>
