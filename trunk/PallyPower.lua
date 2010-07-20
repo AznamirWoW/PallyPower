@@ -1237,7 +1237,7 @@ function PallyPower:UpdateRoster()
 	self:CancelScheduledEvent("PallyPowerUpdateButtons")
 
 	local units
-	local num = 0
+	local num = self:GetNumUnits()
 	local isInRaid
 	
 	local skip = self.opt.extras
@@ -1248,78 +1248,101 @@ function PallyPower:UpdateRoster()
 		classes[i] = {}
 	end
 	
-	if GetNumRaidMembers() == 0 then
-		isInRaid = false
-		units = party_units
-	else
-		isInRaid = true
-		units = raid_units
-	end
+	if num > 0 then
+		num = 0
+		if GetNumRaidMembers() == 0 then
+			isInRaid = false
+			units = party_units
+		else
+			isInRaid = true
+			units = raid_units
+		end
 	
-	twipe(roster)
-	twipe(leaders)
+		twipe(roster)
+		twipe(leaders)
 
-	for _, unitid in ipairs(units) do
-		--PallyPower:Print(unitid)
-		if unitid and UnitExists(unitid) then
-			local tmp = {}
-			num = num + 1
-			tmp.unitid = unitid
-			tmp.name = UnitName(unitid)
+		for _, unitid in ipairs(units) do
+			--PallyPower:Print(unitid)
+			if unitid and UnitExists(unitid) then
+				local tmp = {}
+				num = num + 1
+				tmp.unitid = unitid
+				tmp.name = UnitName(unitid)
+				
+				local isPet = unitid:find("pet")
 			
-			local isPet = unitid:find("pet")
-			
-			if isPet then
-				tmp.class = "PET"
-			else 
-				tmp.class = select(2, UnitClass(unitid))
-			end
-			
-			if isInRaid then
-				local n = select(3, unitid:find("(%d+)"))
-				--PallyPower:Print("n="..n)
-				tmp.rank, tmp.subgroup = select(2, GetRaidRosterInfo(n))
-			else
-				tmp.rank = UnitIsPartyLeader(unitid) and 2 or 0
-				tmp.subgroup = 1
-			end
-			
-			if tmp.rank > 0 then
-				leaders[tmp.name] = true
-			end
-			
-			if tmp.subgroup < 6 or not skip then
-				if smartpets and isPet then
-					local family = UnitCreatureFamily(unitid)
-					if family then
-						if family == L["PET_GHOUL"] then
-							tmp.class = "ROGUE"
-						elseif family == L["PET_IMP"] or family == L["PET_FELHUNTER"] or family == L["PET_SUCCUBUS"] then
-                            tmp.class = "WARLOCK"
-                        else
-                            tmp.class = "WARRIOR"
-						end
-					end
+				if isPet then
+					tmp.class = "PET"
+				else 
+					tmp.class = select(2, UnitClass(unitid))
 				end
+			
+				if isInRaid then
+					local n = select(3, unitid:find("(%d+)"))
+					--PallyPower:Print("n="..n)
+					tmp.rank, tmp.subgroup = select(2, GetRaidRosterInfo(n))
+				else
+					tmp.rank = UnitIsPartyLeader(unitid) and 2 or 0
+					tmp.subgroup = 1
+				end
+			
+				if tmp.rank > 0 then
+					leaders[tmp.name] = true
+				end
+			
+				if tmp.subgroup < 6 or not skip then
+					if smartpets and isPet then
+						local pclass = select(2, UnitClass(unitid))
+						local family = UnitCreatureFamily(unitid)
+						
+						if pclass == "WARRIOR" then -- hunter pets
+							tmp.class = pclass
+						elseif pclass == "ROGUE" then -- dk ghoul
+							tmp.class = pclass
+						elseif pclass == "MAGE" then -- water elemental, imp
+							if family == L["PET_IMP"] then
+								tmp.class = "WARLOCK"
+							else
+								tmp.class = pclass
+							end
+						elseif pclass == "PALADIN" then -- other warlock pets
+							if family == L["PET_FELHUNTER"] or family == L["PET_SUCCUBUS"] then
+								tmp.class = "WARLOCK"
+							else
+								tmp.class = "WARRIOR"
+							end
+						end
+						
+--						if family then
+--							if family == L["PET_GHOUL"] then
+--								tmp.class = "ROGUE"
+--							elseif family == L["PET_IMP"] or family == L["PET_FELHUNTER"] or family == L["PET_SUCCUBUS"] then
+--								tmp.class = "WARLOCK"
+--							else
+--								tmp.class = "WARRIOR"
+--							end
+--						end
+					end
 				
-				--PallyPower:Print(tmp.name, tmp.class, tmp.rank, tmp.subgroup)		
+					--PallyPower:Print(tmp.name, tmp.class, tmp.rank, tmp.subgroup)		
 				
-				tinsert(roster, tmp)
+					tinsert(roster, tmp)
 				
-				for i = 1, PALLYPOWER_MAXCLASSES do
-					if tmp.class == self.ClassID[i] then
-						tmp.visible = false
-						tmp.hasbuff = false
-						tmp.specialbuff = false
-						tmp.dead = false
-						classlist[i] = classlist[i] + 1
-						tinsert(classes[i], tmp)
+					for i = 1, PALLYPOWER_MAXCLASSES do
+						if tmp.class == self.ClassID[i] then
+							tmp.visible = false
+							tmp.hasbuff = false
+							tmp.specialbuff = false
+							tmp.dead = false
+							classlist[i] = classlist[i] + 1
+							tinsert(classes[i], tmp)
+						end
 					end
 				end
 			end
 		end
 	end
-
+	
 	self:UpdateLayout()
 
 	if num > 0 and PP_IsPally then
