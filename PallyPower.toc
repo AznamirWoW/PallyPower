@@ -1,17 +1,14 @@
-﻿## Interface: 30300
+﻿## Interface: 40000
 ## Author: Aznamir
 ## Title: PallyPower
 ## Version: @project-version@ 
-## Notes: Raid/Party Paladin buffs
-## Notes-esES: Buffs de Paladín para Grupo/Banda
-## Notes-zhCN: 圣骑士祝福管理
+## Notes: Personal and Raid/Party Paladin buffs
 ## DefaultState: enabled
 ## Dependencies:
-## OptionalDeps: Ace2, RosterLib, DewdropLib
+## OptionalDeps: Ace3, LibSharedMedia-3.0
 ## X-Category: Paladin
-## X-Embeds: Ace2, RosterLib, DewdropLib
-## X-RelSite-Curse: 3738
-## SavedVariables: PallyPowerDB, PallyPower_Assignments, PallyPower_NormalAssignments, PallyPower_AuraAssignments, PallyPower_SavedPresets
+## X-Embeds: Ace3, LibSharedMedia-3.0
+## SavedVariables: PallyPowerDB
 
 #@no-lib-strip@
 embeds.xml
@@ -28,6 +25,4 @@ locale\zhCN.lua
 locale\zhTW.lua
 
 PallyPower.lua
-PallyPowerValues.lua
-PallyPowerOptions.lua
 PallyPower.xml
