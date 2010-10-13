@@ -436,6 +436,9 @@ function PallyPower:OnInitialize()
 	_G["BINDING_NAME_CLICK PallyPowerAuraBtn:LeftButton"]  = L["Cast selected aura"]
 	_G["BINDING_NAME_CLICK PallyPowerAuraBtn:RightButton"] = L["Cast selected seal"]
 	
+	if settings.seal > 4 then settings.seal = 1 end
+	if settings.aura > 5 then settings.aura = 1 end
+	
 	self:CreateLayout()
 	
 	if settings.skin then
