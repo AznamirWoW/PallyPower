@@ -38,16 +38,16 @@ local roster = {}
 do
 	--print("Roster Table init")
 	table.insert(party_units, "player")
-	table.insert(party_units, "pet")
+	--table.insert(party_units, "pet")
 
 	for i = 1, MAX_PARTY_MEMBERS do
 		table.insert(party_units, ("party%d"):format(i))
-		table.insert(party_units, ("partypet%d"):format(i))
+		--table.insert(party_units, ("partypet%d"):format(i))
 	end
 	
 	for i = 1, MAX_RAID_MEMBERS do
 		table.insert(raid_units, ("raid%d"):format(i))
-		table.insert(raid_units, ("raidpet%d"):format(i))
+		--table.insert(raid_units, ("raidpet%d"):format(i))
 	end
 end
 
