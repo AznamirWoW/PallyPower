@@ -205,9 +205,14 @@ PallyPower.options =
 						PallyPower:ApplySkin()
 						end,
 				},
+				colors = {
+					type = "header",
+					order = 7,
+					name = L["Colors"],
+				},
 				color_good = {
 					type = "color",
-					order = 7,
+					order = 8,
 					name = L["Fully Buffed"],
 					get = function() return settings.cBuffGood.r, settings.cBuffGood.g, settings.cBuffGood.b, settings.cBuffGood.t end,
 					set = function (info, r, g, b, t)
@@ -220,7 +225,7 @@ PallyPower.options =
 				},
 				color_partial = {
 					type = "color",
-					order = 8,
+					order = 9,
 					name = L["Partially Buffed"],
 					get = function() return settings.cBuffNeedSome.r, settings.cBuffNeedSome.g, settings.cBuffNeedSome.b, settings.cBuffNeedSome.t end,
 					set = function (info, r, g, b, t)
@@ -233,7 +238,7 @@ PallyPower.options =
 				},
 				color_missing = {
 					type = "color",
-					order = 9,
+					order = 10,
 					name = L["None Buffed"],
 					get = function() return settings.cBuffNeedAll.r, settings.cBuffNeedAll.g, settings.cBuffNeedAll.b, settings.cBuffNeedAll.t end,
 					set = function (info, r, g, b, t)
@@ -246,7 +251,7 @@ PallyPower.options =
 				},
 				rfs = {
 					type = "group",
-					order = 10,
+					order = 11,
 					name = L["RFM"],
 					desc = L["RFM_DESC"],
 					args = {
@@ -414,7 +419,13 @@ function PallyPower:OnInitialize()
 	end
 
 	self.db = LibStub("AceDB-3.0"):New("PallyPowerDB", PallyPower.defaults, "Default")
+	self.db.RegisterCallback(self, "OnProfileChanged", "OnProfileChanged")
+	self.db.RegisterCallback(self, "OnProfileCopied", "OnProfileChanged")
+	self.db.RegisterCallback(self, "OnProfileReset", "OnProfileChanged")	
+	
 	settings = self.db.profile
+	PallyPower.options.args.profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db)
+
 	LibStub("AceConfig-3.0"):RegisterOptionsTable("PallyPower", PallyPower.options, "pp")
 	self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("PallyPower", "PallyPower")
 	
@@ -445,6 +456,11 @@ function PallyPower:OnInitialize()
 		PallyPower:ApplySkin(settings.skin)
  	end
 	
+end
+
+function PallyPower:OnProfileChanged()
+	settings = self.db.profile
+	PallyPower:UpdateLayout()
 end
 
 function PallyPower:OnEnable()
