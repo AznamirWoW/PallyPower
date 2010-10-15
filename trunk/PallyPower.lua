@@ -387,12 +387,14 @@ PallyPower.defaults = {
 							seal = 1,
 							aura = 1,
 							rf   = false,
+							rfbuff = true,
 							buff = 2,
 						},
 			["secondary"] = {
 							seal = 1,
 							aura = 1,
 							rf   = false,
+							rfbuff = true,
 							buff = 2,
 						},
 		},
@@ -468,7 +470,7 @@ function PallyPower:OnEnable()
 		settings.disabled = false
 		self:RegisterEvent("PLAYER_REGEN_ENABLED")
 		self:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
-		self:RegisterBucketEvent({"RAID_ROSTER_UPDATE", "PARTY_MEMBERS_CHANGED", "UNIT_PET"}, 1, "UpdateRoster")
+		self:RegisterBucketEvent({"RAID_ROSTER_UPDATE", "PARTY_MEMBERS_CHANGED"}, 1, "UpdateRoster")
 		self:UpdateRoster()
 	else
 		settings.disabled = true
@@ -532,15 +534,17 @@ function PallyPower:ACTIVE_TALENT_GROUP_CHANGED()
 			new = "secondary"
 		end
 		
-		settings.sets[old].seal = settings.seal
-		settings.sets[old].aura = settings.aura
-		settings.sets[old].rf   = settings.rf
-		settings.sets[old].buff = settings.buff
+		settings.sets[old].seal   = settings.seal
+		settings.sets[old].aura   = settings.aura
+		settings.sets[old].rf     = settings.rf
+		settings.sets[old].rfbuff = settings.rfbuff
+		settings.sets[old].buff   = settings.buff
 		
-		settings.seal = settings.sets[new].seal
-		settings.aura = settings.sets[new].aura
-		settings.rf   = settings.sets[new].rf
-		settings.buff = settings.sets[new].buff
+		settings.seal   = settings.sets[new].seal
+		settings.aura   = settings.sets[new].aura
+		settings.rf     = settings.sets[new].rf
+		settings.rfbuff = settings.sets[new].rfbuff
+		settings.buff   = settings.sets[new].buff
 
 		PallyPower:UpdateLayout()
 	end
