@@ -1,5 +1,4 @@
 PallyPower = LibStub("AceAddon-3.0"):NewAddon("PallyPower", "AceConsole-3.0", "AceEvent-3.0", "AceBucket-3.0", "AceTimer-3.0")
---_G.PallyPower = PallyPower
 
 local L    = LibStub("AceLocale-3.0"):GetLocale("PallyPower")
 local LSM3 = LibStub("LibSharedMedia-3.0")
@@ -15,11 +14,7 @@ BINDING_NAME_PPSEALCYCLEN = L["Cycle to next seal"]
 local settings
 
 local tinsert = table.insert
-local tremove = table.remove
 local twipe = table.wipe
-local tsort = table.sort
-local sfind = string.find
-local ssub = string.sub
 local sformat = string.format
 
 local isPally = false
@@ -36,18 +31,14 @@ local raid_units = {}
 local roster = {}
 
 do
-	--print("Roster Table init")
 	table.insert(party_units, "player")
-	--table.insert(party_units, "pet")
 
 	for i = 1, MAX_PARTY_MEMBERS do
 		table.insert(party_units, ("party%d"):format(i))
-		--table.insert(party_units, ("partypet%d"):format(i))
 	end
 	
 	for i = 1, MAX_RAID_MEMBERS do
 		table.insert(raid_units, ("raid%d"):format(i))
-		--table.insert(raid_units, ("raidpet%d"):format(i))
 	end
 end
 
@@ -507,7 +498,6 @@ function PallyPower:Reset()
 	h:SetPoint("CENTER", "UIParent", "CENTER", 0, 0)
 	self:UpdateLayout()
 end
-
 -------------------------------------------------------------------
 -- Internal Functions
 -------------------------------------------------------------------
@@ -554,7 +544,6 @@ function PallyPower:PLAYER_REGEN_ENABLED()
 	if isPally then self:UpdateLayout() end
 end
 
--- Bucket for "RAID_ROSTER_UPDATE", "PARTY_MEMBERS_CHANGED", "UNIT_PET" events
 function PallyPower:UpdateRoster()
 	-- stop update timer
 	self:CancelTimer(self.UpdateTimer)
@@ -578,7 +567,6 @@ function PallyPower:UpdateRoster()
 		twipe(roster)
 
 		for _, unitid in ipairs(units) do
-			--PallyPower:Print(unitid)
 			if unitid and UnitExists(unitid) then
 				local tmp = {}
 				num = num + 1
@@ -605,7 +593,6 @@ function PallyPower:UpdateRoster()
 		self.UpdateTimer = self:ScheduleRepeatingTimer("ButtonsUpdate", 2)
 	end
 end
-
 -------------------------------------------------------------------
 -- Buff Checks
 -------------------------------------------------------------------
@@ -669,7 +656,6 @@ function PallyPower:GetAuraExpiration()
 	end
 	return auraExpire
 end
-
 -------------------------------------------------------------------
 -- Buff Assignment
 -------------------------------------------------------------------
@@ -715,7 +701,6 @@ function PallyPower:SealAssign(seal)
 	sealIcon:SetTexture(spellIcon)
 	PallyPowerAura:SetAttribute("spell2", spellName)
 end
-
 -------------------------------------------------------------------
 -- Buff Modifiers
 -------------------------------------------------------------------
@@ -820,7 +805,6 @@ function PallyPower:PerformSealCycleBackward()
 	end
 	PallyPower:SealAssign(cur)
 end
-
 -------------------------------------------------------------------
 -- Buff UI
 -------------------------------------------------------------------
@@ -867,23 +851,6 @@ function PallyPower:UpdateLayout()
 		PallyPowerAuto:Hide()
 	end
 
-    ox = layout.rf.x * x
-	oy = layout.rf.y * y
-
-	PallyPowerRF:ClearAllPoints()
-	PallyPowerRF:SetPoint(point, PallyPowerHeader, "CENTER", ox, oy)
-
-	PallyPowerRF:SetAttribute("type1", "spell")
-	PallyPowerRF:SetAttribute("unit1", "player")
-	
-	PallyPower:RFAssign(settings.rf)
-
-	if self:GetNumUnits() > 0 and settings.rfbuff and not settings.disabled and isPally then
-		PallyPowerRF:Show()
-	else
-		PallyPowerRF:Hide()
-	end
-
     ox = layout.au.x * x
 	oy = layout.au.y * y
 
@@ -905,10 +872,28 @@ function PallyPower:UpdateLayout()
 	else
 		PallyPowerAura:Hide()
 	end
+
+	if settings.auras then 
+		ox = layout.rf.x * x
+		oy = layout.rf.y * y
+	end
+
+	PallyPowerRF:ClearAllPoints()
+	PallyPowerRF:SetPoint(point, PallyPowerHeader, "CENTER", ox, oy)
+
+	PallyPowerRF:SetAttribute("type1", "spell")
+	PallyPowerRF:SetAttribute("unit1", "player")
+	
+	PallyPower:RFAssign(settings.rf)
+
+	if self:GetNumUnits() > 0 and settings.rfbuff and not settings.disabled and isPally then
+		PallyPowerRF:Show()
+	else
+		PallyPowerRF:Hide()
+	end
 	
 	self:ButtonsUpdate()
 end
-
 
 function PallyPower:GetSeverityColor(percent)
 	if (percent >= 0.5) then
@@ -921,7 +906,6 @@ end
 function PallyPower:ButtonsUpdate()
 	-- roster buff check
 	local minClassExpire, minClassDuration, sumnhave, sumnneed = PallyPower:GetBuffExpiration()
-	--self:Print("Buff Expirations", minClassExpire, minClassDuration, sumnhave, sumnneed)
 	local btime = _G["PallyPowerAutoBtnTime"]
 	local btext = _G["PallyPowerAutoBtnText"]
 	
@@ -956,9 +940,6 @@ function PallyPower:ButtonsUpdate()
 	local expire1, duration1 = PallyPower:GetSealExpiration()
 	local expire2            = PallyPower:GetAuraExpiration()
 	
-	--self:Print(settings.aura, settings.seal)	
-	--self:Print("Seal expirations", expire1, duration1, "Aura Expiration", expire2)
-		
 	stime:SetText(PallyPower:FormatTime(expire1))
 	stime:SetTextColor(PallyPower:GetSeverityColor(expire1 and (expire1/duration1) or 0))
 		
@@ -973,28 +954,15 @@ function PallyPower:ButtonsUpdate()
 end
 
 function PallyPower:ApplySkin()
-	--PallyPower.Edge = 'Interface\\Tooltips\\UI-Tooltip-Border'
-	--bgfile = PallyPower.Skins[skinname]
-	
-	
 	local border     = LSM3:Fetch("border", settings.border)
 	local background = LSM3:Fetch("background", settings.skin)
-	
-	--if settings.display.edges then 
-	--	edge = PallyPower.Edge
-	--else
-	--	edge = nil
-	--end
-
-    PallyPowerAuto:SetBackdrop({bgFile = background, edgeFile= border,
-						  tile=false, tileSize = 8, edgeSize = 8,
-						  insets = { left = 0, right = 0, top = 0, bottom = 0}});
-    PallyPowerRF:SetBackdrop({bgFile = background, edgeFile= border,
-						  tile=false, tileSize = 8, edgeSize = 8,
-						  insets = { left = 0, right = 0, top = 0, bottom = 0}});
-	PallyPowerAura:SetBackdrop({bgFile = background, edgeFile= border,
-						  tile=false, tileSize = 8, edgeSize = 8,
-						  insets = { left = 0, right = 0, top = 0, bottom = 0}});
+	local tmp = {bgFile = background, edgeFile= border, 
+				 tile=false, tileSize = 8, edgeSize = 8, 
+				 insets = { left = 0, right = 0, top = 0, bottom = 0}
+				}
+    PallyPowerAuto:SetBackdrop(tmp)
+    PallyPowerRF:SetBackdrop(tmp)
+	PallyPowerAura:SetBackdrop(tmp)
 end
 
 -- button coloring: preset
