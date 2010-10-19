@@ -1,0 +1,235 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ 
+C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
+
+<Button name="PallyPowerButtonTemplate" virtual="true" frameStrata="LOW">
+	<Size>
+		<AbsDimension x="100" y="34"/>
+	</Size>
+	<Backdrop bgFile="Interface\Tooltips\UI-Tooltip-Background" edgeFile="Interface\Tooltips\UI-Tooltip-Border" tile="true">
+		<EdgeSize>
+			<AbsValue val="8"/>
+		</EdgeSize>
+		<TileSize>
+			<AbsValue val="8"/>
+		</TileSize>
+		<BackgroundInsets>
+			<AbsInset left="2" right="2" top="2" bottom="2"/>
+		</BackgroundInsets>
+	</Backdrop>
+	<Layers>
+		<Layer level="OVERLAY">
+			<FontString name="$parentTime" inherits="GameFontHighlightSmall" text="30:00" justifyH="RIGHT">
+				<Size>
+					<AbsDimension x="35" y="16" /> 
+				</Size>
+				<Anchors>
+					<Anchor point="TOPRIGHT">
+						<Offset>
+							<AbsDimension x="-5" y="-3" /> 
+						</Offset>
+					</Anchor>
+				</Anchors>
+			</FontString>
+			<Texture name="$parentBuffIcon" file="Interface\Icons\Spell_Holy_SealOfWisdom">
+				<Size>
+					<AbsDimension x="26" y="26" /> 
+				</Size>
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset>                                      
+							<AbsDimension x="4" y="-4" /> 
+						</Offset>
+					</Anchor>
+				</Anchors>
+			</Texture>
+			<FontString name="$parentText" inherits="GameFontHighlightSmall" text="99" justifyH="RIGHT">
+				<Size>
+					<AbsDimension x="10" y="16" /> 
+				</Size>
+				<Anchors>
+					<Anchor point="TOPRIGHT" relativeTo="$parentTime" relativePoint="TOPLEFT">
+						<Offset>
+							<AbsDimension x="-20" y="0" /> 
+						</Offset>
+					</Anchor>
+				</Anchors>
+			</FontString>
+		</Layer>
+	</Layers>
+	<Scripts>
+		<OnLoad>
+			self:RegisterForDrag("RightButton");
+		</OnLoad>
+		<OnDragStart>
+			if IsShiftKeyDown() then
+				PallyPowerFrame:StartMoving()
+			end
+		</OnDragStart>
+		<OnDragStop>
+			PallyPowerFrame:StopMovingOrSizing()
+		</OnDragStop>
+		<OnMouseWheel>
+			if InCombatLockdown() then return false end
+			PallyPower:PerformBuffCycle();
+			PallyPower:ButtonsUpdate();
+		</OnMouseWheel> 
+	</Scripts>
+</Button>
+
+ <Button name="PallyPowerAuraButtonTemplate" virtual="true" frameStrata="LOW">
+	  <Size>
+		  <AbsDimension x="100" y="34"/>
+	  </Size>
+	  <Backdrop bgFile="Interface\Tooltips\UI-Tooltip-Background" edgeFile="Interface\Tooltips\UI-Tooltip-Border" tile="true">
+		  <EdgeSize>
+			  <AbsValue val="8"/>
+		  </EdgeSize>
+		  <TileSize>
+			  <AbsValue val="8"/>
+		  </TileSize>
+		  <BackgroundInsets>
+			  <AbsInset left="2" right="2" top="3" bottom="2"/>
+		  </BackgroundInsets>
+	  </Backdrop>
+	  <Layers>
+		  <Layer level="OVERLAY">
+			  <Texture name="$parentIconAura" file="Interface/Icons/Spell_Holy_DevotionAura">
+				  <Size>
+					  <AbsDimension x="26" y="26" /> 
+				  </Size>
+				  <Anchors>
+					  <Anchor point="TOPLEFT">
+						  <Offset>
+							  <AbsDimension x="4" y="-4" /> 
+						  </Offset>
+					  </Anchor>
+				  </Anchors>
+			  </Texture>
+			  <Texture name="$parentIconSeal" file="Interface/Icons/Spell_Holy_SealOfWisdom">
+				  <Size>
+					  <AbsDimension x="26" y="26" /> 
+				  </Size>
+				  <Anchors>
+					  <Anchor point="TOPLEFT">
+						  <Offset>
+							  <AbsDimension x="32" y="-4" /> 
+						  </Offset>
+					  </Anchor>
+				  </Anchors>
+			  </Texture>
+			  <FontString name="$parentTimeSeal" inherits="GameFontHighlightSmall" text="30:00" justifyH="RIGHT">
+				  <Size>
+					  <AbsDimension x="35" y="16" /> 
+				  </Size>
+				  <Anchors>
+					  <Anchor point="TOPRIGHT">
+						  <Offset>
+							  <AbsDimension x="-5" y="-3" /> 
+						  </Offset>
+					  </Anchor>
+				  </Anchors>
+			  </FontString>
+		  </Layer>
+	  </Layers>
+	<Scripts>
+		<OnLoad>
+			self:RegisterForDrag("RightButton");
+		</OnLoad>
+		<OnDragStart>
+			if IsShiftKeyDown() then
+				PallyPowerFrame:StartMoving()
+			end
+		</OnDragStart>
+		<OnDragStop>
+			PallyPowerFrame:StopMovingOrSizing()
+		</OnDragStop>		
+		<OnMouseWheel>
+			if InCombatLockdown() then return false end
+			if IsShiftKeyDown() then -- auras
+				if delta == 1 then
+					PallyPower:PerformAuraCycleBackward()
+				else
+					PallyPower:PerformAuraCycle()
+				end
+			else
+				if delta == 1 then
+					PallyPower:PerformSealCycleBackward()
+				else
+					PallyPower:PerformSealCycle()
+				end
+			end
+		</OnMouseWheel>
+	</Scripts>
+</Button>
+
+<Button name="PallyPowerRFButtonTemplate" virtual="true" frameStrata="LOW">
+	<Size>
+		<AbsDimension x="100" y="34"/>
+	</Size>
+    <Backdrop bgFile="Interface\Tooltips\UI-Tooltip-Background" edgeFile="Interface\Tooltips\UI-Tooltip-Border" tile="true">
+		<EdgeSize>
+			<AbsValue val="8"/>
+		</EdgeSize>
+		<TileSize>
+			<AbsValue val="8"/>
+		</TileSize>
+		<BackgroundInsets>
+			<AbsInset left="2" right="2" top="3" bottom="2"/>
+		</BackgroundInsets>
+    </Backdrop>
+    <Layers>
+		<Layer level="OVERLAY">
+			<Texture name="$parentIconRF" file="Interface/Icons/Spell_Holy_SealOfFury">
+				<Size>
+					<AbsDimension x="26" y="26" />
+				</Size>
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset>
+							<AbsDimension x="4" y="-4" />
+						</Offset>
+					</Anchor>
+				</Anchors>
+			</Texture>
+		</Layer>
+	</Layers>
+	<Scripts>
+		<OnLoad>
+			self:RegisterForDrag("RightButton");
+		</OnLoad>
+		<OnDragStart>
+			if IsShiftKeyDown() then
+				PallyPowerFrame:StartMoving()
+			end
+		</OnDragStart>
+		<OnDragStop>
+			PallyPowerFrame:StopMovingOrSizing()
+		</OnDragStop>			
+		<OnMouseWheel>
+			if InCombatLockdown() then return false end
+			PallyPower:PerformRFCycle()
+			PallyPower:ButtonsUpdate();
+		</OnMouseWheel>
+	</Scripts>
+</Button>
+
+<Frame name="PallyPowerFrame" movable="true" frameStrata="LOW" enableMouse="true" parent="UIParent" hidden="false">
+	<Size>
+		<AbsDimension x="1" y="1" />
+	</Size>
+	<Anchors>
+		<Anchor point="CENTER">
+			<Offset x="0" y="0"/>
+		</Anchor>
+	</Anchors>
+	<Frames>
+		<Frame name="PallyPowerHeader" toplevel="true" movable="true" enableMouse="true" resizable="true" frameStrata="LOW" inherits="SecureHandlerStateTemplate">
+			<Size x="1" y="1"/>
+			<Anchors>
+				<Anchor point="CENTER" relativeTo="$parent" relativePoint="CENTER"/>
+			</Anchors>
+		</Frame>
+	</Frames>
+</Frame>
+
+</Ui>
