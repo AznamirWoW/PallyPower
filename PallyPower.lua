@@ -18,6 +18,7 @@ local twipe = table.wipe
 local sformat = string.format
 
 local isPally = false
+local timer = false
 
 -- buttons 
 local PallyPowerHeader
@@ -546,7 +547,10 @@ end
 
 function PallyPower:UpdateRoster()
 	-- stop update timer
-	self:CancelTimer(self.UpdateTimer)
+	if timer then
+		self:CancelTimer(self.UpdateTimer)
+		timer = false
+	end
 	
 	local units
 	local num = self:GetNumUnits()
@@ -591,6 +595,7 @@ function PallyPower:UpdateRoster()
 	if num > 0 and isPally then
 		-- start update timer
 		self.UpdateTimer = self:ScheduleRepeatingTimer("ButtonsUpdate", 2)
+		timer = true
 	end
 end
 -------------------------------------------------------------------
