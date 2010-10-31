@@ -5,7 +5,7 @@
 ## Notes: Personal and Raid/Party Paladin buffs
 ## DefaultState: enabled
 ## Dependencies:
-## OptionalDeps: Ace3, LibSharedMedia-3.0
+## OptionalDeps: Ace3, LibSharedMedia-3.0, SharedMedia
 ## X-Category: Paladin
 ## X-Embeds: Ace3, LibSharedMedia-3.0
 ## SavedVariables: PallyPowerDB
