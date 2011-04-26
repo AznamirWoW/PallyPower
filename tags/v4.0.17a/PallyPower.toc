@@ -1,0 +1,28 @@
+﻿## Interface: 40100
+## Author: Aznamir
+## Title: PallyPower
+## Version: @project-version@ 
+## Notes: Personal and Raid/Party Paladin buffs
+## DefaultState: enabled
+## Dependencies:
+## OptionalDeps: Ace3, LibSharedMedia-3.0, SharedMedia
+## X-Category: Paladin
+## X-Embeds: Ace3, LibSharedMedia-3.0
+## SavedVariables: PallyPowerDB
+
+#@no-lib-strip@
+embeds.xml
+#@end-no-lib-strip@
+
+locale\enUS.lua
+locale\ruRU.lua
+locale\deDE.lua
+locale\frFR.lua
+locale\koKR.lua
+locale\esES.lua
+locale\esMX.lua
+locale\zhCN.lua
+locale\zhTW.lua
+
+PallyPower.lua
+PallyPower.xml
