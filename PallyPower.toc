@@ -1,4 +1,4 @@
-﻿## Interface: 40100
+﻿## Interface: 40300
 ## Author: Aznamir
 ## Title: PallyPower
 ## Version: @project-version@ 
