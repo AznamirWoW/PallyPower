@@ -75,93 +75,6 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 		</OnMouseWheel> 
 	</Scripts>
 </Button>
-
- <Button name="PallyPowerAuraButtonTemplate" virtual="true" frameStrata="LOW">
-	  <Size>
-		  <AbsDimension x="100" y="34"/>
-	  </Size>
-	  <Backdrop bgFile="Interface\Tooltips\UI-Tooltip-Background" edgeFile="Interface\Tooltips\UI-Tooltip-Border" tile="true">
-		  <EdgeSize>
-			  <AbsValue val="8"/>
-		  </EdgeSize>
-		  <TileSize>
-			  <AbsValue val="8"/>
-		  </TileSize>
-		  <BackgroundInsets>
-			  <AbsInset left="2" right="2" top="3" bottom="2"/>
-		  </BackgroundInsets>
-	  </Backdrop>
-	  <Layers>
-		  <Layer level="OVERLAY">
-			  <Texture name="$parentIconAura" file="Interface/Icons/Spell_Holy_DevotionAura">
-				  <Size>
-					  <AbsDimension x="26" y="26" /> 
-				  </Size>
-				  <Anchors>
-					  <Anchor point="TOPLEFT">
-						  <Offset>
-							  <AbsDimension x="4" y="-4" /> 
-						  </Offset>
-					  </Anchor>
-				  </Anchors>
-			  </Texture>
-			  <Texture name="$parentIconSeal" file="Interface/Icons/Spell_Holy_SealOfWisdom">
-				  <Size>
-					  <AbsDimension x="26" y="26" /> 
-				  </Size>
-				  <Anchors>
-					  <Anchor point="TOPLEFT">
-						  <Offset>
-							  <AbsDimension x="32" y="-4" /> 
-						  </Offset>
-					  </Anchor>
-				  </Anchors>
-			  </Texture>
-			  <FontString name="$parentTimeSeal" inherits="GameFontHighlightSmall" text="30:00" justifyH="RIGHT">
-				  <Size>
-					  <AbsDimension x="35" y="16" /> 
-				  </Size>
-				  <Anchors>
-					  <Anchor point="TOPRIGHT">
-						  <Offset>
-							  <AbsDimension x="-5" y="-3" /> 
-						  </Offset>
-					  </Anchor>
-				  </Anchors>
-			  </FontString>
-		  </Layer>
-	  </Layers>
-	<Scripts>
-		<OnLoad>
-			self:RegisterForDrag("RightButton");
-		</OnLoad>
-		<OnDragStart>
-			if IsShiftKeyDown() then
-				PallyPowerFrame:StartMoving()
-			end
-		</OnDragStart>
-		<OnDragStop>
-			PallyPowerFrame:StopMovingOrSizing()
-		</OnDragStop>		
-		<OnMouseWheel>
-			if InCombatLockdown() then return false end
-			if IsShiftKeyDown() then -- auras
-				if delta == 1 then
-					PallyPower:PerformAuraCycleBackward()
-				else
-					PallyPower:PerformAuraCycle()
-				end
-			else
-				if delta == 1 then
-					PallyPower:PerformSealCycleBackward()
-				else
-					PallyPower:PerformSealCycle()
-				end
-			end
-		</OnMouseWheel>
-	</Scripts>
-</Button>
-
 <Button name="PallyPowerRFButtonTemplate" virtual="true" frameStrata="LOW">
 	<Size>
 		<AbsDimension x="100" y="34"/>
@@ -192,6 +105,20 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				</Anchors>
 			</Texture>
 		</Layer>
+		<Layer level="OVERLAY">
+			  <Texture name="$parentIconSeal" file="Interface/Icons/Spell_Holy_HealingAura">
+				  <Size>
+					  <AbsDimension x="26" y="26" /> 
+				  </Size>
+				  <Anchors>
+					  <Anchor point="TOPLEFT">
+						  <Offset>
+							  <AbsDimension x="32" y="-4" /> 
+						  </Offset>
+					  </Anchor>
+				  </Anchors>
+			  </Texture>
+		  </Layer>		
 	</Layers>
 	<Scripts>
 		<OnLoad>
@@ -207,12 +134,19 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 		</OnDragStop>			
 		<OnMouseWheel>
 			if InCombatLockdown() then return false end
-			PallyPower:PerformRFCycle()
-			PallyPower:ButtonsUpdate();
+			if IsShiftKeyDown() then -- RF
+				PallyPower:PerformRFCycle()
+				PallyPower:ButtonsUpdate();
+			else
+				if delta == 1 then
+					PallyPower:PerformSealCycleBackward()
+				else
+					PallyPower:PerformSealCycle()
+				end
+			end			
 		</OnMouseWheel>
 	</Scripts>
 </Button>
-
 <Frame name="PallyPowerFrame" movable="true" frameStrata="LOW" enableMouse="true" parent="UIParent" hidden="false">
 	<Size>
 		<AbsDimension x="1" y="1" />

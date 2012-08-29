@@ -24,7 +24,6 @@ local timer = false
 local PallyPowerHeader
 local PallyPowerAuto
 local PallyPowerRF
-local PallyPowerAura
 
 -- unit tables
 local party_units = {}
@@ -57,7 +56,7 @@ PallyPower.Spells = {
 };
 
 PallyPower.RFSpell = GetSpellInfo(25780) -- Righteous Fury
-PallyPower.HLSpell = GetSpellInfo(635)	 -- Holy Light
+PallyPower.HLSpell = GetSpellInfo(19750)	 -- flash of light
 PallyPower.MSpell = GetSpellInfo(1126) -- Mark of the Wild
 
 PallyPower.Seals = {
@@ -67,16 +66,6 @@ PallyPower.Seals = {
 	[3] = GetSpellInfo(31801), -- seal of truth
 	[4] = GetSpellInfo(20164), -- seal of justice
 	[5] = "",
-}
-
-PallyPower.Auras = {
-	[0] = "",
-	[1] = GetSpellInfo(465),   --Devotion Aura
-	[2] = GetSpellInfo(7294),  --Retribution Aura
-	[3] = GetSpellInfo(19746), --Concentration Aura
-	[4] = GetSpellInfo(19891), --Resistance Aura
-	[5] = GetSpellInfo(32223), --Crusader Aura
-	[6] = "",
 }
 
 -------------------------------------------------------------------
@@ -247,17 +236,6 @@ PallyPower.options =
 					name = L["RFM"],
 					desc = L["RFM_DESC"],
 					args = {
-						rfbutton = {
-							type = "toggle",
-							order = 11,
-							name = L["RFB"],
-							desc = L["RFB_DESC"],
-							get = function(info) return settings.rfbuff end,
-							set = function(info, val)
-								settings.rfbuff = val
-								PallyPower:UpdateLayout()
-								end,
-						},
 						rfury = {
 							type = "toggle",
 							order = 12,
@@ -268,44 +246,6 @@ PallyPower.options =
 								settings.rf = val
 								PallyPower:RFAssign(settings.rf)
 								end,
-						},
-					},
-				},
-				auras = {
-					type = "group",
-					order = 13,
-					name = L["AURAM"],
-					desc = L["AURAM_DESC"],
-					args = {
-						aurabutton = {
-							type = "toggle",
-							order = 14,
-							name = L["AURABTN"],
-							desc = L["AURABTN_DESC"],
-							get = function(info) return settings.auras end,
-							set = function(info, val)
-								settings.auras = val
-								PallyPower:UpdateLayout()
-								end,
-						},
-						aura = {
-							type = "select",
-							order = 15,
-							name = L["AURA"],
-							desc = L["AURA_DESC"],
-							get = function(info) return settings.aura end,
-							set = function(info, val)
-								settings.aura = val
-								PallyPower:UpdateLayout()
-								end,
-							values = {
-								[0] = L["None"],
-								[1] = PallyPower.Auras[1],
-								[2] = PallyPower.Auras[2],
-								[3] = PallyPower.Auras[3],
-								[4] = PallyPower.Auras[4],
-								[5] = PallyPower.Auras[5],
-							},
 						},
 						seal = {
 							type = "select",
@@ -335,23 +275,19 @@ PallyPower.options =
 PallyPower.Layouts = {
 	["Layout 1"] = { 	
 				ab = {x = 0, y = 1},
-				au = {x = 0, y = 2},
-				rf = {x = 0, y = 3},
+				rf = {x = 0, y = 2},
 	},
 	["Layout 2"] = { 	
 				ab = {x = 0, y = 0},
-		 		au = {x = 0, y = -1},
-    			rf = {x = 0, y = -2},
+		 		rf = {x = 0, y = -1},
 	},	
 	["Layout 3"] = { 	
 				ab = {x = 0, y = 0},
-		 		au = {x = 1, y = 0},
-    			rf = {x = 2, y = 0},
+		 		rf = {x = 1, y = 0},
 	},
 	["Layout 4"] = { 	
 				ab = {x = -1, y = 0},
-		 		au = {x = -2, y = 0},
-    			rf = {x = -3, y = 0},
+		 		rf = {x = -2, y = 0},
 	},	
  }
 -------------------------------------------------------------------
@@ -361,7 +297,6 @@ PallyPower.defaults = {
 	profile = {
 		buffscale = 0.9,
 		rfbuff = true,
-		auras = true,
 		extras = false,
 		display = {
 			buttonWidth = 100,
@@ -377,14 +312,12 @@ PallyPower.defaults = {
 		sets = { 
 			["primary"] = {
 							seal = 1,
-							aura = 1,
 							rf   = false,
 							rfbuff = true,
 							buff = 2,
 						},
 			["secondary"] = {
 							seal = 1,
-							aura = 1,
 							rf   = false,
 							rfbuff = true,
 							buff = 2,
@@ -392,7 +325,6 @@ PallyPower.defaults = {
 		},
 		-- default assignments
 		seal = 1,
-		aura = 1,
 		rf   = false,
 		buff = 2,
 		disabled = false,
@@ -442,8 +374,7 @@ function PallyPower:OnInitialize()
 	_G["BINDING_NAME_CLICK PallyPowerAuraBtn:RightButton"] = L["Cast selected seal"]
 	
 	if settings.seal > 4 then settings.seal = 1 end
-	if settings.aura > 5 then settings.aura = 1 end
-	
+		
 	self:CreateLayout()
 	
 	if settings.skin then
@@ -503,11 +434,11 @@ end
 -- Internal Functions
 -------------------------------------------------------------------
 function PallyPower:GetNumUnits()
-	if GetNumRaidMembers() > 0 then
-		return GetNumRaidMembers()
+	if IsInRaid() then
+		return GetNumGroupMembers()
 	end
-	if GetNumPartyMembers() > 0 and settings.display.ShowInParty or settings.display.ShowWhenSingle then
-		return GetNumPartyMembers() + 1
+	if GetNumSubgroupMembers() > 0 and settings.display.ShowInParty or settings.display.ShowWhenSingle then
+		return GetNumSubgroupMembers() + 1
 	end
 	return 0
 end
@@ -526,13 +457,11 @@ function PallyPower:ACTIVE_TALENT_GROUP_CHANGED()
 		end
 		
 		settings.sets[old].seal   = settings.seal
-		settings.sets[old].aura   = settings.aura
 		settings.sets[old].rf     = settings.rf
 		settings.sets[old].rfbuff = settings.rfbuff
 		settings.sets[old].buff   = settings.buff
 		
 		settings.seal   = settings.sets[new].seal
-		settings.aura   = settings.sets[new].aura
 		settings.rf     = settings.sets[new].rf
 		settings.rfbuff = settings.sets[new].rfbuff
 		settings.buff   = settings.sets[new].buff
@@ -560,7 +489,7 @@ function PallyPower:UpdateRoster()
 
 	if num > 0 then
 		num = 0
-		if GetNumRaidMembers() == 0 then
+		if not IsInRaid() then
 			isInRaid = false
 			units = party_units
 		else
@@ -645,22 +574,20 @@ end
 function PallyPower:GetSealExpiration()
     local spellName = PallyPower.Seals[settings.seal]
     local sealExpire, sealDuration = 9999, 30*60
-	local _, _, _, _, _, buffDuration, buffExpire = UnitBuff("player", spellName)
-	if buffExpire then
-		sealExpire = buffExpire - GetTime()
+	
+	local form = GetShapeshiftForm();
+	
+	if form == 0 then return 9999 end
+	
+	local _, formName, _, _ = GetShapeshiftFormInfo(form)
+	
+	if spellName == formName then
+		return 1
+	else 
+		return 9999
 	end
-	return sealExpire, sealDuration
 end
 
-function PallyPower:GetAuraExpiration()
-    local spellName = PallyPower.Auras[settings.aura]
-    local auraExpire = 9999
-	local buffName, _, _, _, _, _, _ = UnitBuff("player", spellName)
-	if buffName == spellName then
-		auraExpire = 60*60
-	end
-	return auraExpire
-end
 -------------------------------------------------------------------
 -- Buff Assignment
 -------------------------------------------------------------------
@@ -687,24 +614,14 @@ function PallyPower:RFAssign(rf)
 	end
 end
 
-function PallyPower:AuraAssign(aura)
-	local spellName, _, spellIcon = GetSpellInfo(PallyPower.Auras[aura])
-	local auraIcon = _G["PallyPowerAuraBtnIconAura"] -- aura icon
-
-	settings.aura = aura
-
-	auraIcon:SetTexture(spellIcon)
-	PallyPowerAura:SetAttribute("spell1", spellName)
-end
-
 function PallyPower:SealAssign(seal)
 	local spellName, _, spellIcon = GetSpellInfo(PallyPower.Seals[seal])
-	local sealIcon = _G["PallyPowerAuraBtnIconSeal"] -- seal icon
+	local sealIcon = _G["PallyPowerRFBtnIconSeal"] -- seal icon
 
 	settings.seal = seal
 
 	sealIcon:SetTexture(spellIcon)
-	PallyPowerAura:SetAttribute("spell2", spellName)
+	PallyPowerRF:SetAttribute("spell2", spellName)
 end
 -------------------------------------------------------------------
 -- Buff Modifiers
@@ -726,48 +643,6 @@ end
 function PallyPower:PerformRFCycle()
 	settings.rf = not settings.rf
 	PallyPower:RFAssign(settings.rf)
-end
-
-function PallyPower:PerformAuraCycle()
-	if not settings.aura then
-	   	settings.aura = 0
-	end
-
-	cur = settings.aura
-
-	for test = cur + 1, 6 do
-	    cur = test
-	    if GetSpellInfo(PallyPower.Auras[cur]) then 
-			do break end
-		end
-	end
-	
-	if cur == 6 then 
-		cur = 0
-	end
-	
-	PallyPower:AuraAssign(cur)
-end
-
-function PallyPower:PerformAuraCycleBackward()
-	if not settings.aura then 
-		settings.aura = 0
-	end
-	
-	cur = settings.aura
-	
-	if cur == 0 then 
-		cur = 6 
-	end
-	
-	for test=cur-1, 0, -1 do
-		cur = test
-		if GetSpellInfo(PallyPower.Auras[cur]) then
-			do break end
-		end
-	end
-	PallyPower:AuraAssign(cur)
-
 end
 
 function PallyPower:PerformSealCycle()
@@ -823,9 +698,6 @@ function PallyPower:CreateLayout()
 	PallyPowerRF = CreateFrame("Button", "PallyPowerRFBtn", PallyPowerHeader, "SecureActionButtonTemplate, PallyPowerRFButtonTemplate")
 	PallyPowerRF:RegisterForClicks("LeftButtonDown")
 
-	PallyPowerAura = CreateFrame("Button", "PallyPowerAuraBtn", PallyPowerHeader, "SecureActionButtonTemplate, PallyPowerAuraButtonTemplate")
-	PallyPowerAura:RegisterForClicks("LeftButtonDown", "RightButtonDown")
-	
 	PallyPower:UpdateLayout()
 end
 
@@ -856,32 +728,8 @@ function PallyPower:UpdateLayout()
 		PallyPowerAuto:Hide()
 	end
 
-    ox = layout.au.x * x
-	oy = layout.au.y * y
-
-	PallyPowerAura:ClearAllPoints()
-	PallyPowerAura:SetPoint(point, PallyPowerHeader, "CENTER", ox, oy)
-		
-	PallyPowerAura:SetAttribute("type1", "spell")
-	PallyPowerAura:SetAttribute("unit1", "player")
-	
-	PallyPower:AuraAssign(settings.aura)
-
-	PallyPowerAura:SetAttribute("type2", "spell")
-	PallyPowerAura:SetAttribute("unit2", "player")
-	
-	PallyPower:SealAssign(settings.seal)
-		
-	if self:GetNumUnits() > 0 and settings.auras and not settings.disabled and isPally then
-		PallyPowerAura:Show()
-	else
-		PallyPowerAura:Hide()
-	end
-
-	if settings.auras then 
-		ox = layout.rf.x * x
-		oy = layout.rf.y * y
-	end
+    ox = layout.rf.x * x
+	oy = layout.rf.y * y
 
 	PallyPowerRF:ClearAllPoints()
 	PallyPowerRF:SetPoint(point, PallyPowerHeader, "CENTER", ox, oy)
@@ -889,9 +737,12 @@ function PallyPower:UpdateLayout()
 	PallyPowerRF:SetAttribute("type1", "spell")
 	PallyPowerRF:SetAttribute("unit1", "player")
 	
+	PallyPowerRF:SetAttribute("type2", "spell")
+	PallyPowerRF:SetAttribute("unit2", "player")
+	
 	PallyPower:RFAssign(settings.rf)
 
-	if self:GetNumUnits() > 0 and settings.rfbuff and not settings.disabled and isPally then
+	if self:GetNumUnits() > 0 and not settings.disabled and isPally then
 		PallyPowerRF:Show()
 	else
 		PallyPowerRF:Hide()
@@ -931,29 +782,16 @@ function PallyPower:ButtonsUpdate()
 		btext:SetText("")
 	end
 	
-	-- rf button check
+	-- rf button /seal check
 	local expire = PallyPower:GetRFExpiration()
+	local expire2 = PallyPower:GetSealExpiration()
 	
-	if expire == 9999 and settings.rf then
+	if (expire == 9999 and settings.rf) and (expire2 == 9999 and settings.seal > 0) then
 		self:ApplyBackdrop(PallyPowerRF, settings.cBuffNeedAll)
-	else
-		self:ApplyBackdrop(PallyPowerRF, settings.cBuffGood)
-	end
-
-	-- seal check
-	local stime = _G["PallyPowerAuraBtnTimeSeal"] -- seal timer
-	local expire1, duration1 = PallyPower:GetSealExpiration()
-	local expire2            = PallyPower:GetAuraExpiration()
-	
-	stime:SetText(PallyPower:FormatTime(expire1))
-	stime:SetTextColor(PallyPower:GetSeverityColor(expire1 and (expire1/duration1) or 0))
-		
-	if (expire1 == 9999 and settings.seal > 0) and (expire2 == 9999 and settings.aura > 0) then
-		self:ApplyBackdrop(PallyPowerAura, settings.cBuffNeedAll)
-  	elseif (expire1 == 9999 and settings.seal > 0) or (expire2 == 9999 and settings.aura > 0) then
-  	    self:ApplyBackdrop(PallyPowerAura, settings.cBuffNeedSome)
+  	elseif (expire == 9999 and settings.rf) or (expire2 == 9999 and settings.seal > 0) then
+  	    self:ApplyBackdrop(PallyPowerRF, settings.cBuffNeedSome)
 	else                                               
-		self:ApplyBackdrop(PallyPowerAura, settings.cBuffGood)
+		self:ApplyBackdrop(PallyPowerRF, settings.cBuffGood)
 	end
 
 end
@@ -967,7 +805,6 @@ function PallyPower:ApplySkin()
 				}
     PallyPowerAuto:SetBackdrop(tmp)
     PallyPowerRF:SetBackdrop(tmp)
-	PallyPowerAura:SetBackdrop(tmp)
 end
 
 -- button coloring: preset
