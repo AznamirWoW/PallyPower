@@ -448,7 +448,7 @@ end
 function PallyPower:ACTIVE_TALENT_GROUP_CHANGED()
 	local old, new
 	if isPally then
-		if GetActiveTalentGroup() == 1 then
+		if  GetActiveSpecGroup() == 1 then
 			old = "secondary"
 			new = "primary"
 		else
