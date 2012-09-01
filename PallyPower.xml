@@ -104,21 +104,19 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					</Anchor>
 				</Anchors>
 			</Texture>
-		</Layer>
-		<Layer level="OVERLAY">
-			  <Texture name="$parentIconSeal" file="Interface/Icons/Spell_Holy_HealingAura">
-				  <Size>
-					  <AbsDimension x="26" y="26" /> 
-				  </Size>
-				  <Anchors>
-					  <Anchor point="TOPLEFT">
-						  <Offset>
-							  <AbsDimension x="32" y="-4" /> 
-						  </Offset>
-					  </Anchor>
-				  </Anchors>
-			  </Texture>
-		  </Layer>		
+			<Texture name="$parentIconSeal" file="Interface/Icons/Spell_Holy_HealingAura">
+				<Size>
+					<AbsDimension x="26" y="26" /> 
+				</Size>
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset>
+							<AbsDimension x="32" y="-4" /> 
+						</Offset>
+					</Anchor>
+				</Anchors>
+			</Texture>
+		</Layer>		
 	</Layers>
 	<Scripts>
 		<OnLoad>

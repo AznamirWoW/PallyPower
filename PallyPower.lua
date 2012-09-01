@@ -61,10 +61,10 @@ PallyPower.MSpell = GetSpellInfo(1126) -- Mark of the Wild
 
 PallyPower.Seals = {
     [0] = "",
-	[1] = GetSpellInfo(20154), -- seal of righteousness
-	[2] = GetSpellInfo(20165), -- seal of insight
-	[3] = GetSpellInfo(31801), -- seal of truth
-	[4] = GetSpellInfo(20164), -- seal of justice
+	[1] = GetSpellInfo(31801), -- seal of truth
+	[2] = GetSpellInfo(20154), -- seal of righteousness
+	[3] = GetSpellInfo(20164), -- seal of justice
+	[4] = GetSpellInfo(20165), -- seal of insight
 	[5] = "",
 }
 
@@ -696,7 +696,7 @@ function PallyPower:CreateLayout()
 	PallyPowerAuto:RegisterForClicks("LeftButtonDown")
 
 	PallyPowerRF = CreateFrame("Button", "PallyPowerRFBtn", PallyPowerHeader, "SecureActionButtonTemplate, PallyPowerRFButtonTemplate")
-	PallyPowerRF:RegisterForClicks("LeftButtonDown")
+	PallyPowerRF:RegisterForClicks("LeftButtonDown", "RightButtonDown")
 
 	PallyPower:UpdateLayout()
 end
@@ -741,6 +741,7 @@ function PallyPower:UpdateLayout()
 	PallyPowerRF:SetAttribute("unit2", "player")
 	
 	PallyPower:RFAssign(settings.rf)
+	PallyPower:SealAssign(settings.seal)
 
 	if self:GetNumUnits() > 0 and not settings.disabled and isPally then
 		PallyPowerRF:Show()
