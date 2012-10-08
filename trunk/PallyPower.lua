@@ -393,6 +393,8 @@ function PallyPower:OnEnable()
 		settings.disabled = false
 		self:RegisterEvent("PLAYER_REGEN_ENABLED")
 		self:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
+		self:RegisterEvent("PET_BATTLE_OPENING_START")
+		self:RegisterEvent("PET_BATTLE_CLOSE")
 		self:RegisterBucketEvent({"RAID_ROSTER_UPDATE", "PARTY_MEMBERS_CHANGED"}, 1, "UpdateRoster")
 		self:UpdateRoster()
 	else
@@ -445,6 +447,18 @@ end
 -------------------------------------------------------------------
 -- External Event Handling
 -------------------------------------------------------------------
+function PallyPower:PET_BATTLE_OPENING_START()
+	PallyPowerAuto:Hide()
+	PallyPowerRF:Hide()
+end
+
+function PallyPower:PET_BATTLE_CLOSE()
+	if self:GetNumUnits() > 0 and not settings.disabled and isPally then
+		PallyPowerAuto:Show()
+		PallyPowerRF:Show()
+	end
+end
+
 function PallyPower:ACTIVE_TALENT_GROUP_CHANGED()
 	local old, new
 	if isPally then
