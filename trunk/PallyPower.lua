@@ -395,7 +395,7 @@ function PallyPower:OnEnable()
 		self:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
 		self:RegisterEvent("PET_BATTLE_OPENING_START")
 		self:RegisterEvent("PET_BATTLE_CLOSE")
-		self:RegisterBucketEvent({"RAID_ROSTER_UPDATE", "PARTY_MEMBERS_CHANGED"}, 1, "UpdateRoster")
+		self:RegisterBucketEvent({"GROUP_ROSTER_UPDATE", "PARTY_MEMBERS_CHANGED"}, 1, "UpdateRoster")
 		self:UpdateRoster()
 	else
 		settings.disabled = true
@@ -553,7 +553,6 @@ function PallyPower:GetBuffExpiration()
 		for playerID, unit in pairs(roster) do
 			if unit.unitid then
 				if IsSpellInRange(PallyPower.HLSpell, unit.unitid) == 1 then
-					
 					local _, _, _, _, _, buffDuration, buffExpire = UnitBuff(unit.unitid, spellName)
 					
 					if not buffExpire and settings.buff == 2 then -- Kings fallback to MotW
