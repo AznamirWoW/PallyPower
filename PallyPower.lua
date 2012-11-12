@@ -58,6 +58,7 @@ PallyPower.Spells = {
 PallyPower.RFSpell = GetSpellInfo(25780) -- Righteous Fury
 PallyPower.HLSpell = GetSpellInfo(19750)	 -- flash of light
 PallyPower.MSpell = GetSpellInfo(1126) -- Mark of the Wild
+PallyPower.LSpell = GetSpellInfo(115921) -- LoE
 
 PallyPower.Seals = {
     [0] = "",
@@ -547,7 +548,7 @@ end
 function PallyPower:GetBuffExpiration()
 	
 	local spellName = PallyPower.Spells[settings.buff]
-	local markName = PallyPower.MSpell
+	--local markName = PallyPower.MSpell
 	local classExpire, classDuration, have, need = 9999, 9999, 0, 0
 	if spellName then
 		for playerID, unit in pairs(roster) do
@@ -556,7 +557,11 @@ function PallyPower:GetBuffExpiration()
 					local _, _, _, _, _, buffDuration, buffExpire = UnitBuff(unit.unitid, spellName)
 					
 					if not buffExpire and settings.buff == 2 then -- Kings fallback to MotW
-						_, _, _, _, _, buffDuration, buffExpire = UnitBuff(unit.unitid, markName)
+						_, _, _, _, _, buffDuration, buffExpire = UnitBuff(unit.unitid, PallyPower.MSpell)
+					end
+					
+					if not buffExpire and settings.buff == 2 then -- Kings fallback to LoE
+						_, _, _, _, _, buffDuration, buffExpire = UnitBuff(unit.unitid, PallyPower.LSpell)
 					end
 					
 					if buffExpire then
