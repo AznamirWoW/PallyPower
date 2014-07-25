@@ -1,0 +1,832 @@
+PallyPower = LibStub("AceAddon-3.0"):NewAddon("PallyPower", "AceConsole-3.0", "AceEvent-3.0", "AceBucket-3.0", "AceTimer-3.0")
+
+local L    = LibStub("AceLocale-3.0"):GetLocale("PallyPower")
+local LSM3 = LibStub("LibSharedMedia-3.0")
+
+-- BINDINGs labels
+BINDING_HEADER_PALLYPOWER = "PallyPower"
+BINDING_NAME_PPBUFFCYCLE  = L["Change blessing"]
+BINDING_NAME_PPAURACYCLEP = L["Cycle to previous aura"]
+BINDING_NAME_PPAURACYCLEN = L["Cycle to next aura"]
+BINDING_NAME_PPSEALCYCLEP = L["Cycle to previous seal"]
+BINDING_NAME_PPSEALCYCLEN = L["Cycle to next seal"]
+
+local settings
+
+local tinsert = table.insert
+local twipe = table.wipe
+local sformat = string.format
+
+local isPally = false
+local timer = false
+
+-- buttons 
+local PallyPowerHeader
+local PallyPowerAuto
+local PallyPowerRF
+
+-- unit tables
+local party_units = {}
+local raid_units = {}
+local roster = {}
+
+do
+	table.insert(party_units, "player")
+
+	for i = 1, MAX_PARTY_MEMBERS do
+		table.insert(party_units, ("party%d"):format(i))
+	end
+	
+	for i = 1, MAX_RAID_MEMBERS do
+		table.insert(raid_units, ("raid%d"):format(i))
+	end
+end
+
+PallyPower.Credits1 = "Pally Power - by Aznamir (Lightbringer US)";
+
+-------------------------------------------------------------------
+-- Spell Settings
+-------------------------------------------------------------------
+
+PallyPower.Spells = {
+	[0] = "",
+	[1] = GetSpellInfo(19740), --Blessing of Might
+	[2] = GetSpellInfo(20217), --Blessing of Kings
+	[3] = "",
+};
+
+PallyPower.RFSpell = GetSpellInfo(25780) -- Righteous Fury
+PallyPower.HLSpell = GetSpellInfo(19750)	 -- flash of light
+PallyPower.MSpell = GetSpellInfo(1126) -- Mark of the Wild
+PallyPower.LSpell = GetSpellInfo(115921) -- LoE
+
+PallyPower.Seals = {
+    [0] = "",
+	[1] = GetSpellInfo(31801), -- seal of truth
+	[2] = GetSpellInfo(20154), -- seal of righteousness
+	[3] = GetSpellInfo(20164), -- seal of justice
+	[4] = GetSpellInfo(20165), -- seal of insight
+	[5] = "",
+}
+
+-------------------------------------------------------------------
+-- Interface settings
+-------------------------------------------------------------------
+PallyPower.options = 
+{
+	type = "group",
+	name = "PallyPower",
+	--handler = PallyPower,
+	icon = "Interface\Icons\Spell_Holy_SummonChampion",
+	args = {
+		desc = {
+			type = "description",
+			order = 0,
+			name = L["MOVE_DESC"],
+		},
+		buffscale = {
+			type = "range",
+			order = 1,
+			name = L["BSC"],
+			desc = L["BSC_DESC"],
+			min = 0.4,
+			max = 1.5,
+			step = 0.05,
+			get = function(info) return settings.buffscale end,
+			set = function(info, val)
+					settings.buffscale = val
+					PallyPower:UpdateLayout()
+				end,
+		},
+		reset = {
+			type = "execute",
+			order = 2,
+			name = L["RESET"],
+			desc = L["RESET_DESC"],
+			func = function() PallyPower:Reset() end,			
+		},
+		showparty = {
+			type = "toggle",
+			order = 17,
+			name = L["SHOWPARTY"],
+			desc = L["SHOWPARTY_DESC"],
+			get = function(info) return settings.display.ShowInParty end,
+			set = function(info, val)
+				settings.display.ShowInParty = val
+				--PallyPower:UpdateRoster()
+				end,
+		},
+		showsingle = {
+			type = "toggle",
+			order = 18,
+			name = L["SHOWSINGLE"],
+			desc = L["SHOWSINGLE_DESC"],
+			get = function(info) return settings.display.ShowWhenSingle end,
+			set = function(info, val)
+					settings.display.ShowWhenSingle = val
+					--PallyPower:UpdateRoster()
+				end,
+		},				
+		extras = {
+			type = "toggle",
+			order = 19,
+			name = L["IGNOREEXTRA"],
+			desc = L["IGNOREEXTRADESC"],
+			get = function(info) return settings.extras end,
+			set = function(info, val)
+					settings.extras = val
+					PallyPower:UpdateRoster()
+				end,
+		},
+		display = {
+			type = "group",
+			order = 3,
+			name = L["DISP"],
+			desc = L["DISP_DESC"],
+			args = {
+			    layout = {
+					type = "select",
+					order = 4,
+					name = L["LAYOUT"],
+					desc = L["LAYOUT_DESC"],
+					get = function(info) return settings.layout end,
+					set = function(info,val)
+						settings.layout = val
+						PallyPower:UpdateLayout()
+						end,
+					values = {
+						["Layout 1"] = L["Up"],
+						["Layout 2"] = L["Down"],
+						["Layout 3"] = L["Right"],
+						["Layout 4"] = L["Left"],
+					},
+				},
+				skin = {
+					type = "select",
+					order = 5,
+					name = L["SKIN"],
+					desc = L["SKIN_DESC"],
+					dialogControl = "LSM30_Background",
+					values = AceGUIWidgetLSMlists.background,
+					get = function(info) return settings.skin end,
+					set = function(info,val)
+						settings.skin = val
+						PallyPower:ApplySkin()
+						end,
+				},
+				edges = {
+					type = "select",
+					order = 6,
+					name = L["DISPEDGES"],
+					desc = L["DISPEDGES_DESC"],
+					dialogControl = "LSM30_Border",
+					values = AceGUIWidgetLSMlists.border,
+					get = function(info) return settings.border end,
+					set = function(info,val)
+						settings.border = val
+						PallyPower:ApplySkin()
+						end,
+				},
+				colors = {
+					type = "header",
+					order = 7,
+					name = L["Colors"],
+				},
+				color_good = {
+					type = "color",
+					order = 8,
+					name = L["Fully Buffed"],
+					get = function() return settings.cBuffGood.r, settings.cBuffGood.g, settings.cBuffGood.b, settings.cBuffGood.t end,
+					set = function (info, r, g, b, t)
+							settings.cBuffGood.r = r
+							settings.cBuffGood.g = g
+							settings.cBuffGood.b = b
+							settings.cBuffGood.t = t
+						end,
+					hasAlpha = true,
+				},
+				color_partial = {
+					type = "color",
+					order = 9,
+					name = L["Partially Buffed"],
+					get = function() return settings.cBuffNeedSome.r, settings.cBuffNeedSome.g, settings.cBuffNeedSome.b, settings.cBuffNeedSome.t end,
+					set = function (info, r, g, b, t)
+							settings.cBuffNeedSome.r = r
+							settings.cBuffNeedSome.g = g
+							settings.cBuffNeedSome.b = b
+							settings.cBuffNeedSome.t = t
+						end,
+					hasAlpha = true,
+				},
+				color_missing = {
+					type = "color",
+					order = 10,
+					name = L["None Buffed"],
+					get = function() return settings.cBuffNeedAll.r, settings.cBuffNeedAll.g, settings.cBuffNeedAll.b, settings.cBuffNeedAll.t end,
+					set = function (info, r, g, b, t)
+							settings.cBuffNeedAll.r = r
+							settings.cBuffNeedAll.g = g
+							settings.cBuffNeedAll.b = b
+							settings.cBuffNeedAll.t = t
+						end,
+					hasAlpha = true,
+				},
+				rfs = {
+					type = "group",
+					order = 11,
+					name = L["RFM"],
+					desc = L["RFM_DESC"],
+					args = {
+						rfury = {
+							type = "toggle",
+							order = 12,
+							name = L["RFUSE"],
+							desc = L["RFUSE_DESC"],
+							get = function(info) return settings.rf end,
+							set = function(info, val)
+								settings.rf = val
+								PallyPower:RFAssign(settings.rf)
+								end,
+						},
+						seal = {
+							type = "select",
+							order = 16,
+							name = L["SEAL"],
+							desc = L["SEAL_DESC"],
+							get = function(info) return settings.seal end,
+							set = function(info, val)
+								settings.seal = val
+								PallyPower:SealAssign(settings.seal)
+								end,
+							values = {
+								[0] = L["None"],
+								[1] = PallyPower.Seals[1],
+								[2] = PallyPower.Seals[2],
+								[3] = PallyPower.Seals[3],
+								[4] = PallyPower.Seals[4],
+							},
+						},
+					},
+				},
+			},      -- display args
+		}, -- main args
+	},
+}
+
+PallyPower.Layouts = {
+	["Layout 1"] = { 	
+				ab = {x = 0, y = 1},
+				rf = {x = 0, y = 2},
+	},
+	["Layout 2"] = { 	
+				ab = {x = 0, y = 0},
+		 		rf = {x = 0, y = -1},
+	},	
+	["Layout 3"] = { 	
+				ab = {x = 0, y = 0},
+		 		rf = {x = 1, y = 0},
+	},
+	["Layout 4"] = { 	
+				ab = {x = -1, y = 0},
+		 		rf = {x = -2, y = 0},
+	},	
+ }
+-------------------------------------------------------------------
+-- Default Settings
+-------------------------------------------------------------------
+PallyPower.defaults = {
+	profile = {
+		buffscale = 0.9,
+		rfbuff = true,
+		extras = false,
+		display = {
+			buttonWidth = 100,
+			buttonHeight = 34,
+			ShowInParty = true,
+			ShowWhenSingle = true,
+		},
+		border = "Blizzard Tooltip",
+		skin = "Solid",
+		cBuffNeedAll     = {r = 1.0, g = 0.0, b = 0.0, t = 0.5},
+		cBuffNeedSome    = {r = 1.0, g = 1.0, b = 0.5, t = 0.5},
+		cBuffGood        = {r = 0.0, g = 0.7, b = 0.0, t = 0.5},
+		sets = { 
+			["primary"] = {
+							seal = 1,
+							rf   = false,
+							rfbuff = true,
+							buff = 2,
+						},
+			["secondary"] = {
+							seal = 1,
+							rf   = false,
+							rfbuff = true,
+							buff = 2,
+						},
+		},
+		-- default assignments
+		seal = 1,
+		rf   = false,
+		buff = 2,
+		disabled = false,
+		layout = "Layout 1",
+	}
+}
+
+-------------------------------------------------------------------
+-- Ace Framework Events
+-------------------------------------------------------------------
+function PallyPower:OnInitialize()
+	DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99"..PallyPower.Credits1.."|r")
+	local _, class = UnitClass("player")
+	if (class == "PALADIN") then
+		isPally = true
+	else
+		isPally = false
+	end
+
+	self.db = LibStub("AceDB-3.0"):New("PallyPowerDB", PallyPower.defaults, "Default")
+	self.db.RegisterCallback(self, "OnProfileChanged", "OnProfileChanged")
+	self.db.RegisterCallback(self, "OnProfileCopied", "OnProfileChanged")
+	self.db.RegisterCallback(self, "OnProfileReset", "OnProfileChanged")	
+	
+	settings = self.db.profile
+	PallyPower.options.args.profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db)
+
+	LibStub("AceConfig-3.0"):RegisterOptionsTable("PallyPower", PallyPower.options, "pp")
+	self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("PallyPower", "PallyPower")
+	
+	--LSM3.RegisterCallback( self, "LibSharedMedia_Registered", "MediaUpdate")
+	--LSM3.RegisterCallback( self, "LibSharedMedia_SetGlobal", "MediaUpdate")
+	
+	LSM3:Register("background", "None", 			"Interface\\Tooltips\\UI-Tooltip-Background")
+	LSM3:Register("background", "Banto",			"Interface\\AddOns\\PallyPower\\Skins\\Banto")
+	LSM3:Register("background", "BantoBarReverse", 	"Interface\\AddOns\\PallyPower\\Skins\\BantoBarReverse")
+	LSM3:Register("background", "Glaze", 			"Interface\\AddOns\\PallyPower\\Skins\\Glaze")
+	LSM3:Register("background", "Gloss", 			"Interface\\AddOns\\PallyPower\\Skins\\Gloss")
+	LSM3:Register("background", "Healbot", 			"Interface\\AddOns\\PallyPower\\Skins\\Healbot")
+	LSM3:Register("background", "oCB", 				"Interface\\AddOns\\PallyPower\\Skins\\oCB")
+	LSM3:Register("background", "Smooth", 			"Interface\\AddOns\\PallyPower\\Skins\\Smooth")
+
+	self.player = UnitName("player")
+	
+	_G["BINDING_NAME_CLICK PallyPowerAutoBtn:LeftButton"]  = L["Cast selected blessing"]
+	_G["BINDING_NAME_CLICK PallyPowerAuraBtn:LeftButton"]  = L["Cast selected aura"]
+	_G["BINDING_NAME_CLICK PallyPowerAuraBtn:RightButton"] = L["Cast selected seal"]
+	
+	if settings.seal > 4 then settings.seal = 1 end
+		
+	self:CreateLayout()
+	
+	if settings.skin then
+		PallyPower:ApplySkin(settings.skin)
+ 	end
+	
+end
+
+function PallyPower:OnProfileChanged()
+	settings = self.db.profile
+	PallyPower:UpdateLayout()
+end
+
+function PallyPower:OnEnable()
+	if isPally then
+		settings.disabled = false
+		self:RegisterEvent("PLAYER_REGEN_ENABLED")
+		self:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
+		self:RegisterEvent("PET_BATTLE_OPENING_START")
+		self:RegisterEvent("PET_BATTLE_CLOSE")
+		self:RegisterBucketEvent({"GROUP_ROSTER_UPDATE", "PARTY_MEMBERS_CHANGED"}, 1, "UpdateRoster")
+		self:UpdateRoster()
+	else
+		settings.disabled = true
+	end
+end
+
+function PallyPower:OnDisable()
+	-- events
+	settings.disabled = true
+	self:UpdateLayout()
+end
+
+function PallyPower:MediaUpdate()
+
+end
+-------------------------------------------------------------------
+-- Service Functions
+-------------------------------------------------------------------
+function PallyPower:FormatTime(time)
+	if not time or time < 0 or time == 9999 then
+		return ""
+	end
+	local mins = floor(time / 60)
+	local secs = time - (mins * 60)
+	return sformat("%d:%02d", mins, secs)
+end
+
+-------------------------------------------------------------------
+-- Command Prompt Response
+-------------------------------------------------------------------
+function PallyPower:Reset()
+	local h = _G["PallyPowerFrame"]
+	h:ClearAllPoints()
+	h:SetPoint("CENTER", "UIParent", "CENTER", 0, 0)
+	self:UpdateLayout()
+end
+-------------------------------------------------------------------
+-- Internal Functions
+-------------------------------------------------------------------
+function PallyPower:GetNumUnits()
+	if IsInRaid() then
+		return GetNumGroupMembers()
+	end
+	if GetNumSubgroupMembers() > 0 and settings.display.ShowInParty or settings.display.ShowWhenSingle then
+		return GetNumSubgroupMembers() + 1
+	end
+	return 0
+end
+-------------------------------------------------------------------
+-- External Event Handling
+-------------------------------------------------------------------
+function PallyPower:PET_BATTLE_OPENING_START()
+	PallyPowerAuto:Hide()
+	PallyPowerRF:Hide()
+end
+
+function PallyPower:PET_BATTLE_CLOSE()
+	if self:GetNumUnits() > 0 and not settings.disabled and isPally then
+		PallyPowerAuto:Show()
+		PallyPowerRF:Show()
+	end
+end
+
+function PallyPower:ACTIVE_TALENT_GROUP_CHANGED()
+	local old, new
+	if isPally then
+		if  GetActiveSpecGroup() == 1 then
+			old = "secondary"
+			new = "primary"
+		else
+			old = "primary"
+			new = "secondary"
+		end
+		
+		settings.sets[old].seal   = settings.seal
+		settings.sets[old].rf     = settings.rf
+		settings.sets[old].rfbuff = settings.rfbuff
+		settings.sets[old].buff   = settings.buff
+		
+		settings.seal   = settings.sets[new].seal
+		settings.rf     = settings.sets[new].rf
+		settings.rfbuff = settings.sets[new].rfbuff
+		settings.buff   = settings.sets[new].buff
+
+		PallyPower:UpdateLayout()
+	end
+end
+
+function PallyPower:PLAYER_REGEN_ENABLED()
+	if isPally then self:UpdateLayout() end
+end
+
+function PallyPower:UpdateRoster()
+	-- stop update timer
+	if timer then
+		self:CancelTimer(self.UpdateTimer)
+		timer = false
+	end
+	
+	local units
+	local num = self:GetNumUnits()
+	local isInRaid
+	
+	local skip = settings.extras
+
+	if num > 0 then
+		num = 0
+		if not IsInRaid() then
+			isInRaid = false
+			units = party_units
+		else
+			isInRaid = true
+			units = raid_units
+		end
+	
+		twipe(roster)
+
+		for _, unitid in ipairs(units) do
+			if unitid and UnitExists(unitid) then
+				local tmp = {}
+				num = num + 1
+				tmp.unitid = unitid
+			
+				if isInRaid then
+					local n = select(3, unitid:find("(%d+)"))
+					tmp.subgroup = select(3, GetRaidRosterInfo(n))
+				else
+					tmp.subgroup = 1
+				end
+			
+				if tmp.subgroup < 6 or not skip then
+					tinsert(roster, tmp)
+				end
+			end
+		end
+	end
+	
+	PallyPower:UpdateLayout()
+
+	if num > 0 and isPally then
+		-- start update timer
+		self.UpdateTimer = self:ScheduleRepeatingTimer("ButtonsUpdate", 2)
+		timer = true
+	end
+end
+-------------------------------------------------------------------
+-- Buff Checks
+-------------------------------------------------------------------
+function PallyPower:GetBuffExpiration()
+	
+	local spellName = PallyPower.Spells[settings.buff]
+	--local markName = PallyPower.MSpell
+	local classExpire, classDuration, have, need = 9999, 9999, 0, 0
+	if spellName then
+		for playerID, unit in pairs(roster) do
+			if unit.unitid then
+				if IsSpellInRange(PallyPower.HLSpell, unit.unitid) == 1 then
+					local _, _, _, _, _, buffDuration, buffExpire = UnitBuff(unit.unitid, spellName)
+					
+					if not buffExpire and settings.buff == 2 then -- Kings fallback to MotW
+						_, _, _, _, _, buffDuration, buffExpire = UnitBuff(unit.unitid, PallyPower.MSpell)
+					end
+					
+					if not buffExpire and settings.buff == 2 then -- Kings fallback to LoE
+						_, _, _, _, _, buffDuration, buffExpire = UnitBuff(unit.unitid, PallyPower.LSpell)
+					end
+					
+					if buffExpire then
+						buffExpire = buffExpire - GetTime()
+						classExpire = min(classExpire, buffExpire)
+						classDuration = min(classDuration, buffDuration)
+						have = have + 1
+					else
+						need = need + 1
+					end
+				end
+			end
+		end
+	end
+	return classExpire, classDuration, have, need
+end
+
+function PallyPower:GetRFExpiration()
+    local spellName = PallyPower.RFSpell
+    local rfExpire = 9999
+	local _, _, _, _, _, buffDuration, buffExpire = UnitBuff("player", spellName)
+	if buffExpire then
+		rfExpire = buffExpire - GetTime()
+	end
+	return rfExpire
+end
+
+function PallyPower:GetSealExpiration()
+    local spellName = PallyPower.Seals[settings.seal]
+    local sealExpire, sealDuration = 9999, 30*60
+	
+	local form = GetShapeshiftForm();
+	
+	if form == 0 then return 9999 end
+	
+	local _, formName, _, _ = GetShapeshiftFormInfo(form)
+	
+	if spellName == formName then
+		return 1
+	else 
+		return 9999
+	end
+end
+
+-------------------------------------------------------------------
+-- Buff Assignment
+-------------------------------------------------------------------
+function PallyPower:BuffAssign(buff)
+	settings.buff = buff
+	local spellName, _, spellIcon = GetSpellInfo(PallyPower.Spells[buff])
+	local bufficon = _G["PallyPowerAutoBtnBuffIcon"]
+	bufficon:SetTexture(spellIcon)
+	PallyPowerAuto:SetAttribute("spell1", spellName)
+end
+
+function PallyPower:RFAssign(rf)
+	local spellName, _, spellIcon = GetSpellInfo(PallyPower.RFSpell)
+	local rfIcon = _G["PallyPowerRFBtnIconRF"]
+	
+	settings.rf = rf
+	
+	if rf then
+		rfIcon:SetTexture(spellIcon)
+		PallyPowerRF:SetAttribute("spell1", spellName)
+	else
+		rfIcon:SetTexture(nil)
+		PallyPowerRF:SetAttribute("spell1", nil)
+	end
+end
+
+function PallyPower:SealAssign(seal)
+	local spellName, _, spellIcon = GetSpellInfo(PallyPower.Seals[seal])
+	local sealIcon = _G["PallyPowerRFBtnIconSeal"] -- seal icon
+
+	settings.seal = seal
+
+	sealIcon:SetTexture(spellIcon)
+	PallyPowerRF:SetAttribute("spell2", spellName)
+end
+-------------------------------------------------------------------
+-- Buff Modifiers
+-------------------------------------------------------------------
+function PallyPower:PerformBuffCycle()
+	if not settings.buff then 
+		settings.buff = 1
+	end
+
+	if settings.buff == 1 then
+		settings.buff = 2
+	else
+		settings.buff = 1
+	end
+
+	PallyPower:BuffAssign(settings.buff)
+end
+
+function PallyPower:PerformRFCycle()
+	settings.rf = not settings.rf
+	PallyPower:RFAssign(settings.rf)
+end
+
+function PallyPower:PerformSealCycle()
+    if not settings.seal then
+	   	settings.seal = 0
+	end
+	
+	cur = settings.seal
+	
+	for test = cur + 1, 5 do
+	    cur = test
+	    if GetSpellInfo(PallyPower.Seals[cur]) then 
+			do break end
+		end
+	end
+	
+	if cur == 5 then 
+		cur = 0
+	end
+	PallyPower:SealAssign(cur)
+end
+
+function PallyPower:PerformSealCycleBackward()
+
+	if not settings.seal then 
+		settings.seal = 0
+	end
+	
+	cur = settings.seal
+	
+	if cur == 0 then 
+		cur = 5 
+	end
+	
+	for test=cur-1, 0, -1 do
+		cur = test
+		if GetSpellInfo(PallyPower.Seals[cur]) then
+			do break end
+		end
+	end
+	PallyPower:SealAssign(cur)
+end
+-------------------------------------------------------------------
+-- Buff UI
+-------------------------------------------------------------------
+function PallyPower:CreateLayout()
+
+	PallyPowerHeader = _G["PallyPowerFrame"]
+
+    PallyPowerAuto = CreateFrame("Button", "PallyPowerAutoBtn", PallyPowerHeader, "SecureActionButtonTemplate, PallyPowerButtonTemplate")
+	PallyPowerAuto:RegisterForClicks("LeftButtonDown")
+
+	PallyPowerRF = CreateFrame("Button", "PallyPowerRFBtn", PallyPowerHeader, "SecureActionButtonTemplate, PallyPowerRFButtonTemplate")
+	PallyPowerRF:RegisterForClicks("LeftButtonDown", "RightButtonDown")
+
+	PallyPower:UpdateLayout()
+end
+
+function PallyPower:UpdateLayout()
+	if InCombatLockdown() then return false end
+	
+	PallyPowerFrame:SetScale(settings.buffscale)
+	
+	-- custom layout
+	local x = settings.display.buttonWidth
+	local y = settings.display.buttonHeight
+	local point = "TOPLEFT"
+	local pointOpposite = "BOTTOMLEFT"
+	local layout = PallyPower.Layouts[settings.layout]
+	local ox = layout.ab.x * x
+	local oy = layout.ab.y * y
+	
+ 	PallyPowerAuto:ClearAllPoints()
+	PallyPowerAuto:SetPoint(point, PallyPowerHeader, "CENTER", ox, oy)
+	PallyPowerAuto:SetAttribute("type", "spell")
+	PallyPowerAuto:SetAttribute("unit1", "player")
+	
+	PallyPower:BuffAssign(settings.buff)
+	
+	if self:GetNumUnits() > 0 and not settings.disabled and isPally then
+		PallyPowerAuto:Show()
+	else
+		PallyPowerAuto:Hide()
+	end
+
+    ox = layout.rf.x * x
+	oy = layout.rf.y * y
+
+	PallyPowerRF:ClearAllPoints()
+	PallyPowerRF:SetPoint(point, PallyPowerHeader, "CENTER", ox, oy)
+
+	PallyPowerRF:SetAttribute("type1", "spell")
+	PallyPowerRF:SetAttribute("unit1", "player")
+	
+	PallyPowerRF:SetAttribute("type2", "spell")
+	PallyPowerRF:SetAttribute("unit2", "player")
+	
+	PallyPower:RFAssign(settings.rf)
+	PallyPower:SealAssign(settings.seal)
+
+	if self:GetNumUnits() > 0 and not settings.disabled and isPally then
+		PallyPowerRF:Show()
+	else
+		PallyPowerRF:Hide()
+	end
+	
+	self:ButtonsUpdate()
+end
+
+function PallyPower:GetSeverityColor(percent)
+	if (percent >= 0.5) then
+		return (1.0-percent)*2, 1.0, 0.0
+	else
+		return 1.0, percent*2, 0.0
+	end
+end
+
+function PallyPower:ButtonsUpdate()
+	-- roster buff check
+	local minClassExpire, minClassDuration, sumnhave, sumnneed = PallyPower:GetBuffExpiration()
+	local btime = _G["PallyPowerAutoBtnTime"]
+	local btext = _G["PallyPowerAutoBtnText"]
+	
+	if (sumnhave == 0) then
+  		PallyPower:ApplyBackdrop(PallyPowerAuto, settings.cBuffNeedAll)
+	elseif (sumnneed > 0) then
+  		self:ApplyBackdrop(PallyPowerAuto, settings.cBuffNeedSome)
+	else
+  		self:ApplyBackdrop(PallyPowerAuto, settings.cBuffGood)
+	end
+	
+	btime:SetText(PallyPower:FormatTime(minClassExpire))
+	btime:SetTextColor(PallyPower:GetSeverityColor(minClassExpire and minClassDuration and (minClassExpire/minClassDuration) or 0))
+	
+	if (sumnneed > 0) then
+		btext:SetText(sumnneed)
+	else
+		btext:SetText("")
+	end
+	
+	-- rf button /seal check
+	local expire = PallyPower:GetRFExpiration()
+	local expire2 = PallyPower:GetSealExpiration()
+	
+	if (expire == 9999 and settings.rf) and (expire2 == 9999 and settings.seal > 0) then
+		self:ApplyBackdrop(PallyPowerRF, settings.cBuffNeedAll)
+  	elseif (expire == 9999 and settings.rf) or (expire2 == 9999 and settings.seal > 0) then
+  	    self:ApplyBackdrop(PallyPowerRF, settings.cBuffNeedSome)
+	else                                               
+		self:ApplyBackdrop(PallyPowerRF, settings.cBuffGood)
+	end
+
+end
+
+function PallyPower:ApplySkin()
+	local border     = LSM3:Fetch("border", settings.border)
+	local background = LSM3:Fetch("background", settings.skin)
+	local tmp = {bgFile = background, edgeFile= border, 
+				 tile=false, tileSize = 8, edgeSize = 8, 
+				 insets = { left = 0, right = 0, top = 0, bottom = 0}
+				}
+    PallyPowerAuto:SetBackdrop(tmp)
+    PallyPowerRF:SetBackdrop(tmp)
+end
+
+-- button coloring: preset
+function PallyPower:ApplyBackdrop(button, preset)
+	button:SetBackdropColor(preset["r"], preset["g"], preset["b"], preset["t"])
+end
