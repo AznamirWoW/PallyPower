@@ -1,4 +1,4 @@
-﻿## Interface: 50200
+﻿## Interface: 50400
 ## Author: Aznamir
 ## Title: PallyPower
 ## Version: @project-version@ 
