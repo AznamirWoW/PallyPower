@@ -1,4 +1,4 @@
-﻿## Interface: 60000
+﻿## Interface: 60200
 ## Author: Aznamir
 ## Title: PallyPower
 ## Version: @project-version@ 
