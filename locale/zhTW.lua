@@ -1,5 +1,3 @@
-local L = AceLibrary("AceLocale-2.2"):new("PallyPower")
-
-L:RegisterTranslations("zhTW", function() return 
---@localization(locale="zhTW", format="lua_table", handle-unlocalized="english")@ 
-end)
+local L = LibStub("AceLocale-3.0"):NewLocale("PallyPower", "zhTW", true, false)
+if not L then return end
+--@localization(locale="zhTW", format="lua_additive_table", handle-unlocalized="english")@
