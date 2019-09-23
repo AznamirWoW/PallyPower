@@ -1,14 +1,16 @@
-﻿## Interface: 60200
-## Author: Aznamir
-## Title: PallyPower
+﻿## Interface: 11302
+## Author: Aznamir,Dyaxler
+## Title: PallyPower Classic
 ## Version: @project-version@ 
-## Notes: Personal and Raid/Party Paladin buffs
+## Notes: Raid/Party Paladin buffs.
+## Notes-esES: Buffs de Paladín para Grupo/Banda
+## Notes-zhCN: 圣骑士祝福管理
 ## DefaultState: enabled
 ## Dependencies:
-## OptionalDeps: Ace3, LibSharedMedia-3.0, SharedMedia
+## OptionalDeps: Ace3
 ## X-Category: Paladin
-## X-Embeds: Ace3, LibSharedMedia-3.0
-## SavedVariables: PallyPowerDB
+## X-Embeds: Ace3, LibClassicDurations
+## SavedVariables: PallyPowerDB, PallyPower_Assignments, PallyPower_NormalAssignments, PallyPower_AuraAssignments, PallyPower_SavedPresets
 
 #@no-lib-strip@
 embeds.xml
@@ -25,4 +27,6 @@ locale\zhCN.lua
 locale\zhTW.lua
 
 PallyPower.lua
+PallyPowerValues.lua
+PallyPowerOptions.lua
 PallyPower.xml
