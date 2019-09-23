@@ -1,3 +1,5 @@
-local L = LibStub("AceLocale-3.0"):NewLocale("PallyPower", "koKR", false, false)
-if not L then return end 
---@localization(locale="koKR", format="lua_additive_table", handle-unlocalized="english")@ 
+local L = AceLibrary("AceLocale-2.2"):new("PallyPower")
+
+L:RegisterTranslations("koKR", function() return 
+--@localization(locale="koKR", format="lua_table", handle-unlocalized="english")@ 
+end)

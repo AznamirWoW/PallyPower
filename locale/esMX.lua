@@ -1,3 +1,5 @@
-local L = LibStub("AceLocale-3.0"):NewLocale("PallyPower", "esMX", false, false)
-if not L then return end
---@localization(locale="esMX", format="lua_additive_table", handle-unlocalized="english")@ 
+local L = AceLibrary("AceLocale-2.2"):new("PallyPower")
+
+L:RegisterTranslations("esMX", function() return 
+--@localization(locale="esMX", format="lua_table", handle-unlocalized="english")@ 
+end)
