@@ -1,16 +1,15 @@
-﻿## Interface: 30300
-## Author: Aznamir
-## Title: PallyPower
+﻿## Interface: 11302
+## Author: Aznamir,Dyaxler
+## Title: PallyPower Classic
 ## Version: @project-version@ 
-## Notes: Raid/Party Paladin buffs
+## Notes: Raid/Party Paladin buffs.
 ## Notes-esES: Buffs de Paladín para Grupo/Banda
 ## Notes-zhCN: 圣骑士祝福管理
 ## DefaultState: enabled
 ## Dependencies:
-## OptionalDeps: Ace2, RosterLib, DewdropLib
+## OptionalDeps: Ace3
 ## X-Category: Paladin
-## X-Embeds: Ace2, RosterLib, DewdropLib
-## X-RelSite-Curse: 3738
+## X-Embeds: Ace3, LibClassicDurations
 ## SavedVariables: PallyPowerDB, PallyPower_Assignments, PallyPower_NormalAssignments, PallyPower_AuraAssignments, PallyPower_SavedPresets
 
 #@no-lib-strip@

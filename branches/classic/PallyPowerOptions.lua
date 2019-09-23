@@ -1,352 +1,199 @@
-local L = AceLibrary("AceLocale-2.2"):new("PallyPower");
+local L = LibStub("AceLocale-3.0"):GetLocale("PallyPower")
 
-PallyPower.options = {
+PallyPower.options =
+{
 	type = "group",
+	name = "PallyPower",
+	icon = "Interface\Icons\Spell_Holy_SummonChampion",
 	args = {
-		config = {
-		        name = L["BAS"],
-			type = "execute",
-			desc = L["BAS_DESC"],
-			func = function() PallyPowerConfig_Toggle() end,
-		},
-		report = {
-			name = L["BRPT"],
-			type = "execute",
-			desc = L["BRPT_DESC"],
-			func = function() PallyPower:Report() end,
+		desc = {
+			type = "description",
+			order = 0,
+			name = L["MOVE_DESC"],
 		},
 		buffscale = {
-			name = L["BSC"],
 			type = "range",
+			order = 1,
+			name = L["BSC"],
 			desc = L["BSC_DESC"],
 			min = 0.4,
 			max = 1.5,
 			step = 0.05,
-			get = "BuffScale",
-			set = "BuffScale",
-		},
-		configscale = {
-			name = L["CSC"],
-			type = "range",
-			desc = L["CSC_DESC"],
-			min = 0.4,
-			max = 1.5,
-			step = 0.05,
-			get = "ConfigScale",
-			set = "ConfigScale",	
+			get = function(info) return PallyPower.opt.buffscale end,
+			set = function(info, val)
+					PallyPower.opt.buffscale = val
+					PallyPower:UpdateLayout()
+				end,
 		},
 		reset = {
-			name = L["RESET"],
 			type = "execute",
+			order = 2,
+			name = L["RESET"],
 			desc = L["RESET_DESC"],
-			func = function() PallyPower:Reset() end,			
-			},
-		smartbuff = {
-			name = L["SBUFF"],
-			type = "toggle",
-			desc = L["SBUFF_DESC"],
-			get = "ToggleSmartBuffs",
-			set = "ToggleSmartBuffs",
-			map = {
-				[false]=L["DISABLED"], 
-				[true] = L["ENABLED"]
-			},
+			func = function() PallyPower:Reset() end,
 		},
-		smartpets = {
-			name = L["SPET"],
+		showparty = {
 			type = "toggle",
-			desc = L["SPET_DESC"],
-			get = "ToggleSmartPets",
-			set = "ToggleSmartPets",
-			map = {
-				[false]=L["DISABLED"], 
-				[true] = L["ENABLED"]
-			},
+			order = 17,
+			name = L["SHOWPARTY"],
+			desc = L["SHOWPARTY_DESC"],
+			get = function(info) return PallyPower.opt.display.ShowInParty end,
+			set = function(info, val)
+				PallyPower.opt.display.ShowInParty = val
+				--PallyPower:UpdateRoster()
+				end,
 		},
-  		freeassign = {
-			name = L["FREEASSIGN"],
+		showsingle = {
 			type = "toggle",
-			desc = L["FREEASSIGN_DESC"],
-			get = "ToggleFA",
-			set = "ToggleFA",
-			map = {
-				[false]=L["DISABLED"],
-				[true] = L["ENABLED"]
-			},
+			order = 18,
+			name = L["SHOWSINGLE"],
+			desc = L["SHOWSINGLE_DESC"],
+			get = function(info) return PallyPower.opt.display.ShowWhenSingle end,
+			set = function(info, val)
+					PallyPower.opt.display.ShowWhenSingle = val
+					--PallyPower:UpdateRoster()
+				end,
 		},
-
+		extras = {
+			type = "toggle",
+			order = 19,
+			name = L["IGNOREEXTRA"],
+			desc = L["IGNOREEXTRADESC"],
+			get = function(info) return PallyPower.opt.extras end,
+			set = function(info, val)
+					PallyPower.opt.extras = val
+					PallyPower:UpdateRoster()
+				end,
+		},
 		display = {
-			name = L["DISP"],
 			type = "group",
+			order = 3,
+			name = L["DISP"],
 			desc = L["DISP_DESC"],
 			args = {
 			    layout = {
+					type = "select",
+					order = 4,
 					name = L["LAYOUT"],
-					type = "text",
 					desc = L["LAYOUT_DESC"],
-					get = "layout",
-					set = "layout",
-					validate = {
-						"Standard",
-						"Layout 1",
-						"Layout 2",
-						"Layout 3",
-						"Layout 4",
-						"Layout 5",
+					get = function(info) return PallyPower.opt.layout end,
+					set = function(info,val)
+						PallyPower.opt.layout = val
+						PallyPower:UpdateLayout()
+						end,
+					values = {
+						["Layout 1"] = L["Up"],
+						["Layout 2"] = L["Down"],
+						["Layout 3"] = L["Right"],
+						["Layout 4"] = L["Left"],
 					},
 				},
 				skin = {
+					type = "select",
+					order = 5,
 					name = L["SKIN"],
-					type = "text",
 					desc = L["SKIN_DESC"],
-					get = "skinButtons",
-					set = "skinButtons",
-					validate = {
-							"None",
-							"Banto",
-							"BantoBarReverse",
-							"Glaze",
-							"Gloss",
-							"Healbot",
-							"oCB",
-							"Smooth",
-					},
-				},
-				columns = {
-					name = L["DISPCOL"],
-					type = "range",
-					desc = L["DISPCOL_DESC"],
-					min = 1,
-					max = 11,
-					step = 1,
-					get = "displayColumns",
-					set = "displayColumns",	
-				},
-				rows = {
-					name = L["DISPROWS"],
-					type = "range",
-					desc = L["DISPROWS_DESC"],
-					min = 1,
-					max = 11,
-					step = 1,
-					get = "displayRows",
-					set = "displayRows",	
-				},
-				gapping = {
-					name = L["DISPGAP"],
-					type = "range",
-					desc = L["DISPGAP_DESC"],
-					min = 0,
-					max = 5,
-					step = 1,
-					get = "displayGapping",
-					set = "displayGapping",	
+					dialogControl = "LSM30_Background",
+					values = AceGUIWidgetLSMlists.background,
+					get = function(info) return PallyPower.opt.skin end,
+					set = function(info,val)
+						PallyPower.opt.skin = val
+						PallyPower:ApplySkin()
+						end,
 				},
 				edges = {
+					type = "select",
+					order = 6,
 					name = L["DISPEDGES"],
-					type = "toggle",
 					desc = L["DISPEDGES_DESC"],
-					get = "ToggleEdges",
-					set = "ToggleEdges",
-					map = {
-						[false]= L["DISABLED"], 
-						[true] = L["ENABLED"]
-					},
+					dialogControl = "LSM30_Border",
+					values = AceGUIWidgetLSMlists.border,
+					get = function(info) return PallyPower.opt.border end,
+					set = function(info,val)
+						PallyPower.opt.border = val
+						PallyPower:ApplySkin()
+						end,
 				},
-				calign = {
-					name = L["DISPCL"],
-					type = "text",
-					desc = L["DISPCL_DESC"],
-					get = "displayAlignClassButtons",
-					set = "displayAlignClassButtons",
-					validate = {
-							"1", 
-							"3", 
-							"7", 
-							"9"},
+				colors = {
+					type = "header",
+					order = 7,
+					name = L["Colors"],
 				},
-				palign = {
-					name = L["DISPPL"],
-					type = "text",
-					desc = L["DISPCL_DESC"],
-					get = "displayAlignPlayerButtons",
-					set = "displayAlignPlayerButtons",
-					validate = {	
-							"top", 
-							"right", 
-							"bottom", 
-							"left", 
-							"compact-left", 
-							"compact-right",
-					},
+				color_good = {
+					type = "color",
+					order = 8,
+					name = L["Fully Buffed"],
+					get = function() return PallyPower.opt.cBuffGood.r, PallyPower.opt.cBuffGood.g, PallyPower.opt.cBuffGood.b, PallyPower.opt.cBuffGood.t end,
+					set = function (info, r, g, b, t)
+							PallyPower.opt.cBuffGood.r = r
+							PallyPower.opt.cBuffGood.g = g
+							PallyPower.opt.cBuffGood.b = b
+							PallyPower.opt.cBuffGood.t = t
+						end,
+					hasAlpha = true,
 				},
-				pbuttons = {
-					name = L["HIDEPB"],
-					type = "toggle",
-					desc = L["HIDEPB_DESC"],
-					get = "TogglePlayerButtons",
-					set = "TogglePlayerButtons",
-					map = {
-						[false]=L["DISABLED"], 
-						[true] = L["ENABLED"]
-					},
+				color_partial = {
+					type = "color",
+					order = 9,
+					name = L["Partially Buffed"],
+					get = function() return PallyPower.opt.cBuffNeedSome.r, PallyPower.opt.cBuffNeedSome.g, PallyPower.opt.cBuffNeedSome.b, PallyPower.opt.cBuffNeedSome.t end,
+					set = function (info, r, g, b, t)
+							PallyPower.opt.cBuffNeedSome.r = r
+							PallyPower.opt.cBuffNeedSome.g = g
+							PallyPower.opt.cBuffNeedSome.b = b
+							PallyPower.opt.cBuffNeedSome.t = t
+						end,
+					hasAlpha = true,
 				},
-				cbuttons = {
-					name = L["HIDECB"],
-					type = "toggle",
-					desc = L["HIDECB_DESC"],
-					get = "ToggleClassButtons",
-					set = "ToggleClassButtons",
-					map = {
-						[false]=L["DISABLED"],
-						[true] = L["ENABLED"]
-					},
+				color_missing = {
+					type = "color",
+					order = 10,
+					name = L["None Buffed"],
+					get = function() return PallyPower.opt.cBuffNeedAll.r, PallyPower.opt.cBuffNeedAll.g, PallyPower.opt.cBuffNeedAll.b, PallyPower.opt.cBuffNeedAll.t end,
+					set = function (info, r, g, b, t)
+							PallyPower.opt.cBuffNeedAll.r = r
+							PallyPower.opt.cBuffNeedAll.g = g
+							PallyPower.opt.cBuffNeedAll.b = b
+							PallyPower.opt.cBuffNeedAll.t = t
+						end,
+					hasAlpha = true,
 				},
-				handle = {
-					name = L["HIDEDH"],
-					type = "toggle",
-					desc = L["HIDEDH_DESC"],
-					get = "ToggleDragHandle",
-					set = "ToggleDragHandle",
-					map = {
-						[false]=L["DISABLED"], 
-						[true] = L["ENABLED"]
-					},
-				},
-				showparty = {
-					name = L["SHOWPARTY"],
-					type = "toggle",
-					desc = L["SHOWPARTY_DESC"],
-					get = "ToggleShowParty",
-					set = "ToggleShowParty",
-					map = {
-						[false]=L["DISABLED"], 
-						[true] = L["ENABLED"]
-					},
-				},
-				showsingle = {
-					name = L["SHOWSINGLE"],
-					type = "toggle",
-					desc = L["SHOWSINGLE_DESC"],
-					get = "ToggleShowSingle",
-					set = "ToggleShowSingle",
-					map = {
-						[false]=L["DISABLED"], 
-						[true] = L["ENABLED"]
-					},
-				},
-				autobuff = {
-					name = L["AUTOBUFF"],
+				rfs = {
 					type = "group",
-					desc = L["AUTOBUFF_DESC"],
+					order = 11,
+					name = L["RFM"],
+					desc = L["RFM_DESC"],
 					args = {
-						autokey1 = {
-							name = L["AUTOKEY1"],
-							desc = L["AUTOKEY1_DESC"],
-							type = "text",
-							validate = "keybinding",
-							set = function(value)
-									PallyPower:UnbindKeys()
-									PallyPower.opt.autobuff.autokey1 = value
-									PallyPower:BindKeys()
-								  end,
-							get = function() return PallyPower.opt.autobuff.autokey1 end
-						},
-						autokey2 = {
-							name = L["AUTOKEY2"],
-							desc = L["AUTOKEY2_DESC"],
-							type = "text",
-							validate = "keybinding",
-							set = function(value)
-									PallyPower:UnbindKeys()
-									PallyPower.opt.autobuff.autokey2 = value
-									PallyPower:BindKeys()
-								  end,
-							get = function() return PallyPower.opt.autobuff.autokey2 end
-						},
-						autobutton = {
-							name = L["AUTOBTN"],
+						rfury = {
 							type = "toggle",
-							desc = L["AUTOBTN_DESC"],
-							set = "ToggleAutoButton",
-							get = "ToggleAutoButton",
-							map = {
-								[false] = L["DISABLED"],
-								[true] = L["ENABLED"]
-							},
-						},
-						waitforpeople = {
-							name = L["WAIT"],
-							type = "toggle",
-							desc = L["WAIT_DESC"],
-							set = "ToggleWaitPeople",
-							get = "ToggleWaitPeople",
-							map = {
-								[false] = L["DISABLED"],
-								[true] = L["ENABLED"]
-							},
-						},
-					},
-				},
-				rfs ={
-					name = L["RFBUFF"],
-					type = "group",
-					desc = L["RFBUFF"],
-					args = {
-						rfbuff = {
-							name = L["RFBUFF"],
-							type = "toggle",
-							desc = L["RFBUFF_DESC"],
-							get = "ToggleRFButton",
-							set = "ToggleRFButton",
-							map = {
-								[false]=L["DISABLED"],
-								[true] = L["ENABLED"]
-							},
+							order = 12,
+							name = L["RFUSE"],
+							desc = L["RFUSE_DESC"],
+							get = function(info) return PallyPower.opt.rf end,
+							set = function(info, val)
+								PallyPower.opt.rf = val
+								PallyPower:RFAssign(PallyPower.opt.rf)
+								end,
 						},
 						seal = {
+							type = "select",
+							order = 16,
 							name = L["SEAL"],
-							type = "range",
 							desc = L["SEAL_DESC"],
-							get = "ToggleSeal",
-							set = "ToggleSeal",
-							min = 1,
-							max = 9,
-							step = 1,
-						},
-						rfury = {
-							name = L["RFUSE"],
-							type = "toggle",
-							desc = L["RFUSE_DESC"],
-							get = "ToggleRF",
-							set = "ToggleRF",
-							map = {
-								[false]=L["DISABLED"],
-								[true] = L["ENABLED"]
+							get = function(info) return PallyPower.opt.seal end,
+							set = function(info, val)
+								PallyPower.opt.seal = val
+								PallyPower:SealAssign(PallyPower.opt.seal)
+								end,
+							values = {
+								[0] = L["None"],
+								[1] = PallyPower.Seals[1],
+								[2] = PallyPower.Seals[2],
+								[3] = PallyPower.Seals[3],
+								[4] = PallyPower.Seals[4],
+								[5] = PallyPower.Seals[5],
 							},
 						},
-					},
-				},
-				auras = {
-					name = L["AURAS"],
-					type = "toggle",
-					desc = L["AURAS_DESC"],
-					get = "ToggleAuras",
-					set = "ToggleAuras",
-					map = {
-						[false]=L["DISABLED"],
-						[true] = L["ENABLED"]
-					},
-				},
-				extras = {
-					name = L["IGNOREEXTRA"],
-					type = "toggle",
-					desc = L["IGNOREEXTRADESC"],
-					get = "ToggleExtras",
-					set = "ToggleExtras",
-					map = {
-						[false]=L["DISABLED"],
-						[true] =L["ENABLED"]
 					},
 				},
 			},      -- display args
@@ -377,7 +224,7 @@ end
 function PallyPower:ToggleEdges(value)
 	if type(value) == "nil" then return self.opt.display.edges end
 	self.opt.display.edges = value
-	PallyPower:ApplySkin(self.opt.skin)	
+	PallyPower:ApplySkin(self.opt.skin)
 end
 
 function PallyPower:layout(value)
@@ -477,7 +324,7 @@ end
 function PallyPower:ToggleClassButtons(value)
 	if type(value) == "nil" then return self.opt.hideClassButtons end
 	self.opt.hideClassButtons = value;
-	PallyPower:UpdateLayout();	
+	PallyPower:UpdateLayout();
 end
 
 function PallyPower:ToggleAutoButton(value)
