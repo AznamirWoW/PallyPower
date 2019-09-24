@@ -3,8 +3,6 @@
 ## Title: PallyPower Classic
 ## Version: @project-version@ 
 ## Notes: Raid/Party Paladin buffs.
-## Notes-esES: Buffs de Paladín para Grupo/Banda
-## Notes-zhCN: 圣骑士祝福管理
 ## DefaultState: enabled
 ## Dependencies:
 ## OptionalDeps: Ace3
