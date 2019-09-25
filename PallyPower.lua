@@ -31,8 +31,8 @@ PP_IsPally = false
 PP_IsLineOfSight = true
 
 -- unit tables
-party_units = {}
-raid_units = {}
+local party_units = {}
+local raid_units = {}
 local leaders = {}
 local roster = {}
 
@@ -257,18 +257,6 @@ end
 function PallyPowerGrid_NormalBlessingMenu(btn, mouseBtn, pname, class)
 	if InCombatLockdown() then return false end
 	if (mouseBtn == "LeftButton") then
-		local tempoptions = {
-			type = "group",
-			args = {
-				close = {
-					name = "Close",
-					desc = "Closes the menu.",
-					order = 10,
-					type = "execute",
-					func = function() dewdrop:Close() end
-				}
-			}
-		}
 		local pre, suf
 		for pally in pairs(AllPallys) do
 			local control
@@ -286,23 +274,7 @@ function PallyPowerGrid_NormalBlessingMenu(btn, mouseBtn, pname, class)
 						blessings[tostring(index)] = sformat("%s%s%s", pre, blessing, suf)
 				end
 			end
-			tempoptions.args[pally] = {
-				name = sformat("%s%s%s", pre, pally, suf),
-				type = "text",
-				desc = pally,
-				order = 5,
-				get = function() return GetNormalBlessings(pally, class, pname) end,
-				set = function(value) if control then SetNormalBlessings(pally, class, pname, value + 0) end end,
-				validate = blessings,
-			}
 		end
-		dewdrop:Register(btn, "children",
-			function(level, value) dewdrop:FeedAceOptionsTable(tempoptions) end,
-			"dontHook", true,
-			'point', "TOPLEFT",
-			'relativePoint', "BOTTOMLEFT"
-		)
-		dewdrop:Open(btn)
 	elseif (mouseBtn == "RightButton") then
 		for pally in pairs(AllPallys) do
 			if PallyPower_NormalAssignments[pally] and PallyPower_NormalAssignments[pally][class] and PallyPower_NormalAssignments[pally][class][pname] then
@@ -530,50 +502,54 @@ end
 --
 
 function PallyPower:Report(type)
-	if self:GetNumUnits() > 0 then
-	if not type then
-		if IsInRaid() == true then
-			type = "RAID"
-		else
-			type = "PARTY"
-		end
-	end
-		if PallyPower:CheckRaidLeader(self.player) then
-			SendChatMessage(PALLYPOWER_ASSIGNMENTS1, type)
-			local list = {}
-			for name in pairs(AllPallys) do
-				local blessings
-				for i = 1, 6 do
-					list[i] = 0
-				end
-				for id = 1, PALLYPOWER_MAXCLASSES do
-					local bid = PallyPower_Assignments[name][id]
-					if bid and bid > 0 then
-						list[bid] = list[bid] + 1
-					end
-				end
-				for id = 1, 6 do
-					if (list[id] > 0) then
-						if (blessings) then
-							blessings = blessings .. ", "
-						else
-							blessings = ""
-						end
-      					local spell = PallyPower.Spells[id]
-						blessings = blessings .. spell
-					end
-				end
-				if not (blessings) then
-					blessings = "Nothing"
-				end
-				SendChatMessage(name ..": ".. blessings, type)
+	if self:GetNumUnits() > 1 then
+		if not type then
+			if IsInRaid() == true then
+				type = "RAID"
+			else
+				type = "PARTY"
 			end
-			SendChatMessage(PALLYPOWER_ASSIGNMENTS2, type)
-		else
-			self:Print(ERR_NOT_LEADER)
+			if PallyPower:CheckRaidLeader(self.player) then
+				SendChatMessage(PALLYPOWER_ASSIGNMENTS1, type)
+				local list = {}
+				for name in pairs(AllPallys) do
+					local blessings
+					for i = 1, 6 do
+						list[i] = 0
+					end
+					for id = 1, PALLYPOWER_MAXCLASSES do
+						local bid = PallyPower_Assignments[name][id]
+						if bid and bid > 0 then
+							list[bid] = list[bid] + 1
+						end
+					end
+					for id = 1, 6 do
+						if (list[id] > 0) then
+							if (blessings) then
+								blessings = blessings .. ", "
+							else
+								blessings = ""
+							end
+									local spell = PallyPower.Spells[id]
+							blessings = blessings .. spell
+						end
+					end
+					if not (blessings) then
+						blessings = "Nothing"
+					end
+					SendChatMessage(name ..": ".. blessings, type)
+				end
+				SendChatMessage(PALLYPOWER_ASSIGNMENTS2, type)
+			else
+				self:Print(ERR_NOT_LEADER)
+			end
 		end
 	else
-		self:Print(ERR_NOT_IN_RAID)
+		if type == "RAID" then
+			self:Print(ERR_NOT_IN_RAID)
+		else
+			self:Print(ERR_NOT_IN_GROUP)
+		end
 	end
 end
 
@@ -929,11 +905,13 @@ function PallyPower:SendMessage(msg)
 		end
 	end
 	C_ChatInfo.SendAddonMessage(PallyPower.commPrefix, msg, type, self.player)
+	--self:Debug("[Sent Message] prefix: "..PallyPower.commPrefix.." | msg: "..msg.." | type: "..type.." | player name: "..self.player)
 end
 
 function PallyPower:SPELLS_CHANGED()
 	self:Debug("SPELLS_CHANGED event")
 	self:ScanSpells()
+	self:UpdateLayout()
 	self:SendSelf()
 end
 
@@ -949,8 +927,11 @@ function PallyPower:PLAYER_ENTERING_WORLD()
 	--if UnitName("player") == "Dyaxler" then PP_DebugEnabled = true end
 end
 
-function PallyPower:CHAT_MSG_ADDON(prefix, message, distribution, sender)
-	--self:Debug("EVENT: CHAT_MSG_ADDON")
+function PallyPower:CHAT_MSG_ADDON(event, prefix, message, distribution, source)
+	local sender, server = string.match(source, "(.*)-(.*)")
+	if prefix == PallyPower.commPrefix then
+		--self:Debug("[EVENT: CHAT_MSG_ADDON] prefix: "..prefix.." | message: "..message.." | distribution: "..distribution.." | sender: "..sender)
+	end
 	if prefix == PallyPower.commPrefix and (distribution == "PARTY" or distribution == "RAID" or distribution == "BATTLEGROUND") then
 		if not ChatControl[sender] then
 			ChatControl[sender]={}
@@ -989,7 +970,11 @@ function PallyPower:PLAYER_REGEN_ENABLED()
 end
 
 function PallyPower:CanControl(name)
-	return (UnitIsGroupLeader(name) or UnitIsRaidOfficer() or (name==self.player) or (AllPallys[name] and AllPallys[name].freeassign == true))
+	if UnitIsGroupLeader(self.player) or UnitIsGroupAssistant(self.player) then
+		return true
+	else
+		return (name==self.player) or (AllPallys[name] and (AllPallys[name].freeassign == true))
+	end
 end
 
 function PallyPower:CheckRaidLeader(nick)
@@ -1045,7 +1030,7 @@ function PallyPower:SyncAdd(name)
 end
 
 function PallyPower:ParseMessage(sender, msg)
-    --self:Print("Received from: %s, message: %s", sender, msg)
+	self:Debug("[Parse Message] sender: "..sender.." | msg: "..msg)
 	if sender == self.player then return end
 	local leader = self:CheckRaidLeader(sender)
 	if msg == "REQ" then
@@ -1238,30 +1223,6 @@ function PallyPower:UpdateRoster()
 					leaders[tmp.name] = true
 				end
 				if tmp.subgroup < 6 or not skip then
-					--[[
-					if smartpets and isPet then
-						local pclass = select(2, UnitClass(unitid))
-						local family = UnitCreatureFamily(unitid)
-						if pclass == "WARRIOR" then -- hunter pets
-							tmp.class = pclass
-						elseif pclass == "ROGUE" then -- dk ghoul
-							tmp.class = pclass
-						elseif pclass == "MAGE" then -- water elemental, imp
-							if family == L["PET_IMP"] then
-								tmp.class = "WARLOCK"
-							else
-								tmp.class = pclass
-							end
-						elseif pclass == "PALADIN" then -- other warlock pets
-							if family == L["PET_FELHUNTER"] or family == L["PET_SUCCUBUS"] then
-								tmp.class = "WARLOCK"
-							else
-								tmp.class = "WARRIOR"
-							end
-						end
-					  --PallyPower:Print(tmp.name, tmp.class, tmp.rank, tmp.subgroup)
-					end
-					--]]
 					tinsert(roster, tmp)
 					for i = 1, PALLYPOWER_MAXCLASSES do
 						if tmp.class == self.ClassID[i] then
@@ -1532,7 +1493,7 @@ function PallyPower:UpdateLayout()
 		auraBtn:SetAttribute("type1", "spell")
 		auraBtn:SetAttribute("unit1", "player")
 		PallyPower:UpdateAuraButton(PallyPower_AuraAssignments[self.player])
-		if self:GetNumUnits() > 0 and self.opt.auras and not self.opt.disabled and PP_IsPally then
+		if self:GetNumUnits() > 0 and self.opt.auras and not self.opt.disabled and PP_IsPally and (AllPallys[self.player].AuraInfo[1] ~= nil) then
 			auraBtn:Show()
 			offset = offset - y
 		else
@@ -1605,7 +1566,7 @@ function PallyPower:UpdateLayout()
 		auraBtn:SetAttribute("type1", "spell")
 		auraBtn:SetAttribute("unit1", "player")
 		PallyPower:UpdateAuraButton(PallyPower_AuraAssignments[self.player])
-		if self:GetNumUnits() > 0 and self.opt.auras and not self.opt.disabled and PP_IsPally then
+		if self:GetNumUnits() > 0 and self.opt.auras and not self.opt.disabled and PP_IsPally and (AllPallys[self.player].AuraInfo[1] ~= nil) then
 			auraBtn:Show()
 		else
 			auraBtn:Hide()
@@ -2481,8 +2442,16 @@ function PallyPower:AutoAssignBlessings()
 	if pc == 0 then return end
 	if pc > 4 then pc = 4 end
 	for name in pairs(AllPallys) do
-		pallycount = pallycount + 1
 		local wisdom, might, kings, salv, light, sanct = PallyPower:CalcSkillRanks1(name)
+		if AllPallys[name][1] == nil then
+			if (name==self.player) then
+				DEFAULT_CHAT_FRAME:AddMessage(L["BUFAA_PLAYER"],1,0,0);
+			else
+				DEFAULT_CHAT_FRAME:AddMessage(L["BUFAA_GROUP"],1,0,0);
+			end
+			return
+		end
+		pallycount = pallycount + 1
 		if wisdom then
 			tinsert(WisdomPallys, {pallyname = name, skill = wisdom})
 		end
@@ -2648,7 +2617,7 @@ function PallyPower:PerformAuraCycleBackwards(name, skipzero)
 end
 
 function PallyPower:IsAuraActive(aura)
-    local bFound = false
+  local bFound = false
 	local bSelfCast = false
 	if ( aura and aura > 0 ) then
 		local spell = PallyPower.Auras[aura]
