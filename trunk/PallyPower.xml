@@ -658,6 +658,24 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				  </Anchor>
 			  </Anchors>
 		  </Button>
+		  <Button name="$parentPlayerButton9" inherits="PlayerButtonTemplate">
+			  <Anchors>
+				  <Anchor point="TOPLEFT">
+					  <Offset>
+						  <AbsDimension x="3" y="-158" /> 
+					  </Offset>
+				  </Anchor>
+			  </Anchors>
+		  </Button>
+		  <Button name="$parentPlayerButton10" inherits="PlayerButtonTemplate">
+			  <Anchors>
+				  <Anchor point="TOPLEFT">
+					  <Offset>
+						  <AbsDimension x="3" y="-171" /> 
+					  </Offset>
+				  </Anchor>
+			  </Anchors>
+		  </Button>
 	  </Frames>
   </Frame>
 
@@ -1634,6 +1652,16 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 		  <Frame name="$parentPlayer8" inherits="UserTemplate">
 			  <Anchors>
 				  <Anchor point="TOPLEFT" relativeTo="$parentPlayer7" relativePoint="BOTTOMLEFT" /> 
+			  </Anchors>
+		  </Frame>
+		  <Frame name="$parentPlayer9" inherits="UserTemplate">
+			  <Anchors>
+				  <Anchor point="TOPLEFT" relativeTo="$parentPlayer8" relativePoint="BOTTOMLEFT" /> 
+			  </Anchors>
+		  </Frame>
+		  <Frame name="$parentPlayer10" inherits="UserTemplate">
+			  <Anchors>
+				  <Anchor point="TOPLEFT" relativeTo="$parentPlayer9" relativePoint="BOTTOMLEFT" /> 
 			  </Anchors>
 		  </Frame>
 	  </Frames>
