@@ -104,9 +104,8 @@ function PallyPower:OnEnable()
 	self:RegisterEvent("CHAT_MSG_ADDON")
 	self:RegisterEvent("CHAT_MSG_SYSTEM")
 	self:RegisterEvent("UI_ERROR_MESSAGE")
-	self:RegisterEvent("PLAYER_REGEN_ENABLED")
 	self:RegisterBucketEvent("SPELLS_CHANGED", 1, "SPELLS_CHANGED")
-	self:RegisterBucketEvent({"GROUP_ROSTER_UPDATE", "UNIT_OTHER_PARTY_CHANGED", "UNIT_PET"}, 1, "UpdateRoster")
+	self:RegisterBucketEvent({"GROUP_ROSTER_UPDATE", "PLAYER_REGEN_ENABLED", "UNIT_PET"}, 1, "UpdateRoster")
 	self:ScheduleRepeatingTimer(self.InventoryScan, 60, self)
 	self:UpdateRoster()
 	self:BindKeys()
@@ -298,8 +297,7 @@ function PallyPowerPlayerButton_OnMouseWheel(btn, arg1)
 	local _, _, class, pnum = sfind(btn:GetName(), "PallyPowerConfigFrameClassGroup(.+)PlayerButton(.+)")
 	local pname = getglobal("PallyPowerConfigFrameClassGroup"..class.."PlayerButton"..pnum.."Text"):GetText()
 	class = tonumber(class)
-
-	PallyPower:PerformPlayerCycle(arg1, pname, class)
+	PallyPower:PerformPlayerCycle(self, arg1, pname, class)
 end
 
 function PallyPowerGridButton_OnClick(btn, mouseBtn)
@@ -504,7 +502,7 @@ end
 function PallyPower:Report(type)
 	if self:GetNumUnits() > 1 then
 		if not type then
-			if IsInRaid() == true then
+			if IsInRaid() then
 				type = "RAID"
 			else
 				type = "PARTY"
@@ -530,7 +528,7 @@ function PallyPower:Report(type)
 							else
 								blessings = ""
 							end
-									local spell = PallyPower.Spells[id]
+							local spell = PallyPower.Spells[id]
 							blessings = blessings .. spell
 						end
 					end
@@ -807,7 +805,6 @@ end
 function PallyPower:ScanInventory()
 	self:Debug("Scan Inventory -- begin")
 	if not PP_IsPally then return end
-
 	PP_Symbols = GetItemCount(21177)
 	AllPallys[self.player].symbols = PP_Symbols
 	self:Debug("Scan Inventory -- end")
@@ -898,7 +895,7 @@ function PallyPower:SendMessage(msg)
 	if inInstance and instanceType == "pvp" then
 		type = "BATTLEGROUND"
 	else
-		if IsInRaid() == false then
+		if IsInGroup() then
 			type = "PARTY"
 		else
 			type = "RAID"

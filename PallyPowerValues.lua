@@ -77,7 +77,7 @@ PALLYPOWER_DEFAULT_VALUES = {
 		}
 	}
 
-PallyPower_Credits1 = "PallyPower Classic";
+PallyPower_Credits1 = "Pally Power Classic";
 PallyPower_Credits2 = "Originally written by Aznamir";
 PallyPower_Credits3 = "Updated for Classic by Dyaxler";
 
@@ -157,8 +157,9 @@ PallyPower.AuraIcons = {
 PALLYPOWER_CLEAR = L["PP_CLEAR"];
 PALLYPOWER_REFRESH = L["PP_REFRESH"];
 PALLYPOWER_OPTIONS = L["PP_OPTIONS"];
-PALLYPOWER_AUTOASSIGN = L["AUTOASSIGN"]
-PALLYPOWER_FREEASSIGN = L["FREEASSIGN"]
+PALLYPOWER_AUTOASSIGN = L["AUTOASSIGN"];
+PALLYPOWER_REPORT	= L["BRPT"];
+PALLYPOWER_FREEASSIGN = L["FREEASSIGN"];
 
 PALLYPOWER_ASSIGNMENTS1 = L["PP_RAS1"];
 PALLYPOWER_ASSIGNMENTS2 = L["PP_RAS2"];
