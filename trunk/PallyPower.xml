@@ -1501,6 +1501,23 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				  </OnClick> 
 			  </Scripts>
 		  </Button>
+		  <Button name="$parentReport" inherits="GameMenuButtonTemplate" text="PALLYPOWER_REPORT" hidden="false">
+			  <Size>
+				  <AbsDimension x="120" y="20" /> 
+			  </Size>
+			  <Anchors>
+				  <Anchor point="BOTTOMRIGHT" relativeTo="$parentAutoAssign" relativePoint="BOTTOMLEFT">
+					  <Offset>
+						  <AbsDimension x="-7" y="0" /> 
+					  </Offset>
+				  </Anchor>
+			  </Anchors>
+			  <Scripts>
+				  <OnClick>
+					  PallyPower:Report();
+				  </OnClick> 
+			  </Scripts>
+		  </Button>
 		  <CheckButton name="$parentFreeAssign" inherits="OptionsCheckButtonTemplate">
 			  <Anchors>
 				  <Anchor point="BOTTOMLEFT">
