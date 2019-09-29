@@ -104,30 +104,15 @@ function PallyPower:OnEnable()
 	self:RegisterEvent("CHAT_MSG_ADDON")
 	self:RegisterEvent("CHAT_MSG_SYSTEM")
 	self:RegisterEvent("UI_ERROR_MESSAGE")
+	self:RegisterEvent("ZONE_CHANGED")
+	self:RegisterEvent("ZONE_CHANGED_INDOORS")
+	self:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 	self:RegisterBucketEvent("SPELLS_CHANGED", 1, "SPELLS_CHANGED")
 	self:RegisterBucketEvent({"GROUP_ROSTER_UPDATE", "PLAYER_REGEN_ENABLED", "UNIT_PET"}, 1, "UpdateRoster")
 	self:ScheduleRepeatingTimer(self.InventoryScan, 60, self)
 	self:UpdateRoster()
 	self:BindKeys()
 end
-
-hooksecurefunc("CompactUnitFrame_UtilSetBuff", function(buffFrame, unit, index, filter)
-    local name, _, _, _, duration, expirationTime, unitCaster, _, _, spellId = UnitBuff(unit, index, filter);
-
-    local durationNew, expirationTimeNew = LibClassicDurations:GetAuraDurationByUnit(unit, spellId, unitCaster, name)
-    if duration == 0 and durationNew then
-        duration = durationNew
-        expirationTime = expirationTimeNew
-    end
-
-    local enabled = expirationTime and expirationTime ~= 0;
-    if enabled then
-        local startTime = expirationTime - duration;
-        CooldownFrame_Set(buffFrame.cooldown, startTime, duration, true);
-    else
-        CooldownFrame_Clear(buffFrame.cooldown);
-    end
-end)
 
 function PallyPower:BindKeys()
 	-- First unbind stuff because clearing one removes both.
@@ -710,8 +695,8 @@ function PallyPower:NeedsBuff(class, test, playerName)
 		if (class == 1 or class == 2) and test == 1 then
 			return false
 		end
-		-- no might for casters
-		if (class == 3 or class == 7 or class == 8) and test == 2 then
+		-- no might for casters and hunters
+		if (class == 3 or class == 6 or class == 7 or class == 8) and test == 2 then
 			return false
 		end
 	end
@@ -737,7 +722,7 @@ function PallyPower:NeedsBuff(class, test, playerName)
 end
 
 function PallyPower:ScanSpells()
-	self:Debug("Scan Spells -- begin")
+	self:Debug("ScanSpells()")
 	local _, class=UnitClass("player")
 	if (class == "PALADIN") then
 		local RankInfo = {}
@@ -799,26 +784,24 @@ function PallyPower:ScanSpells()
 		PP_IsPally = false
 	end
 	initalized=true
-	self:Debug("Scan Spells -- end")
 end
 
 function PallyPower:ScanInventory()
-	self:Debug("Scan Inventory -- begin")
+	self:Debug("ScanInventory()")
 	if not PP_IsPally then return end
 	PP_Symbols = GetItemCount(21177)
 	AllPallys[self.player].symbols = PP_Symbols
-	self:Debug("Scan Inventory -- end")
 end
 
 function PallyPower:InventoryScan()
-	self:ScanInventory()
-	if self:GetNumUnits() > 0 and PP_IsPally then
+	if self:GetNumUnits() > 1 and PP_IsPally then
+		self:ScanInventory()
 		self:SendMessage("SYMCOUNT " .. PP_Symbols)
 	end
 end
 
 function PallyPower:SendSelf()
-	self:Debug("Send self -- begin")
+	self:Debug("SendSelf()")
 	if not initalized then PallyPower:ScanSpells() end
 	if not AllPallys[self.player] then return end
   --local name = UnitName("player")
@@ -885,11 +868,10 @@ function PallyPower:SendSelf()
 	else
 		self:SendMessage("FREEASSIGN NO")
 	end
-	self:Debug("Send self -- end")
 end
 
 function PallyPower:SendMessage(msg)
-	self:Debug("Sending message")
+	self:Debug("SendMessage("..msg..")")
 	local type
 	local inInstance, instanceType = IsInInstance()
 	if inInstance and instanceType == "pvp" then
@@ -906,7 +888,7 @@ function PallyPower:SendMessage(msg)
 end
 
 function PallyPower:SPELLS_CHANGED()
-	self:Debug("SPELLS_CHANGED event")
+	self:Debug("EVENT: SPELLS_CHANGED")
 	self:ScanSpells()
 	self:UpdateLayout()
 	self:SendSelf()
@@ -921,7 +903,7 @@ end
 
 function PallyPower:PLAYER_ENTERING_WORLD()
 	self:Debug("EVENT: PLAYER_ENTERING_WORLD")
-	--if UnitName("player") == "Dyaxler" then PP_DebugEnabled = true end
+	if UnitName("player") == "Dyaxler" then PP_DebugEnabled = true end
 end
 
 function PallyPower:CHAT_MSG_ADDON(event, prefix, message, distribution, source)
@@ -945,25 +927,41 @@ function PallyPower:CHAT_MSG_ADDON(event, prefix, message, distribution, source)
 	end
 end
 
-function PallyPower:CHAT_MSG_SYSTEM()
-	self:Debug("EVENT: CHAT_MSG_SYSTEM")
-	if arg1 then
-		if sfind(arg1, ERR_RAID_YOU_JOINED) then
+function PallyPower:CHAT_MSG_SYSTEM(event, text)
+	if text then
+		if sfind(text, ERR_RAID_YOU_JOINED) then
 			self:SendSelf()
 			self:SendMessage("REQ")
-		elseif sfind(arg1, ERR_RAID_YOU_LEFT) or sfind(arg1, ERR_LEFT_GROUP_YOU) or sfind(arg1, ERR_GROUP_DISBANDED) then
+			self:Debug("EVENT: CHAT_MSG_SYSTEM")
+		elseif sfind(text, ERR_RAID_YOU_LEFT) or sfind(text, ERR_LEFT_GROUP_YOU) or sfind(text, ERR_GROUP_DISBANDED) then
 			AllPallys = {}
 			SyncList = {}
 			PallyPower:ScanSpells()
 			PallyPower:ScanInventory()
-			PallyPower:UpdateLayout()
+			self:Debug("EVENT: CHAT_MSG_SYSTEM")
 		end
 	end
+end
+
+function PallyPower:GROUP_ROSTER_UPDATE()
+	self:Debug("EVENT: GROUP_ROSTER_UPDATE")
 end
 
 function PallyPower:PLAYER_REGEN_ENABLED()
 	self:Debug("EVENT: PLAYER_REGEN_ENABLED")
 	if PP_IsPally then self:UpdateLayout() end
+end
+
+function PallyPower:ZONE_CHANGED()
+	self:Debug("EVENT: ZONE_CHANGED")
+end
+
+function PallyPower:ZONE_CHANGED_INDOORS()
+	self:Debug("EVENT: ZONE_CHANGED_INDOORS")
+end
+
+function PallyPower:ZONE_CHANGED_NEW_AREA()
+	self:Debug("EVENT: ZONE_CHANGED_NEW_AREA")
 end
 
 function PallyPower:CanControl(name)
@@ -1027,7 +1025,7 @@ function PallyPower:SyncAdd(name)
 end
 
 function PallyPower:ParseMessage(sender, msg)
-	self:Debug("[Parse Message] sender: "..sender.." | msg: "..msg)
+	--self:Debug("[Parse Message] sender: "..sender.." | msg: "..msg)
 	if sender == self.player then return end
 	local leader = self:CheckRaidLeader(sender)
 	if msg == "REQ" then
@@ -1173,7 +1171,7 @@ end
 
 function PallyPower:UpdateRoster()
 	-- unregister events
-	self:Debug("Update Roster")
+	self:Debug("UpdateRoster()")
 	self:CancelTimer(self.InventoryScan)
 	local units
 	local num = self:GetNumUnits()
@@ -1240,7 +1238,6 @@ function PallyPower:UpdateRoster()
 		--register events
 		self:ScheduleRepeatingTimer(self.ButtonsUpdate, 2.0, self)
 	end
-	self:Debug("Update Roster - end")
 end
 
 function PallyPower:ScanClass(classID)
@@ -1261,7 +1258,7 @@ function PallyPower:ScanClass(classID)
 end
 
 function PallyPower:CreateLayout()
-	self:Debug("Create Layout -- begin")
+	self:Debug("CreateLayout()")
 	local p = _G["PallyPowerFrame"]
 	self.Header = p
   self.autoButton = CreateFrame("Button", "PallyPowerAuto", self.Header, "SecureHandlerShowHideTemplate, SecureHandlerEnterLeaveTemplate, SecureHandlerStateTemplate, SecureActionButtonTemplate, PallyPowerAutoButtonTemplate")
@@ -1360,7 +1357,6 @@ function PallyPower:CreateLayout()
 		end
 	end
 	self:UpdateLayout()
-	self:Debug("Create Layout -- end")
 end
 
 function PallyPower:CountClasses()
@@ -1375,7 +1371,7 @@ function PallyPower:CountClasses()
 end
 
 function PallyPower:UpdateLayout()
-	self:Debug("Update Layout -- begin")
+	self:Debug("UpdateLayout()")
 	if InCombatLockdown() then return false end
 	PallyPowerFrame:SetScale(self.opt.buffscale)
 	if self.opt.layout == "Standard" then
@@ -1670,7 +1666,6 @@ function PallyPower:UpdateLayout()
 	end
 	self:ButtonsUpdate()
 	self:UpdateAnchor(displayedButtons)
-	self:Debug("Update Layout -- end")
 end
 
 function PallyPower:SetButton(baseName)
@@ -2114,9 +2109,6 @@ end
 
 -- Lock & Unlock the frame on left click, and toggle config dialog with right click
 function PallyPower:ClickHandle(button, mousebutton)
-	if mousebutton then
-		self:Debug("mousebutton "..mousebutton)
-	end
 	local function RelockActionBars()
 		self.opt.display.frameLocked = true
 		if (self.opt.display.LockBuffBars) then
@@ -2125,6 +2117,8 @@ function PallyPower:ClickHandle(button, mousebutton)
 		_G["PallyPowerAnchor"]:SetChecked(true)
 	end
 	if (mousebutton == "RightButton") then
+		PallyPower:ScanSpells()
+		PallyPower:ScanInventory()
 		PallyPowerConfig_Toggle()
 		button:SetChecked(self.opt.display.frameLocked)
 	elseif (mousebutton == "LeftButton") then
