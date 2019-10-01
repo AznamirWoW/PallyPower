@@ -504,9 +504,9 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
   </Button>
 
   <Button name="PlayerButtonTemplate" hidden="false" virtual="true" movable="false">
-	<Size>
-		<AbsDimension x="84" y="13" /> 
-	</Size>
+		<Size>
+			<AbsDimension x="84" y="13" /> 
+		</Size>
 	  <Layers>
 	  <Layer level="OVERLAY">
 		  <FontString name="$parentText" inherits="GameFontHighlightSmall" text="PlayerButton" justifyH="LEFT">
