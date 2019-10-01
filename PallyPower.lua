@@ -24,11 +24,9 @@ SyncList = {}
 ChatControl = {}
 
 local initalized = false
-PP_IsLineOfSight = true
 PP_DebugEnabled = false
 PP_Symbols = 0
 PP_IsPally = false
-PP_IsLineOfSight = true
 
 -- unit tables
 local party_units = {}
@@ -103,13 +101,12 @@ function PallyPower:OnEnable()
 	self:RegisterEvent("PLAYER_ENTERING_WORLD")
 	self:RegisterEvent("CHAT_MSG_ADDON")
 	self:RegisterEvent("CHAT_MSG_SYSTEM")
-	self:RegisterEvent("UI_ERROR_MESSAGE")
-	self:RegisterEvent("ZONE_CHANGED")
-	self:RegisterEvent("ZONE_CHANGED_INDOORS")
-	self:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 	self:RegisterBucketEvent("SPELLS_CHANGED", 1, "SPELLS_CHANGED")
 	self:RegisterBucketEvent({"GROUP_ROSTER_UPDATE", "PLAYER_REGEN_ENABLED", "UNIT_PET"}, 1, "UpdateRoster")
-	self:ScheduleRepeatingTimer(self.InventoryScan, 60, self)
+	if PP_IsPally then
+		self:ScheduleRepeatingTimer(self.InventoryScan, 60, self)
+		self:ScheduleRepeatingTimer(self.ButtonsUpdate, 1, self)
+	end
 	self:UpdateRoster()
 	self:BindKeys()
 end
@@ -487,7 +484,7 @@ end
 function PallyPower:Report(type)
 	if self:GetNumUnits() > 1 then
 		if not type then
-			if IsInRaid() then
+			if (IsInRaid() == true) then
 				type = "RAID"
 			else
 				type = "PARTY"
@@ -726,7 +723,7 @@ function PallyPower:ScanSpells()
 	local _, class=UnitClass("player")
 	if (class == "PALADIN") then
 		local RankInfo = {}
-		for i = 1, 7 do -- find max spell ranks
+		for i = 1, 6 do -- find max spell ranks
 			local spellName = GetSpellInfo(PallyPower.GSpells[i])
 			local spellRank = GetSpellSubtext(GetSpellInfo(PallyPower.GSpells[i]))
 			if not spellName then -- fallback to lower blessings
@@ -877,10 +874,10 @@ function PallyPower:SendMessage(msg)
 	if inInstance and instanceType == "pvp" then
 		type = "BATTLEGROUND"
 	else
-		if IsInGroup() then
-			type = "PARTY"
-		else
+		if (IsInRaid() == true) then
 			type = "RAID"
+		else
+			type = "PARTY"
 		end
 	end
 	C_ChatInfo.SendAddonMessage(PallyPower.commPrefix, msg, type, self.player)
@@ -894,13 +891,6 @@ function PallyPower:SPELLS_CHANGED()
 	self:SendSelf()
 end
 
-function PallyPower:UI_ERROR_MESSAGE(event, error_message)
-	if error_message == 50 then
-		self:Debug("EVENT: Failed Line of Sight")
-		PP_IsLineOfSight = false
-	end
-end
-
 function PallyPower:PLAYER_ENTERING_WORLD()
 	self:Debug("EVENT: PLAYER_ENTERING_WORLD")
 	if UnitName("player") == "Dyaxler" then PP_DebugEnabled = true end
@@ -912,6 +902,7 @@ function PallyPower:CHAT_MSG_ADDON(event, prefix, message, distribution, source)
 		--self:Debug("[EVENT: CHAT_MSG_ADDON] prefix: "..prefix.." | message: "..message.." | distribution: "..distribution.." | sender: "..sender)
 	end
 	if prefix == PallyPower.commPrefix and (distribution == "PARTY" or distribution == "RAID" or distribution == "BATTLEGROUND") then
+		--[[
 		if not ChatControl[sender] then
 			ChatControl[sender]={}
 			ChatControl[sender].time=0
@@ -923,6 +914,7 @@ function PallyPower:CHAT_MSG_ADDON(event, prefix, message, distribution, source)
 				ChatControl[sender].time = GetTime()
 			end
 		end
+		--]]
 		self:ParseMessage(sender, message)
 	end
 end
@@ -950,18 +942,6 @@ end
 function PallyPower:PLAYER_REGEN_ENABLED()
 	self:Debug("EVENT: PLAYER_REGEN_ENABLED")
 	if PP_IsPally then self:UpdateLayout() end
-end
-
-function PallyPower:ZONE_CHANGED()
-	self:Debug("EVENT: ZONE_CHANGED")
-end
-
-function PallyPower:ZONE_CHANGED_INDOORS()
-	self:Debug("EVENT: ZONE_CHANGED_INDOORS")
-end
-
-function PallyPower:ZONE_CHANGED_NEW_AREA()
-	self:Debug("EVENT: ZONE_CHANGED_NEW_AREA")
 end
 
 function PallyPower:CanControl(name)
@@ -1170,7 +1150,6 @@ function PallyPower:GetNumUnits()
 end
 
 function PallyPower:UpdateRoster()
-	-- unregister events
 	self:Debug("UpdateRoster()")
 	self:CancelTimer(self.InventoryScan)
 	local units
@@ -1194,7 +1173,6 @@ function PallyPower:UpdateRoster()
 		twipe(roster)
 		twipe(leaders)
 		for _, unitid in ipairs(units) do
-			--PallyPower:Print(unitid)
 			if unitid and UnitExists(unitid) then
 				local tmp = {}
 				num = num + 1
@@ -1234,14 +1212,15 @@ function PallyPower:UpdateRoster()
 		end
 	end
 	self:UpdateLayout()
+	--[[
 	if num > 0 and PP_IsPally then
 		--register events
-		self:ScheduleRepeatingTimer(self.ButtonsUpdate, 2.0, self)
+		self:ScheduleRepeatingTimer(self.ButtonsUpdate, 4, self)
 	end
+	--]]
 end
 
 function PallyPower:ScanClass(classID)
-	--self:Print("Scanning class: %s -- begin", classID)
 	local class = classes[classID]
 	for playerID, unit in pairs(class) do
 		if unit.unitid then
@@ -1918,10 +1897,10 @@ function PallyPower:UpdatePButton(button, baseName, classID, playerID)
 		rng:SetAlpha(0)
 		dead:SetAlpha(0)
 	end
-	--    self:Print("Update PopupButton -- end")
 end
 
 function PallyPower:ButtonsUpdate()
+	--self:Debug("ButtonsUpdate()")
 	local minClassExpire, minClassDuration, minSpecialExpire, minSpecialDuration, sumnhave, sumnneed, sumnspecial = 9999, 9999, 9999, 9999, 0, 0, 0
 	for cbNum = 1, PALLYPOWER_MAXCLASSES do -- scan classes and if populated then assign textures, etc
 		local cButton = self.classButtons[cbNum]
@@ -2117,6 +2096,10 @@ function PallyPower:ClickHandle(button, mousebutton)
 		_G["PallyPowerAnchor"]:SetChecked(true)
 	end
 	if (mousebutton == "RightButton") then
+		if self:GetNumUnits() > 1 and PP_IsPally then
+			PallyPower:SendSelf()
+			PallyPower:SendMessage("REQ")
+		end
 		PallyPower:ScanSpells()
 		PallyPower:ScanInventory()
 		PallyPowerConfig_Toggle()
@@ -2173,7 +2156,7 @@ function PallyPower:AutoBuff(mousebutton)
 					local spell2 = PallyPower.GSpells[spellid]
 					local gspell = PallyPower.GSpells[gspellid]
 					if (spellid == gspellid and unit.unitid) then
-						if (IsSpellInRange(spell, unit.unitid) == 1 and PP_IsLineOfSight == true) then
+						if (IsSpellInRange(spell, unit.unitid) == 1) then
 							local penalty = 0
 							if (self.AutoBuffedList[unit.name] and now - self.AutoBuffedList[unit.name] < 20) then
 								penalty = PALLYPOWER_GREATERBLESSINGDURATION / 2
@@ -2211,7 +2194,6 @@ function PallyPower:AutoBuff(mousebutton)
 			self.AutoBuffedList[minUnit.name] = now
 			self.PreviousAutoBuffedUnit = minUnit
 		end
-		PP_IsLineOfSight = true
 	else
 		local minExpire, minUnit, minSpell = 9999, nil, nil
 		for _, unit in ipairs(roster) do
@@ -2219,7 +2201,7 @@ function PallyPower:AutoBuff(mousebutton)
 			local spell = PallyPower.Spells[spellID]
 			local spell2 = PallyPower.GSpells[spellID]
 			local gspell = PallyPower.GSpells[gspellID]
-			if (IsSpellInRange(spell, unit.unitid) == 1 and PP_IsLineOfSight == true) then
+			if (IsSpellInRange(spell, unit.unitid) == 1) then
 				local penalty = 0
 				if (self.AutoBuffedList[unit.name] and now - self.AutoBuffedList[unit.name] < 20) then
 					penalty = PALLYPOWER_NORMALBLESSINGDURATION / 2
@@ -2242,7 +2224,6 @@ function PallyPower:AutoBuff(mousebutton)
 			self.AutoBuffedList[minUnit.name] = now
 			self.PreviousAutoBuffedUnit = minUnit
 		end
-		PP_IsLineOfSight = true
 	end
 end
 
