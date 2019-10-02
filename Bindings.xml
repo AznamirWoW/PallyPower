@@ -1,20 +1,8 @@
 <Bindings>
-	<Binding name="CLICK PallyPowerAutoBtn:LeftButton" header="PALLYPOWER" />
-	<Binding name="PPBUFFCYCLE">
-		PallyPower:PerformBuffCycle()
+	<Binding name="AUTOKEY1" category="PALLYPOWER_NAME">
+		PallyPower:AutoBuff(self, "Hotkey1");
 	</Binding>
-	<Binding name="CLICK PallyPowerAuraBtn:LeftButton"/>
-	<Binding name="PPAURACYCLEP">
-		PallyPower:PerformAuraCycleBackward()
-	</Binding>
-	<Binding name="PPAURACYCLEN">
-		PallyPower:PerformAuraCycle()
-	</Binding>
-	<Binding name="CLICK PallyPowerAuraBtn:RightButton"/>
-	<Binding name="PPSEALCYCLEP">
-		PallyPower:PerformSealCycleBackward()
-	</Binding>
-	<Binding name="PPSEALCYCLEN">
-		PallyPower:PerformSealCycle()
+	<Binding name="AUTOKEY2" category="PALLYPOWER_NAME">
+		PallyPower:AutoBuff(self, "Hotkey2");
 	</Binding>
 </Bindings>

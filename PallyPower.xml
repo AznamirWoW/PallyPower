@@ -409,6 +409,39 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 	  </Scripts>
   </Button>
 
+	<Frame name="PallyPowerScalingFrame" hidden="true">
+		<Scripts>
+			<OnUpdate>
+				PallyPower_ScalingFrame_Update(self, elapsed)
+			</OnUpdate>
+		</Scripts>
+	</Frame>
+
+	<Button name="PallyPowerResizeTemplate" virtual="true">
+		<Size>
+			<AbsDimension x="16" y="16"/>
+		</Size>
+		<Scripts>
+			<OnMouseDown>
+				PallyPower_StartScaling(self, button)
+			</OnMouseDown>
+			<OnMouseUp>
+				PallyPower_StopScaling(self, button)
+			</OnMouseUp>
+			<OnEnter>
+				GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+				GameTooltip:SetText(PallyPower.CONFIG_RESIZEGRIP);
+				GameTooltip:Show(self, motion);
+				CursorUpdate(self, motion);
+			</OnEnter>
+			<OnLeave>
+				GameTooltip:Hide(self, motion);
+			</OnLeave>
+		</Scripts>
+		<NormalTexture file="Interface\AddOns\PallyPower\Icons\ResizeGrip" />
+		<HighlightTexture file="Interface\AddOns\PallyPower\Icons\ResizeGrip" alphaMode="ADD" />
+	</Button>
+
   <Frame name="PallyPowerFrame" movable="true" frameStrata="LOW" enableMouse="true" parent="UIParent" hidden="false">
 	  <Size>
 		  <AbsDimension x="1" y="1" />
@@ -1225,96 +1258,96 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
       </Layer>
     </Layers>
     <Frames>
-    <Button name="$parentAura1" inherits="AuraGridButtonTemplate">
-      <Anchors>
-        <Anchor point="TOPLEFT">
-          <Offset>
-            <AbsDimension x="130" y="0" />
-          </Offset>
-        </Anchor>
-      </Anchors>
-    </Button>
-    <Button name="$parentClass1" inherits="BuffGridButtonTemplate">
-      <Anchors>
-        <Anchor point="TOPLEFT" relativeTo="$parentAura1" relativePoint="TOPRIGHT">
-          <Offset>
-            <AbsDimension x="2" y="0" />
-          </Offset>
-        </Anchor>
-      </Anchors>
-    </Button>
-    <Button name="$parentClass2" inherits="BuffGridButtonTemplate">
-		  <Anchors>
-			  <Anchor point="TOPLEFT" relativeTo="$parentClass1" relativePoint="TOPRIGHT">
-				  <Offset>
-					  <AbsDimension x="2" y="0" /> 
-				  </Offset>
-			  </Anchor>
-		  </Anchors>
-	  </Button>
-	  <Button name="$parentClass3" inherits="BuffGridButtonTemplate">
-		  <Anchors>
-			  <Anchor point="TOPLEFT" relativeTo="$parentClass2" relativePoint="TOPRIGHT">
-				  <Offset>
-					  <AbsDimension x="2" y="0" /> 
-				  </Offset>
-			  </Anchor>
-		  </Anchors>
-	  </Button>
-	  <Button name="$parentClass4" inherits="BuffGridButtonTemplate">
-		  <Anchors>
-			  <Anchor point="TOPLEFT" relativeTo="$parentClass3" relativePoint="TOPRIGHT">
-				  <Offset>
-					  <AbsDimension x="2" y="0" /> 
-				  </Offset>
-			  </Anchor>
-		  </Anchors>
-	  </Button>
-	  <Button name="$parentClass5" inherits="BuffGridButtonTemplate">
-		  <Anchors>
-			  <Anchor point="TOPLEFT" relativeTo="$parentClass4" relativePoint="TOPRIGHT">
-				  <Offset>
-					  <AbsDimension x="2" y="0" /> 
-				  </Offset>
-			  </Anchor>
-		  </Anchors>
-	  </Button>
-	  <Button name="$parentClass6" inherits="BuffGridButtonTemplate">
-		  <Anchors>
-			  <Anchor point="TOPLEFT" relativeTo="$parentClass5" relativePoint="TOPRIGHT">
-				  <Offset>
-					  <AbsDimension x="2" y="0" /> 
-				  </Offset>
-			  </Anchor>
-		  </Anchors>
-	  </Button>
-	  <Button name="$parentClass7" inherits="BuffGridButtonTemplate">
-		  <Anchors>
-			  <Anchor point="TOPLEFT" relativeTo="$parentClass6" relativePoint="TOPRIGHT">
-				  <Offset>
-					  <AbsDimension x="2" y="0" /> 
-				  </Offset>
-			  </Anchor>
-		  </Anchors>
-	  </Button>
-	  <Button name="$parentClass8" inherits="BuffGridButtonTemplate">
-		  <Anchors>
-			  <Anchor point="TOPLEFT" relativeTo="$parentClass7" relativePoint="TOPRIGHT">
-				  <Offset>
-					  <AbsDimension x="2" y="0" /> 
-				  </Offset>
-			  </Anchor>
-		  </Anchors>
-	  </Button>
-	  <Button name="$parentClass9" inherits="BuffGridButtonTemplate">
-		  <Anchors>
-			  <Anchor point="TOPLEFT" relativeTo="$parentClass8" relativePoint="TOPRIGHT">
-				  <Offset>
-					  <AbsDimension x="2" y="0" /> 
-				  </Offset>
-			  </Anchor>
-		  </Anchors>
-	  </Button>
+			<Button name="$parentAura1" inherits="AuraGridButtonTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset>
+							<AbsDimension x="130" y="0" />
+						</Offset>
+					</Anchor>
+				</Anchors>
+			</Button>
+			<Button name="$parentClass1" inherits="BuffGridButtonTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parentAura1" relativePoint="TOPRIGHT">
+						<Offset>
+							<AbsDimension x="2" y="0" />
+						</Offset>
+					</Anchor>
+				</Anchors>
+			</Button>
+			<Button name="$parentClass2" inherits="BuffGridButtonTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parentClass1" relativePoint="TOPRIGHT">
+						<Offset>
+							<AbsDimension x="2" y="0" /> 
+						</Offset>
+					</Anchor>
+				</Anchors>
+			</Button>
+			<Button name="$parentClass3" inherits="BuffGridButtonTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parentClass2" relativePoint="TOPRIGHT">
+						<Offset>
+							<AbsDimension x="2" y="0" /> 
+						</Offset>
+					</Anchor>
+				</Anchors>
+			</Button>
+			<Button name="$parentClass4" inherits="BuffGridButtonTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parentClass3" relativePoint="TOPRIGHT">
+						<Offset>
+							<AbsDimension x="2" y="0" /> 
+						</Offset>
+					</Anchor>
+				</Anchors>
+			</Button>
+			<Button name="$parentClass5" inherits="BuffGridButtonTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parentClass4" relativePoint="TOPRIGHT">
+						<Offset>
+							<AbsDimension x="2" y="0" /> 
+						</Offset>
+					</Anchor>
+				</Anchors>
+			</Button>
+			<Button name="$parentClass6" inherits="BuffGridButtonTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parentClass5" relativePoint="TOPRIGHT">
+						<Offset>
+							<AbsDimension x="2" y="0" /> 
+						</Offset>
+					</Anchor>
+				</Anchors>
+			</Button>
+			<Button name="$parentClass7" inherits="BuffGridButtonTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parentClass6" relativePoint="TOPRIGHT">
+						<Offset>
+							<AbsDimension x="2" y="0" /> 
+						</Offset>
+					</Anchor>
+				</Anchors>
+			</Button>
+			<Button name="$parentClass8" inherits="BuffGridButtonTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parentClass7" relativePoint="TOPRIGHT">
+						<Offset>
+							<AbsDimension x="2" y="0" /> 
+						</Offset>
+					</Anchor>
+				</Anchors>
+			</Button>
+			<Button name="$parentClass9" inherits="BuffGridButtonTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parentClass8" relativePoint="TOPRIGHT">
+						<Offset>
+							<AbsDimension x="2" y="0" /> 
+						</Offset>
+					</Anchor>
+				</Anchors>
+			</Button>
 	  </Frames>
   </Frame>
 
@@ -1395,6 +1428,15 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				  </Anchor>
 			  </Anchors>
 		  </Button>
+			<Button name="$parentResizeButton" inherits="PallyPowerResizeTemplate" hidden="false">
+				<Anchors>
+					<Anchor point="BOTTOMRIGHT">
+						<Offset>
+							<AbsDimension x="1" y="-1"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+			</Button>
 		  <Button name="$parentRefresh" inherits="GameMenuButtonTemplate" text="PALLYPOWER_REFRESH" hidden="false">
 			  <Size>
 				  <AbsDimension x="100" y="20" /> 

@@ -108,26 +108,6 @@ function PallyPower:OnEnable()
 		self:ScheduleRepeatingTimer(self.ButtonsUpdate, 1, self)
 	end
 	self:UpdateRoster()
-	self:BindKeys()
-end
-
-function PallyPower:BindKeys()
-	-- First unbind stuff because clearing one removes both.
-	if not self.opt.autobuff.autokey1 then
-		self.opt.autobuff.autokey1 = false
-	end
-	if not self.opt.autobuff.autokey2 then
-		self.opt.autobuff.autokey2 = false
-	end
-	if not self.opt.autobuff.autokey1 or not self.opt.autobuff.autokey2 then
-		self:UnbindKeys()
-	end
-	if self.opt.autobuff.autokey1 then
-		SetOverrideBindingClick(self.autoButton, false, self.opt.autobuff.autokey1, "PallyPowerAuto", "Hotkey1")
-	end
-	if self.opt.autobuff.autokey2 then
-		SetOverrideBindingClick(self.autoButton, false, self.opt.autobuff.autokey2, "PallyPowerAuto", "Hotkey2")
-	end
 end
 
 function PallyPower:OnDisable()
@@ -142,11 +122,6 @@ function PallyPower:OnDisable()
 	self.rfButton:Hide()
 	self.autoButton:Hide()
 	PallyPowerAnchor:Hide()
-	self:UnbindKeys()
-end
-
-function PallyPower:UnbindKeys()
-	ClearOverrideBindings(self.autoButton)
 end
 
 --
@@ -474,6 +449,71 @@ function PallyPowerConfigGrid_Update(self, elapsed)
 			end
 		end
 		PallyPowerConfigFrameFreeAssign:SetChecked(PallyPower.opt.freeassign)
+	end
+end
+
+function PallyPower_StartScaling(self, button)
+	if button=="RightButton" then
+		PallyPower.opt.configscale = 0.9
+	end
+	if button=="LeftButton" then
+		self:LockHighlight()
+		PallyPower.FrameToScale = self:GetParent()
+    PallyPower.ScalingWidth = self:GetParent():GetWidth() * PallyPower.FrameToScale:GetParent():GetEffectiveScale()
+    PallyPower.ScalingHeight = self:GetParent():GetHeight() * PallyPower.FrameToScale:GetParent():GetEffectiveScale()
+    PallyPowerScalingFrame:Show()
+	end
+end
+
+function PallyPower_StopScaling(self, button)
+	if button=="LeftButton" then
+		PallyPowerScalingFrame:Hide()
+    PallyPower.FrameToScale = nil
+    self:UnlockHighlight()
+	end
+end
+
+function PallyPower_ScaleFrame(scale)
+	local frame = PallyPower.FrameToScale
+	local oldscale = frame:GetScale() or 1
+	local framex = (frame:GetLeft() or PallyPowerPerOptions.XPos)* oldscale
+	local framey = (frame:GetTop() or PallyPowerPerOptions.YPos)* oldscale
+	frame:SetScale(scale)
+	if frame:GetName() == "PallyPowerConfigFrame" then
+		frame:SetPoint("TOPLEFT","UIParent","BOTTOMLEFT",framex/scale,framey/scale)
+		PallyPower.opt.configscale = scale
+	end
+end
+
+function PallyPower_ScalingFrame_Update(self, elapsed)
+	if not PallyPower.ScalingTime then
+		PallyPower.ScalingTime = 0
+	end
+	PallyPower.ScalingTime = PallyPower.ScalingTime + elapsed
+	if PallyPower.ScalingTime > 0.25 then
+		PallyPower.ScalingTime = 0
+		local frame = PallyPower.FrameToScale
+		local oldscale = frame:GetEffectiveScale()
+		local framex, framey, cursorx, cursory = frame:GetLeft() * oldscale, frame:GetTop() * oldscale, GetCursorPosition()
+		if PallyPower.ScalingWidth>PallyPower.ScalingHeight then
+			if (cursorx-framex)>32 then
+				local newscale =  (cursorx-framex)/PallyPower.ScalingWidth
+				if newscale < 0.5 then
+					PallyPower_ScaleFrame(0.5)
+				else
+					PallyPower_ScaleFrame(newscale)
+				end
+			end
+		else
+			if (framey-cursory)>32 then
+				local newscale =  (framey-cursory)/PallyPower.ScalingHeight
+				if newscale < 0.5 then
+					PallyPower_ScaleFrame(0.5)
+				else
+					PallyPower_ScaleFrame(newscale)
+				end
+			end
+		end
 	end
 end
 
@@ -2132,7 +2172,7 @@ function PallyPower:DragStop()
 	_G["PallyPowerFrame"]:StopMovingOrSizing()
 end
 
-function PallyPower:AutoBuff(mousebutton)
+function PallyPower:AutoBuff(button, mousebutton)
 	if InCombatLockdown() then return end
 	local now = time()
 	local greater = (mousebutton == "LeftButton" or mousebutton == "Hotkey2")
@@ -2227,7 +2267,7 @@ function PallyPower:AutoBuff(mousebutton)
 	end
 end
 
-function PallyPower:AutoBuffClear(mousebutton)
+function PallyPower:AutoBuffClear(button, mousebutton)
 	if InCombatLockdown() then return end
 	local button = self.autoButton
 	button:SetAttribute("unit", nil)
