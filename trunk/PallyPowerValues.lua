@@ -81,7 +81,7 @@ PALLYPOWER_DEFAULT_VALUES = {
 		}
 	}
 
-PallyPower_Credits1 = "Pally Power Classic (v1.0i)";
+PallyPower_Credits1 = "Pally Power Classic (v1.0j)";
 PallyPower_Credits2 = "Originally written by Aznamir";
 PallyPower_Credits3 = "Updated for Classic by Dyaxler";
 
@@ -209,10 +209,11 @@ PallyPower.Edge = 'Interface\\Tooltips\\UI-Tooltip-Border'
 PallyPower.Seals = {
     [0] = "",
     [1] = GetSpellInfo(20164), -- seal of justice
-		[2] = GetSpellInfo(20165), -- seal of light
+	[2] = GetSpellInfo(20165), -- seal of light
     [3] = GetSpellInfo(20166), -- seal of wisdom
-    [4] = GetSpellInfo(21084), -- seal of right
-    [5] = GetSpellInfo(20375), -- seal of command
+    [4] = GetSpellInfo(21084), -- seal of righteousness
+	[5] = GetSpellInfo(21082), -- seal of the crusader
+    [6] = GetSpellInfo(20375), -- seal of command
 };
 
 PallyPower.Auras = {

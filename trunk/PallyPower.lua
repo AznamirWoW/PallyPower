@@ -455,6 +455,10 @@ end
 function PallyPower_StartScaling(self, button)
 	if button=="RightButton" then
 		PallyPower.opt.configscale = 0.9
+		local c = _G["PallyPowerConfigFrame"]
+		c:ClearAllPoints()
+   		c:SetPoint("CENTER", "UIParent", "CENTER", 0, 0)
+		PallyPowerConfigFrame:Show()
 	end
 	if button=="LeftButton" then
 		self:LockHighlight()
@@ -480,6 +484,7 @@ function PallyPower_ScaleFrame(scale)
 	local framey = (frame:GetTop() or PallyPowerPerOptions.YPos)* oldscale
 	frame:SetScale(scale)
 	if frame:GetName() == "PallyPowerConfigFrame" then
+		frame:SetClampedToScreen(true)
 		frame:SetPoint("TOPLEFT","UIParent","BOTTOMLEFT",framex/scale,framey/scale)
 		PallyPower.opt.configscale = scale
 	end
