@@ -1,8 +1,8 @@
 <Bindings>
 	<Binding name="AUTOKEY1" category="PALLYPOWER_NAME">
-		PallyPower:AutoBuff(self, "Hotkey1");
+		PallyPower:AutoBuff("PallyPowerAuto", "Hotkey1");
 	</Binding>
 	<Binding name="AUTOKEY2" category="PALLYPOWER_NAME">
-		PallyPower:AutoBuff(self, "Hotkey2");
+		PallyPower:AutoBuff("PallyPowerAuto", "Hotkey2");
 	</Binding>
 </Bindings>

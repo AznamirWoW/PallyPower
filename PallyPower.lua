@@ -108,6 +108,26 @@ function PallyPower:OnEnable()
 		self:ScheduleRepeatingTimer(self.ButtonsUpdate, 1, self)
 	end
 	self:UpdateRoster()
+	self:BindKeys()
+end
+
+function PallyPower:BindKeys()
+	-- First unbind stuff because clearing one removes both.
+	if not self.opt.autobuff.autokey1 then
+		self.opt.autobuff.autokey1 = false
+	end
+	if not self.opt.autobuff.autokey2 then
+		self.opt.autobuff.autokey2 = false
+	end
+	if not self.opt.autobuff.autokey1 or not self.opt.autobuff.autokey2 then
+		self:UnbindKeys()
+	end
+	if self.opt.autobuff.autokey1 then
+		SetOverrideBindingClick(self.autoButton, false, self.opt.autobuff.autokey1, "PallyPowerAuto", "Hotkey1")
+	end
+	if self.opt.autobuff.autokey2 then
+		SetOverrideBindingClick(self.autoButton, false, self.opt.autobuff.autokey2, "PallyPowerAuto", "Hotkey2")
+	end
 end
 
 function PallyPower:OnDisable()
@@ -122,6 +142,11 @@ function PallyPower:OnDisable()
 	self.rfButton:Hide()
 	self.autoButton:Hide()
 	PallyPowerAnchor:Hide()
+	self:UnbindKeys()
+end
+
+function PallyPower:UnbindKeys()
+	ClearOverrideBindings(self.autoButton)
 end
 
 --
@@ -2178,10 +2203,12 @@ function PallyPower:DragStop()
 end
 
 function PallyPower:AutoBuff(button, mousebutton)
+	self:Debug("AutoBuff(): mousebutton["..mousebutton.."]")
 	if InCombatLockdown() then return end
 	local now = time()
 	local greater = (mousebutton == "LeftButton" or mousebutton == "Hotkey2")
 	if greater then
+		self:Debug("AutoBuff(): Greater Blessing")
 		local groupCount = {}
 		local HLspell = PallyPower.HLSpell
 		if (IsInRaid() == true) then
@@ -2240,6 +2267,7 @@ function PallyPower:AutoBuff(button, mousebutton)
 			self.PreviousAutoBuffedUnit = minUnit
 		end
 	else
+		self:Debug("AutoBuff(): Normal Blessing")
 		local minExpire, minUnit, minSpell = 9999, nil, nil
 		for _, unit in ipairs(roster) do
 			local spellID, gspellID = self:GetSpellID(self:GetClassID(unit.class), unit.name)
