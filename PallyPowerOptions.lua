@@ -192,6 +192,7 @@ PallyPower.options =
 								[3] = PallyPower.Seals[3],
 								[4] = PallyPower.Seals[4],
 								[5] = PallyPower.Seals[5],
+								[6] = PallyPower.Seals[6],
 							},
 						},
 					},
