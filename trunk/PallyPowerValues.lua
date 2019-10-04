@@ -79,7 +79,7 @@ PALLYPOWER_DEFAULT_VALUES = {
 		}
 	}
 
-PallyPower_Credits1 = "Pally Power Classic (v1.0k)";
+PallyPower_Credits1 = "Pally Power Classic (v1.0L)";
 PallyPower_Credits2 = "Originally written by Aznamir";
 PallyPower_Credits3 = "Updated for Classic by Dyaxler";
 
