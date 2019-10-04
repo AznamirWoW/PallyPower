@@ -101,6 +101,7 @@ function PallyPower:OnEnable()
 	self:RegisterEvent("PLAYER_ENTERING_WORLD")
 	self:RegisterEvent("CHAT_MSG_ADDON")
 	self:RegisterEvent("CHAT_MSG_SYSTEM")
+	self:RegisterEvent("UPDATE_BINDINGS", "BindKeys")
 	self:RegisterBucketEvent("SPELLS_CHANGED", 1, "SPELLS_CHANGED")
 	self:RegisterBucketEvent({"GROUP_ROSTER_UPDATE", "PLAYER_REGEN_ENABLED", "UNIT_PET"}, 1, "UpdateRoster")
 	if PP_IsPally then
@@ -112,22 +113,14 @@ function PallyPower:OnEnable()
 end
 
 function PallyPower:BindKeys()
-	-- First unbind stuff because clearing one removes both.
-	if not self.opt.autobuff.autokey1 then
-		self.opt.autobuff.autokey1 = false
-	end
-	if not self.opt.autobuff.autokey2 then
-		self.opt.autobuff.autokey2 = false
-	end
-	if not self.opt.autobuff.autokey1 or not self.opt.autobuff.autokey2 then
-		self:UnbindKeys()
-	end
-	if self.opt.autobuff.autokey1 then
-		SetOverrideBindingClick(self.autoButton, false, self.opt.autobuff.autokey1, "PallyPowerAuto", "Hotkey1")
-	end
-	if self.opt.autobuff.autokey2 then
-		SetOverrideBindingClick(self.autoButton, false, self.opt.autobuff.autokey2, "PallyPowerAuto", "Hotkey2")
-	end
+	local key1 = GetBindingKey("AUTOKEY1")
+	local key2 = GetBindingKey("AUTOKEY2")
+	if key1 then
+		SetOverrideBindingClick(self.autoButton, false, key1, "PallyPowerAuto", "Hotkey1")
+  	end
+	if key2 then
+		SetOverrideBindingClick(self.autoButton, false, key2, "PallyPowerAuto", "Hotkey2")
+  	end
 end
 
 function PallyPower:OnDisable()

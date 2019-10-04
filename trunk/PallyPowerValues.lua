@@ -26,8 +26,6 @@ PALLYPOWER_DEFAULT_VALUES = {
 		auras = true,
 		extras = false,
 		autobuff = {
-			autokey1 = ",",
-			autokey2 = "CTRL-,",
 			autobutton = true,
 			waitforpeople = true,
 		},
