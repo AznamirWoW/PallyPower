@@ -1404,14 +1404,14 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			  </Scripts>
 			  <Layers>
 				  <Layer level="OVERLAY">
-					  <FontString name="$parentText" inherits="GameFontNormal" text="Pally Power" justifyH="CENTER">
+					  <FontString name="$parentText" inherits="GameFontNormal" text="PALLYPOWER_NAME" justifyH="CENTER">
 						  <Size>
-							  <AbsDimension x="100" y="12" /> 
+							  <AbsDimension x="400" y="12" /> 
 						  </Size>
 						  <Anchors>
-							  <Anchor point="LEFT">
+							  <Anchor point="CENTER">
 								  <Offset>
-									  <AbsDimension x="5" y="0" /> 
+									  <AbsDimension x="0" y="0" /> 
 								  </Offset>
 							  </Anchor>
 						  </Anchors>
@@ -1451,7 +1451,16 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			  <Scripts>
 				  <OnClick>
 					  PallyPowerConfig_Refresh(self, button, down)
-				  </OnClick> 
+				  </OnClick>
+					<OnEnter>
+						GameTooltip:SetOwner(self, "ANCHOR_BOTTOM");
+						GameTooltip:SetText(PALLYPOWER_REFRESH_DESC);
+						GameTooltip:Show(self, motion);
+						CursorUpdate(self, motion);
+					</OnEnter>
+					<OnLeave>
+						GameTooltip:Hide(self, motion);
+					</OnLeave>
 			  </Scripts>
 		  </Button>
 		  <Button name="$parentClear" inherits="GameMenuButtonTemplate" text="PALLYPOWER_CLEAR" hidden="false">
@@ -1469,6 +1478,15 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				  <OnClick>
 					  PallyPowerConfig_Clear(self, button, down)
 				  </OnClick> 
+					<OnEnter>
+						GameTooltip:SetOwner(self, "ANCHOR_BOTTOM");
+						GameTooltip:SetText(PALLYPOWER_CLEAR_DESC);
+						GameTooltip:Show(self, motion);
+						CursorUpdate(self, motion);
+					</OnEnter>
+					<OnLeave>
+						GameTooltip:Hide(self, motion);
+					</OnLeave>
 			  </Scripts>
 		  </Button>
 		  <Button name="$parentAutoAssign" inherits="GameMenuButtonTemplate" text="PALLYPOWER_AUTOASSIGN" hidden="false">
@@ -1485,7 +1503,16 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			  <Scripts>
 				  <OnClick>
 					  PallyPower:AutoAssign();
-				  </OnClick> 
+				  </OnClick>
+					<OnEnter>
+						GameTooltip:SetOwner(self, "ANCHOR_BOTTOM");
+						GameTooltip:SetText(PALLYPOWER_AUTOASSIGN_DESC);
+						GameTooltip:Show(self, motion);
+						CursorUpdate(self, motion);
+					</OnEnter>
+					<OnLeave>
+						GameTooltip:Hide(self, motion);
+					</OnLeave>					
 			  </Scripts>
 		  </Button>
 		  <Button name="$parentReport" inherits="GameMenuButtonTemplate" text="PALLYPOWER_REPORT" hidden="false">
@@ -1503,6 +1530,15 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				  <OnClick>
 					  PallyPower:Report();
 				  </OnClick> 
+					<OnEnter>
+						GameTooltip:SetOwner(self, "ANCHOR_BOTTOM");
+						GameTooltip:SetText(PALLYPOWER_REPORT_DESC);
+						GameTooltip:Show(self, motion);
+						CursorUpdate(self, motion);
+					</OnEnter>
+					<OnLeave>
+						GameTooltip:Hide(self, motion);
+					</OnLeave>
 			  </Scripts>
 		  </Button>
 		  <CheckButton name="$parentFreeAssign" inherits="OptionsCheckButtonTemplate">
@@ -1522,6 +1558,15 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						  PallyPower:SendMessage("FREEASSIGN NO")
 					  end
 				  </OnClick>
+					<OnEnter>
+						GameTooltip:SetOwner(self, "ANCHOR_BOTTOM");
+						GameTooltip:SetText(PALLYPOWER_FREEASSIGN_DESC);
+						GameTooltip:Show(self, motion);
+						CursorUpdate(self, motion);
+					</OnEnter>
+					<OnLeave>
+						GameTooltip:Hide(self, motion);
+					</OnLeave>
 			  </Scripts>
 		  </CheckButton>
       <Frame name="$parentAuraGroup1" inherits="AuraGroupTemplate">
@@ -1697,7 +1742,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				  self:StopMovingOrSizing(); 
 				  self.isMoving = false;
 			  end
-		  </OnHide> 
+		  </OnHide>
 	  </Scripts>
   </Frame>
 </Ui>
