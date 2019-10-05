@@ -17,71 +17,46 @@ BINDING_NAME_AUTOKEY2	= L["AUTOKEY2"];
 
 PALLYPOWER_DEFAULT_VALUES = {
 	profile = {
-		buffscale = 0.90,
-		configscale = 0.90,
-		smartbuffs = true,
-		smartpets = true,
-		greaterbuffs = true,
-		rfbuff = true,
+		aura = 1,
 		auras = true,
-		extras = false,
 		autobuff = {
 			autobutton = true,
 			waitforpeople = true,
 		},
-		display = {
-			-- buttons
-			rows = 9,
-			columns = 1,
-			gapping = 2,
-			buttonWidth = 100,
-			buttonHeight = 34,
-			alignClassButtons = "9",
-			alignPlayerButtons = "compact-left",
-			edges = true,
-			frameLocked = false,
-			hideDragHandle = false,
-			hidePlayerButtons = false,
-			hideClassButtons = false,
-			PlainButtons = false,
-			HideKeyText = false,
-			HideCount = false,
-			LockBuffBars = false,
-			HideCountText = false,
-			HideTimerText = false,
-		},
-		ShowInParty = true,
-		ShowWhenSingle = true,
-		skin = "Smooth",
+		border = "Blizzard Tooltip",
+		buffscale = 0.90,
 		cBuffNeedAll     = {r = 1.0, g = 0.0, b = 0.0, t = 0.5},
 		cBuffNeedSome    = {r = 1.0, g = 1.0, b = 0.5, t = 0.5},
 		cBuffNeedSpecial = {r = 0.0, g = 0.0, b = 1.0, t = 0.5},
 		cBuffGood        = {r = 0.0, g = 0.7, b = 0.0, t = 0.5},
-		sets = {
-			["primary"] = {
-							seal = 0, 	-- wisdom
-							aura = 1, 	-- devotion
-							rf = false, -- RF off
-							buffs = { 0, 0, 0, 0, 0, 0, 0, 0, 0,}
-						},
-			["secondary"] = {
-							seal = 0, 	-- wisdom
-							aura = 1, 	-- devotion
-							rf = false, -- RF off
-							buffs = { 0, 0, 0, 0, 0, 0, 0, 0, 0,}
-						},
+		configscale = 0.90,
+		display = {
+			buttonWidth = 100,
+			buttonHeight = 34,
+			enableDragHandle = true,
+			frameLocked = false,
+			showPlayerButtons = true,
+			showClassButtons = true,
+			HideKeyText = false,
+			HideCount = false,
+			HideCountText = false,
+			HideTimerText = false,
+			LockBuffBars = false,
+			PlainButtons = false,
 		},
-		-- default assignments
-		seal = 0,
-		aura = 1,
-		disabled = false,
-		layout = "Standard",
-		}
+		enabled = true,
+		layout = "Layout 2",
+		rfbuff = true,
+		seal = 4,
+		ShowInParty = true,
+		ShowWhenSingle = true,
+		skin = "Smooth",
+		smartbuffs = true,
+		},
 	}
 
-PallyPower_Credits1 = "Pally Power Classic (v1.0L)";
-PallyPower_Credits2 = "Originally written by Aznamir";
-PallyPower_Credits3 = "Updated for Classic by Dyaxler";
+PallyPower_Credits1 = "Originally written by Aznamir";
+PallyPower_Credits2 = "Updated for Classic by Dyaxler";
 
 PallyPower.BuffBarTitle = "Pally Buffs (%d)";
 
@@ -153,15 +128,18 @@ PallyPower.AuraIcons = {
 	[7] = "Interface\\Icons\\Spell_Holy_MindVision",
 };
 
---
--- Need to add localizations
---
+-- XML Aliases
+PALLYPOWER_NAME = "PallyPower Classic ("..string.trim(GetAddOnMetadata("PallyPower","Version"))..")"
 PALLYPOWER_CLEAR = L["PP_CLEAR"];
+PALLYPOWER_CLEAR_DESC = L["PP_CLEAR_DESC"];
 PALLYPOWER_REFRESH = L["PP_REFRESH"];
-PALLYPOWER_OPTIONS = L["PP_OPTIONS"];
+PALLYPOWER_REFRESH_DESC = L["PP_REFRESH_DESC"];
 PALLYPOWER_AUTOASSIGN = L["AUTOASSIGN"];
+PALLYPOWER_AUTOASSIGN_DESC = L["AUTOASSIGN_DESC"];
 PALLYPOWER_REPORT	= L["BRPT"];
+PALLYPOWER_REPORT_DESC = L["BRPT_DESC"];
 PALLYPOWER_FREEASSIGN = L["FREEASSIGN"];
+PALLYPOWER_FREEASSIGN_DESC = L["FREEASSIGN_DESC"];
 PALLYPOWER_ASSIGNMENTS1 = L["PP_RAS1"];
 PALLYPOWER_ASSIGNMENTS2 = L["PP_RAS2"];
 
@@ -207,10 +185,10 @@ PallyPower.Edge = 'Interface\\Tooltips\\UI-Tooltip-Border'
 PallyPower.Seals = {
     [0] = "",
     [1] = GetSpellInfo(20164), -- seal of justice
-	[2] = GetSpellInfo(20165), -- seal of light
+		[2] = GetSpellInfo(20165), -- seal of light
     [3] = GetSpellInfo(20166), -- seal of wisdom
     [4] = GetSpellInfo(21084), -- seal of righteousness
-	[5] = GetSpellInfo(21082), -- seal of the crusader
+		[5] = GetSpellInfo(21082), -- seal of the crusader
     [6] = GetSpellInfo(20375), -- seal of command
 };
 
@@ -659,7 +637,7 @@ PallyPower.Layouts = {
 								},
 		 		},
 				ab = {x = 0, y = 1},
-    			rf = {x = 0, y = 2},
+    		rf = {x = 0, y = 2},
 		 		au = {x = 0, y = 3},
 	},
 	["Layout 3"] = {
