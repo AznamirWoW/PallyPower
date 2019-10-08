@@ -22,6 +22,7 @@ PallyPower.options = {
 							name = L["SHOWGLOBAL"],
 							desc = L["SHOWGLOBAL_DESC"],
 							type = "toggle",
+							width = 1.20,
 							get = function(info) return PallyPower.opt.enabled end,
 							set = function(info, val)
 								PallyPower.opt.enabled = val
@@ -37,6 +38,7 @@ PallyPower.options = {
 							name = L["SHOWPARTY"],
 							desc = L["SHOWPARTY_DESC"],
 							type = "toggle",
+							width = 1.20,
 							disabled = function(info) return PallyPower.opt.enabled == false end,
 							get = function(info) return PallyPower.opt.ShowInParty end,
 							set = function(info, val)
@@ -49,10 +51,24 @@ PallyPower.options = {
 							name = L["SHOWSOLO"],
 							desc = L["SHOWSOLO_DESC"],
 							type = "toggle",
+							width = 1.20,
 							disabled = function(info) return PallyPower.opt.enabled == false end,
 							get = function(info) return PallyPower.opt.ShowWhenSolo end,
 							set = function(info, val)
 								PallyPower.opt.ShowWhenSolo = val
+								PallyPower:UpdateRoster()
+							end,
+						},
+						showtooltips = {
+							order = 4,
+							name = L["SHOWTIPS"],
+							desc = L["SHOWTIPS_DESC"],
+							type = "toggle",
+							width = 1.20,
+							disabled = function(info) return PallyPower.opt.enabled == false end,
+							get = function(info) return PallyPower.opt.ShowTooltips end,
+							set = function(info, val)
+								PallyPower.opt.ShowTooltips = val
 								PallyPower:UpdateRoster()
 							end,
 						},
@@ -63,6 +79,7 @@ PallyPower.options = {
 					name = L["PP_LOOKS"],
 					type = "group",
 					inline = true,
+					disabled = function(info) return PallyPower.opt.enabled == false end,
 					args = {
 						buffscale = {
 							order = 1,
@@ -140,6 +157,7 @@ PallyPower.options = {
 					name = L["PP_COLOR"],
 					type = "group",
 					inline = true,
+					disabled = function(info) return PallyPower.opt.enabled == false end,
 					args = {
 						color_good = {
 							order = 1,
@@ -188,6 +206,7 @@ PallyPower.options = {
 					name = L["PP_RESET"],
 					type = "group",
 					inline = true,
+					disabled = function(info) return PallyPower.opt.enabled == false end,
 					args = {
 						reset = {
 							order = 1,
@@ -205,6 +224,7 @@ PallyPower.options = {
 			name = L["BUTTONS"],
 			desc = L["BUTTONS_DESC"],
 			type = "group",
+			disabled = function(info) return PallyPower.opt.enabled == false end,
 			args = {
 				aura_button = {
 					order = 1,
@@ -351,7 +371,7 @@ PallyPower.options = {
 					type = "group",
 					inline = true,
 					args = {
-						pc_desc = {
+						cp_desc = {
 							order = 0,
 							type = "description",
 							name = L["CPBTNS_DESC"],
@@ -402,8 +422,8 @@ PallyPower.options = {
 						drag_enable = {
 							order = 1,
 							type = "toggle",
-							name = L["DRAGHANDLE_ENABLED"] ,
-							desc = L["DRAGHANDLE_ENABLED_DESC"] ,
+							name = L["DRAGHANDLE_ENABLED"],
+							desc = L["DRAGHANDLE_ENABLED_DESC"],
 							width = 1.1,
 							get = function(info) return PallyPower.opt.display.enableDragHandle end,
 							set = function(info, val)
@@ -416,9 +436,9 @@ PallyPower.options = {
 							type = "toggle",
 							name = L["SMARTBUFF"],
 							desc = L["SMARTBUFF_DESC"],
-							get = function(info) return PallyPower.opt.smartbuffs end,
+							get = function(info) return PallyPower.opt.SmartBuffs end,
 							set = function(info, val)
-								PallyPower.opt.smartbuffs = val
+								PallyPower.opt.SmartBuffs = val
 								PallyPower:UpdateRoster()
 							end,
 						},

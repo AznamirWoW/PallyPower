@@ -48,9 +48,10 @@ PALLYPOWER_DEFAULT_VALUES = {
 		rfbuff = true,
 		seal = 4,
 		ShowInParty = true,
+		ShowTooltips = true,
 		ShowWhenSolo = true,
 		skin = "Smooth",
-		smartbuffs = true,
+		SmartBuffs = true,
 		},
 	}
 
@@ -139,6 +140,7 @@ PALLYPOWER_FREEASSIGN_DESC = L["FREEASSIGN_DESC"];
 PALLYPOWER_ASSIGNMENTS1 = L["PP_RAS1"];
 PALLYPOWER_ASSIGNMENTS2 = L["PP_RAS2"];
 PALLYPOWER_OPTIONS	= L["OPTIONS"];
+PALLYPOWER_OPTIONS_DESC	= L["OPTIONS_DESC"];
 
 -- get translations directly
 PallyPower.Spells = {

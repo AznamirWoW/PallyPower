@@ -63,13 +63,10 @@ function PallyPower:OnInitialize()
 	self.db.RegisterCallback(self, "OnProfileChanged", "OnProfileChanged")
 	self.db.RegisterCallback(self, "OnProfileCopied", "OnProfileChanged")
 	self.db.RegisterCallback(self, "OnProfileReset", "OnProfileChanged")
-
 	self.opt = self.db.profile
-
 	PallyPower.options.args.profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db)
 	LibStub("AceConfig-3.0"):RegisterOptionsTable("PallyPower", PallyPower.options, "pp")
 	self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("PallyPower", "PallyPower")
-
 	LSM3:Register("background", "None", "Interface\\Tooltips\\UI-Tooltip-Background")
 	LSM3:Register("background", "Banto", "Interface\\AddOns\\PallyPower\\Skins\\Banto")
 	LSM3:Register("background", "BantoBarReverse", "Interface\\AddOns\\PallyPower\\Skins\\BantoBarReverse")
@@ -78,7 +75,6 @@ function PallyPower:OnInitialize()
 	LSM3:Register("background", "Healbot", "Interface\\AddOns\\PallyPower\\Skins\\Healbot")
 	LSM3:Register("background", "oCB", "Interface\\AddOns\\PallyPower\\Skins\\oCB")
 	LSM3:Register("background", "Smooth", "Interface\\AddOns\\PallyPower\\Skins\\Smooth")
-
 	self.player = UnitName("player")
 	self:ScanInventory()
 	self:CreateLayout()
@@ -86,7 +82,6 @@ function PallyPower:OnInitialize()
 		PallyPower:ApplySkin(self.opt.skin)
  	end
 	LibClassicDurations:Register("PallyPower")
-
 	self.AutoBuffedList = {}
 	self.PreviousAutoBuffedUnit = nil
 end
@@ -189,6 +184,9 @@ function PallyPowerBlessings_Refresh()
 end
 
 function PallyPowerBlessings_Toggle(msg)
+	if PallyPower.configFrame and PallyPower.configFrame:IsShown() then
+		PallyPower.configFrame:Hide()
+	end
 	if PallyPowerBlessingsFrame:IsVisible() then
 		PallyPowerBlessingsFrame:Hide()
 		PlaySound(SOUNDKIT.IG_SPELLBOOK_CLOSE)
@@ -198,14 +196,17 @@ function PallyPowerBlessings_Toggle(msg)
     	c:SetPoint("CENTER", "UIParent", "CENTER", 0, 0)
 		PallyPowerBlessingsFrame:Show()
 		PlaySound(SOUNDKIT.IG_SPELLBOOK_OPEN)
+		table.insert(UISpecialFrames, "PallyPowerBlessingsFrame")
 	end
 end
 
 function PallyPowerBlessings_ShowCredits(self)
-	GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT")
-	GameTooltip:SetText(PallyPower_Credits1, 1, 1, 1)
-	GameTooltip:AddLine(PallyPower_Credits2, 1, 1, 1)
-	GameTooltip:Show()
+	if PallyPower.opt.ShowTooltips then
+		GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT")
+		GameTooltip:SetText(PallyPower_Credits1, 1, 1, 1)
+		GameTooltip:AddLine(PallyPower_Credits2, 1, 1, 1)
+		GameTooltip:Show()
+	end
 end
 
 function PallyPower:OpenConfigWindow()
@@ -215,9 +216,11 @@ function PallyPower:OpenConfigWindow()
 	if not PallyPower.configFrame then
 		PallyPower.configFrame = AceGUI:Create("Frame")
     PallyPower.configFrame:Hide()
+		_G["PallyPowerConfigFrame"] = PallyPower.configFrame.frame
+		table.insert(UISpecialFrames, "PallyPowerConfigFrame")
 	end
   if not PallyPower.configFrame:IsShown() then
-		LibStub("AceConfigDialog-3.0"):SetDefaultSize("PallyPower", 620, 580)
+		LibStub("AceConfigDialog-3.0"):SetDefaultSize("PallyPower", 625, 580)
     LibStub("AceConfigDialog-3.0"):Open("PallyPower", PallyPower.configFrame)
 		PlaySound(SOUNDKIT.IG_SPELLBOOK_OPEN)
   else
@@ -759,7 +762,7 @@ function PallyPower:NeedsBuff(class, test, playerName)
 	if test==7 or test==0 then
 		return true
 	end
-	if self.opt.smartbuffs then
+	if self.opt.SmartBuffs then
 		-- no wisdom for warriors and rogues
 		if (class == 1 or class == 2) and test == 1 then
 			return false
