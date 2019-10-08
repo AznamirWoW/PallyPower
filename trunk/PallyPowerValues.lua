@@ -3,7 +3,7 @@ local L = LibStub("AceLocale-3.0"):GetLocale("PallyPower");
 PallyPower.commPrefix = "PLPWR";
 C_ChatInfo.RegisterAddonMessagePrefix(PallyPower.commPrefix)
 
-PALLYPOWER_MAXCLASSES = 9;
+PALLYPOWER_MAXCLASSES = 8;
 PALLYPOWER_MAXPERCLASS = 10;
 PALLYPOWER_NORMALBLESSINGDURATION = 10*60;
 PALLYPOWER_GREATERBLESSINGDURATION = 30*60;
@@ -42,14 +42,13 @@ PALLYPOWER_DEFAULT_VALUES = {
 			HideCountText = false,
 			HideTimerText = false,
 			LockBuffBars = false,
-			PlainButtons = false,
 		},
 		enabled = true,
 		layout = "Layout 2",
 		rfbuff = true,
 		seal = 4,
 		ShowInParty = true,
-		ShowWhenSingle = true,
+		ShowWhenSolo = true,
 		skin = "Smooth",
 		smartbuffs = true,
 		},
@@ -69,7 +68,6 @@ PallyPower.ClassID = {
 	[6] = "HUNTER",
 	[7] = "MAGE",
 	[8] = "WARLOCK",
-	[9] = "PET",
 };
 
 PallyPower.ClassToID = {
@@ -81,7 +79,6 @@ PallyPower.ClassToID = {
 	["HUNTER"] 		= 6,
 	["MAGE"] 		  = 7,
 	["WARLOCK"]		= 8,
-	["PET"]			  = 9,
 };
 
 PallyPower.ClassIcons = {
@@ -93,7 +90,6 @@ PallyPower.ClassIcons = {
 	[6] = "Interface\\AddOns\\PallyPower\\Icons\\Hunter",
 	[7] = "Interface\\AddOns\\PallyPower\\Icons\\Mage",
 	[8] = "Interface\\AddOns\\PallyPower\\Icons\\Warlock",
-	[9] = "Interface\\AddOns\\PallyPower\\Icons\\Pet",
 };
 
 PallyPower.BlessingIcons = {
@@ -142,6 +138,7 @@ PALLYPOWER_FREEASSIGN = L["FREEASSIGN"];
 PALLYPOWER_FREEASSIGN_DESC = L["FREEASSIGN_DESC"];
 PALLYPOWER_ASSIGNMENTS1 = L["PP_RAS1"];
 PALLYPOWER_ASSIGNMENTS2 = L["PP_RAS2"];
+PALLYPOWER_OPTIONS	= L["OPTIONS"];
 
 -- get translations directly
 PallyPower.Spells = {
@@ -203,94 +200,91 @@ PallyPower.Auras = {
 	[7] = GetSpellInfo(20218), --BS["Sanctity Aura"],
 };
 -- Buff templates
-PallyPower.Templates={
+-- Table [1] is for a single Paladin but not all Paladins have Kings and if it's not there it defaults to the next prio so something gets assigned so on and so forth down the list of tables.
+-- Paladin Leader
+PallyPower.LeaderTemplates={
 	[1] = {
-		[1]=  {2},
-		[2]=  {2},
-		[3]=  {1},
-		[4]=  {2},
-		[5]=  {2},
-		[6]=  {2},
-		[7]=  {1},
-		[8]=  {1},
-		[9]=  {2},
-	},
-	[2] = {
-		[1]=  {2, 5},
-		[2]=  {2, 4},
-		[3]=  {1, 4},
-		[4]=  {2, 4},
-		[5]=  {2, 4},
-		[6]=  {2, 4},
-		[7]=  {1, 4},
-		[8]=  {1, 4},
-		[9]=  {2, 4},
-	},
-	[3]= {
-		[1]=  {2, 5, 6},
-		[2]=  {2, 4, 6},
-		[3]=  {1, 4, 6},
-		[4]=  {2, 4, 1},
-		[5]=  {2, 4, 1},
-		[6]=  {2, 4, 1},
-		[7]=  {1, 4, 6},
-		[8]=  {1, 4, 6},
-		[9]=  {2, 4, 1},
-	},
-	[4]= {
-		[1]=  {2, 5, 6},
-		[2]=  {2, 4, 5, 6},
-		[3]=  {1, 4, 5, 6},
-		[4]=  {2, 4, 1, 5},
-		[5]=  {2, 4, 1, 5},
-		[6]=  {2, 4, 1, 5},
-		[7]=  {1, 4, 5, 6},
-		[8]=  {1, 4, 5, 6},
-		[9]=  {2, 4, 1, 5},
-	},
-	[5] = {
-		[1]=  {3},
-		[2]=  {3},
-		[3]=  {3},
-		[4]=  {3},
-		[5]=  {3},
-		[6]=  {3},
-		[7]=  {3},
-		[8]=  {3},
-		[9]=  {3},
-	},
-	[6] = {
 		[1]=  {3, 2},
-		[2]=  {3, 2},
+		[2]=  {2},
 		[3]=  {3, 1},
-		[4]=  {3, 2},
-		[5]=  {3, 2},
-		[6]=  {3, 2},
+		[4]=  {3, 1, 2},
+		[5]=  {3, 1, 2},
+		[6]=  {3, 1},
 		[7]=  {3, 1},
 		[8]=  {3, 1},
-		[9]=  {3, 2},
 	},
-	[7] = {
-		[1]=  {3, 2, 5},
+	[2] = {
+		[1]=  {4, 3, 2},
+		[2]=  {4, 3, 2},
+		[3]=  {4, 3, 1},
+		[4]=  {4, 3, 1, 2},
+		[5]=  {4, 3, 1, 2},
+		[6]=  {4, 3, 1},
+		[7]=  {4, 3, 1},
+		[8]=  {4, 3, 1},
+	},
+	[3] = {
+		[1]=  {4, 3, 2, 6, 5},
+		[2]=  {4, 3, 2, 5, 6},
+		[3]=  {4, 3, 1, 5, 6},
+		[4]=  {4, 3, 1, 2, 6},
+		[5]=  {4, 3, 1, 2, 6},
+		[6]=  {4, 3, 1, 5, 6},
+		[7]=  {4, 3, 1, 5, 6},
+		[8]=  {4, 3, 1, 5, 6},
+	},
+	[4]= {
+		[1]=  {4, 3, 2, 6, 5},
+		[2]=  {4, 3, 2, 5, 6},
+		[3]=  {4, 3, 1, 5, 6},
+		[4]=  {4, 3, 1, 2, 6, 5},
+		[5]=  {4, 3, 1, 2, 6, 5},
+		[6]=  {4, 3, 1, 5, 6},
+		[7]=  {4, 3, 1, 5, 6},
+		[8]=  {4, 3, 1, 5, 6},
+	},
+}
+-- Normal Paladin
+PallyPower.Templates={
+	[1] = {
+		[1]=  {3, 2},
+		[2]=  {2},
+		[3]=  {3, 1},
+		[4]=  {3, 1, 2},
+		[5]=  {3, 1, 2},
+		[6]=  {3, 1},
+		[7]=  {3, 1},
+		[8]=  {3, 1},
+	},
+	[2] = {
+		[1]=  {3, 2, 4},
 		[2]=  {3, 2, 4},
 		[3]=  {3, 1, 4},
-		[4]=  {3, 2, 4},
-		[5]=  {3, 2, 4},
-		[6]=  {3, 2, 4},
+		[4]=  {3, 1, 4, 2},
+		[5]=  {3, 1, 4, 2},
+		[6]=  {3, 1, 4},
 		[7]=  {3, 1, 4},
 		[8]=  {3, 1, 4},
-		[9]=  {3, 2, 4},
 	},
-	[8]= {
-		[1]=  {3, 2, 5, 6},
-		[2]=  {3, 2, 4, 6},
-		[3]=  {3, 1, 4, 6},
-		[4]=  {3, 2, 4, 1},
-		[5]=  {3, 2, 4, 1},
-		[6]=  {3, 2, 4, 1},
-		[7]=  {3, 1, 4, 6},
-		[8]=  {3, 1, 4, 6},
-		[9]=  {3, 2, 4, 1},
+	[3] = {
+		[1]=  {3, 2, 4, 6, 5},
+		[2]=  {3, 2, 4, 5, 6},
+		[3]=  {3, 1, 4, 5, 6},
+		[4]=  {3, 1, 4, 2, 6},
+		[5]=  {3, 1, 4, 2, 6},
+		[6]=  {3, 1, 4, 5, 6},
+		[7]=  {3, 1, 4, 5, 6},
+		[8]=  {3, 1, 4, 5, 6},
+	},
+	[4]= {
+		[1]=  {3, 2, 4, 6, 5},
+		[2]=  {3, 2, 4, 5, 6},
+		[3]=  {3, 1, 4, 5, 6},
+		[4]=  {3, 1, 4, 2, 6, 5},
+		[5]=  {3, 1, 4, 2, 6, 5},
+		[6]=  {3, 1, 4, 5, 6},
+		[7]=  {3, 1, 4, 5, 6},
+		[8]=  {3, 1, 4, 5, 6},
 	},
 }
 -- Layouts
