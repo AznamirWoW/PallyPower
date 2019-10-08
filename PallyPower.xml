@@ -429,10 +429,12 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				PallyPower_StopScaling(self, button)
 			</OnMouseUp>
 			<OnEnter>
-				GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-				GameTooltip:SetText(PallyPower.CONFIG_RESIZEGRIP);
-				GameTooltip:Show(self, motion);
-				CursorUpdate(self, motion);
+				if PallyPower.opt.ShowTooltips then
+					GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+					GameTooltip:SetText(PallyPower.CONFIG_RESIZEGRIP);
+					GameTooltip:Show(self, motion);
+					CursorUpdate(self, motion);
+				end
 			</OnEnter>
 			<OnLeave>
 				GameTooltip:Hide(self, motion);
@@ -468,10 +470,12 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					  PallyPower:DragStop(self, button);
 				  </OnDragStop>
 				  <OnEnter>
-					  GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-					  GameTooltip:SetText(PallyPower.CONFIG_DRAGHANDLE);
-					  GameTooltip:Show(self, motion);
-					  CursorUpdate(self, motion);
+						if PallyPower.opt.ShowTooltips then
+							GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+							GameTooltip:SetText(PallyPower.CONFIG_DRAGHANDLE);
+							GameTooltip:Show(self, motion);
+							CursorUpdate(self, motion);
+						end
 				  </OnEnter>
 				  <OnLeave>
 					  GameTooltip:Hide(self, motion);
@@ -1431,10 +1435,12 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					  PallyPowerBlessings_Refresh(self, button, down)
 				  </OnClick>
 					<OnEnter>
-						GameTooltip:SetOwner(self, "ANCHOR_BOTTOM");
-						GameTooltip:SetText(PALLYPOWER_REFRESH_DESC);
-						GameTooltip:Show(self, motion);
-						CursorUpdate(self, motion);
+						if PallyPower.opt.ShowTooltips then
+							GameTooltip:SetOwner(self, "ANCHOR_BOTTOM");
+							GameTooltip:SetText(PALLYPOWER_REFRESH_DESC);
+							GameTooltip:Show(self, motion);
+							CursorUpdate(self, motion);
+						end
 					</OnEnter>
 					<OnLeave>
 						GameTooltip:Hide(self, motion);
@@ -1457,10 +1463,12 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					  PallyPowerBlessings_Clear(self, button, down)
 				  </OnClick> 
 					<OnEnter>
-						GameTooltip:SetOwner(self, "ANCHOR_BOTTOM");
-						GameTooltip:SetText(PALLYPOWER_CLEAR_DESC);
-						GameTooltip:Show(self, motion);
-						CursorUpdate(self, motion);
+						if PallyPower.opt.ShowTooltips then
+							GameTooltip:SetOwner(self, "ANCHOR_BOTTOM");
+							GameTooltip:SetText(PALLYPOWER_CLEAR_DESC);
+							GameTooltip:Show(self, motion);
+							CursorUpdate(self, motion);
+						end
 					</OnEnter>
 					<OnLeave>
 						GameTooltip:Hide(self, motion);
@@ -1483,10 +1491,12 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					  PallyPower:AutoAssign();
 				  </OnClick>
 					<OnEnter>
-						GameTooltip:SetOwner(self, "ANCHOR_BOTTOM");
-						GameTooltip:SetText(PALLYPOWER_AUTOASSIGN_DESC);
-						GameTooltip:Show(self, motion);
-						CursorUpdate(self, motion);
+						if PallyPower.opt.ShowTooltips then
+							GameTooltip:SetOwner(self, "ANCHOR_BOTTOM");
+							GameTooltip:SetText(PALLYPOWER_AUTOASSIGN_DESC);
+							GameTooltip:Show(self, motion);
+							CursorUpdate(self, motion);
+						end
 					</OnEnter>
 					<OnLeave>
 						GameTooltip:Hide(self, motion);
@@ -1509,10 +1519,12 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					  PallyPower:Report();
 				  </OnClick> 
 					<OnEnter>
-						GameTooltip:SetOwner(self, "ANCHOR_BOTTOM");
-						GameTooltip:SetText(PALLYPOWER_REPORT_DESC);
-						GameTooltip:Show(self, motion);
-						CursorUpdate(self, motion);
+						if PallyPower.opt.ShowTooltips then
+							GameTooltip:SetOwner(self, "ANCHOR_BOTTOM");
+							GameTooltip:SetText(PALLYPOWER_REPORT_DESC);
+							GameTooltip:Show(self, motion);
+							CursorUpdate(self, motion);
+						end
 					</OnEnter>
 					<OnLeave>
 						GameTooltip:Hide(self, motion);
@@ -1533,7 +1545,18 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			  <Scripts>
 				  <OnClick>
 					  PallyPower:OpenConfigWindow();
-				  </OnClick> 
+				  </OnClick>
+					<OnEnter>
+						if PallyPower.opt.ShowTooltips then
+							GameTooltip:SetOwner(self, "ANCHOR_BOTTOM");
+							GameTooltip:SetText(PALLYPOWER_OPTIONS_DESC);
+							GameTooltip:Show(self, motion);
+							CursorUpdate(self, motion);
+						end
+					</OnEnter>
+					<OnLeave>
+						GameTooltip:Hide(self, motion);
+					</OnLeave>
 			  </Scripts>
 		  </Button>
 		  <CheckButton name="$parentFreeAssign" inherits="OptionsCheckButtonTemplate">
@@ -1554,10 +1577,12 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					  end
 				  </OnClick>
 					<OnEnter>
-						GameTooltip:SetOwner(self, "ANCHOR_BOTTOM");
-						GameTooltip:SetText(PALLYPOWER_FREEASSIGN_DESC);
-						GameTooltip:Show(self, motion);
-						CursorUpdate(self, motion);
+						if PallyPower.opt.ShowTooltips then
+							GameTooltip:SetOwner(self, "ANCHOR_BOTTOM");
+							GameTooltip:SetText(PALLYPOWER_FREEASSIGN_DESC);
+							GameTooltip:Show(self, motion);
+							CursorUpdate(self, motion);
+						end
 					</OnEnter>
 					<OnLeave>
 						GameTooltip:Hide(self, motion);
