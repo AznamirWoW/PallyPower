@@ -37,6 +37,7 @@ PallyPower.options = {
 							name = L["SHOWPARTY"],
 							desc = L["SHOWPARTY_DESC"],
 							type = "toggle",
+							disabled = function(info) return PallyPower.opt.enabled == false end,
 							get = function(info) return PallyPower.opt.ShowInParty end,
 							set = function(info, val)
 								PallyPower.opt.ShowInParty = val
@@ -48,9 +49,10 @@ PallyPower.options = {
 							name = L["SHOWSOLO"],
 							desc = L["SHOWSOLO_DESC"],
 							type = "toggle",
-							get = function(info) return PallyPower.opt.ShowWhenSingle end,
+							disabled = function(info) return PallyPower.opt.enabled == false end,
+							get = function(info) return PallyPower.opt.ShowWhenSolo end,
 							set = function(info, val)
-								PallyPower.opt.ShowWhenSingle = val
+								PallyPower.opt.ShowWhenSolo = val
 								PallyPower:UpdateRoster()
 							end,
 						},
@@ -409,7 +411,7 @@ PallyPower.options = {
 								PallyPower:UpdateRoster()
 							end,
 						},
-						smart_enable = {
+						smart_buffs = {
 							order = 2,
 							type = "toggle",
 							name = L["SMARTBUFF"],

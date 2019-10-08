@@ -1053,7 +1053,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
         </Texture>
         <Texture name="$parentLine1" file="Interface\Tooltips\UI-Tooltip-Background" hidden="false">
         <Size>
-          <AbsDimension x="985" y="2" /> 
+          <AbsDimension x="898" y="2" /> 
         </Size>
         <Anchors>
           <Anchor point="TOPLEFT">
@@ -1165,18 +1165,6 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 		      </Size>
 		      <Anchors>
 			      <Anchor point="TOPLEFT" relativeTo="$parentLine9">
-				      <Offset>
-					      <AbsDimension x="86" y="0" /> 
-				      </Offset>
-			      </Anchor>
-		      </Anchors>
-	      </Texture>
-	      <Texture name="$parentLine11" file="Interface\Tooltips\UI-Tooltip-Background" hidden="false">
-		      <Size>
-			      <AbsDimension x="2" y="78" /> 
-		      </Size>
-		      <Anchors>
-			      <Anchor point="TOPLEFT" relativeTo="$parentLine10">
 				      <Offset>
 					      <AbsDimension x="86" y="0" /> 
 				      </Offset>
@@ -1339,21 +1327,11 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					</Anchor>
 				</Anchors>
 			</Button>
-			<Button name="$parentClass9" inherits="BuffGridButtonTemplate">
-				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="$parentClass8" relativePoint="TOPRIGHT">
-						<Offset>
-							<AbsDimension x="2" y="0" /> 
-						</Offset>
-					</Anchor>
-				</Anchors>
-			</Button>
 	  </Frames>
   </Frame>
-
-  <Frame name="PallyPowerConfigFrame" hidden="true" toplevel="true" frameStrata="HIGH" enableMouse="true" movable="true" parent="UIParent">
+  <Frame name="PallyPowerBlessingsFrame" hidden="true" toplevel="true" frameStrata="HIGH" enableMouse="true" movable="true" parent="UIParent">
 	  <Size>
-		  <AbsDimension x="1000" y="960" /> 
+		  <AbsDimension x="912" y="1200" /> 
 	  </Size>
     <Anchors>
       <Anchor point="TOPLEFT" relativeTo="UIParent" relativePoint="BOTTOMLEFT">
@@ -1387,19 +1365,19 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			  </Anchors>
 			  <Scripts>
 				  <OnEnter>
-					  PallyPowerConfig_ShowCredits(self, motion)
+					  PallyPowerBlessings_ShowCredits(self, motion)
 				  </OnEnter> 
 				  <OnLeave>
 					  HideUIPanel(GameTooltip);
 				  </OnLeave> 
           <OnMouseDown>
-					  PallyPowerConfigFrame_MouseDown(self, button)
+					  PallyPowerBlessingsFrame_MouseDown(self, button)
 				  </OnMouseDown>
 				  <OnMouseUp>
-					  PallyPowerConfigFrame_MouseUp(self, button)
+					  PallyPowerBlessingsFrame_MouseUp(self, button)
 				  </OnMouseUp>
 				  <OnUpdate>
-					  PallyPowerConfigGrid_Update(self, elapsed)
+					  PallyPowerBlessingsGrid_Update(self, elapsed)
 				  </OnUpdate>
 			  </Scripts>
 			  <Layers>
@@ -1450,7 +1428,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			  </Anchors>
 			  <Scripts>
 				  <OnClick>
-					  PallyPowerConfig_Refresh(self, button, down)
+					  PallyPowerBlessings_Refresh(self, button, down)
 				  </OnClick>
 					<OnEnter>
 						GameTooltip:SetOwner(self, "ANCHOR_BOTTOM");
@@ -1476,7 +1454,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			  </Anchors>
 			  <Scripts>
 				  <OnClick>
-					  PallyPowerConfig_Clear(self, button, down)
+					  PallyPowerBlessings_Clear(self, button, down)
 				  </OnClick> 
 					<OnEnter>
 						GameTooltip:SetOwner(self, "ANCHOR_BOTTOM");
@@ -1539,6 +1517,23 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					<OnLeave>
 						GameTooltip:Hide(self, motion);
 					</OnLeave>
+			  </Scripts>
+		  </Button>
+		  <Button name="$parentOptions" inherits="GameMenuButtonTemplate" text="PALLYPOWER_OPTIONS" hidden="false">
+			  <Size>
+				  <AbsDimension x="100" y="20" /> 
+			  </Size>
+			  <Anchors>
+				  <Anchor point="BOTTOMRIGHT" relativeTo="$parentReport" relativePoint="BOTTOMLEFT">
+					  <Offset>
+						  <AbsDimension x="-7" y="0" /> 
+					  </Offset>
+				  </Anchor>
+			  </Anchors>
+			  <Scripts>
+				  <OnClick>
+					  PallyPower:OpenConfigWindow();
+				  </OnClick> 
 			  </Scripts>
 		  </Button>
 		  <CheckButton name="$parentFreeAssign" inherits="OptionsCheckButtonTemplate">
@@ -1650,15 +1645,6 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				  </Anchor>
 			  </Anchors>
 		  </Frame>
-		  <Frame name="$parentClassGroup9" inherits="ClassGroupTemplate">
-			  <Anchors>
-				  <Anchor point="TOPLEFT" relativeTo="$parentClassGroup8" relativePoint="TOPRIGHT">
-					  <Offset>
-						  <AbsDimension x="2" y="0" /> 
-					  </Offset>
-				  </Anchor>
-			  </Anchors>
-		  </Frame>
 		  <Frame name="$parentPlayer1" inherits="UserTemplate">
 			  <Anchors>
 				  <Anchor point="TOPLEFT">
@@ -1721,7 +1707,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					  <AbsDimension x="100" y="16" /> 
 				  </Size>
 				  <Anchors>
-					  <Anchor point="BOTTOMLEFT" relativeTo="PallyPowerConfigFrame" relativePoint="BOTTOMLEFT"> 
+					  <Anchor point="BOTTOMLEFT" relativeTo="PallyPowerBlessingsFrame" relativePoint="BOTTOMLEFT"> 
 						  <Offset>
 							  <AbsDimension x="33" y="9" /> 
 						  </Offset>
@@ -1732,10 +1718,10 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 	  </Layers>
 	  <Scripts>
 		  <OnMouseUp>
-			  PallyPowerConfigFrame_MouseUp()
+			  PallyPowerBlessingsFrame_MouseUp()
 		  </OnMouseUp> 
 		  <OnMouseDown>
-			  PallyPowerConfigFrame_MouseDown(arg1)
+			  PallyPowerBlessingsFrame_MouseDown(arg1)
 		  </OnMouseDown> 
 		  <OnHide>
 			  if ( self.isMoving ) then 
