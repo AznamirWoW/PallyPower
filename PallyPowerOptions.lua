@@ -442,6 +442,17 @@ PallyPower.options = {
 								PallyPower:UpdateRoster()
 							end,
 						},
+						show_pets = {
+							order = 3,
+							type = "toggle",
+							name = L["SHOWPETS"],
+							desc = L["SHOWPETS_DESC"],
+							get = function(info) return PallyPower.opt.ShowPets end,
+							set = function(info, val)
+								PallyPower.opt.ShowPets = val
+								PallyPower:UpdateRoster()
+							end,
+						},
 					},
 				},
 			},

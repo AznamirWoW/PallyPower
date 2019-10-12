@@ -98,6 +98,7 @@ function PallyPower:OnEnable()
 	self:RegisterEvent("CHAT_MSG_ADDON")
 	self:RegisterEvent("CHAT_MSG_SYSTEM")
 	self:RegisterEvent("UPDATE_BINDINGS", "BindKeys")
+	self:RegisterEvent("UNIT_AURA")
 	self:RegisterBucketEvent("SPELLS_CHANGED", 1, "SPELLS_CHANGED")
 	self:RegisterBucketEvent({"GROUP_ROSTER_UPDATE", "PLAYER_REGEN_ENABLED", "UNIT_PET"}, 1, "UpdateRoster")
 	if PP_IsPally then
@@ -147,17 +148,22 @@ function PallyPower:Purge()
 end
 
 function PallyPowerBlessings_Clear()
-	if InCombatLockdown() then return false end
-	PallyPower:ClearAssignments(UnitName("player"))
-	if PallyPower:CheckRaidLeader(UnitName("player")) then
-		PallyPower:SendMessage("CLEAR")
+	if InCombatLockdown() then return end
+	if GetNumGroupMembers() > 0 then
+		if UnitIsGroupLeader(PallyPower.player) or UnitIsGroupAssistant(PallyPower.player) then
+			PallyPower:ClearAssignments(UnitName("player"))
+			PallyPower:SendMessage("CLEAR")
+		else
+			PallyPower:Print(ERR_NOT_LEADER)
+		end
+	else
+		PallyPower:ClearAssignments(UnitName("player"))
 	end
-end
-
-function PallyPowerBlessings_Options()
+	PallyPower:UpdateRoster()
 end
 
 function PallyPower:Reset()
+	if InCombatLockdown() then return end
 	local h = _G["PallyPowerFrame"]
 	h:ClearAllPoints()
 	h:SetPoint("CENTER", "UIParent", "CENTER", 0, 0)
@@ -181,6 +187,7 @@ function PallyPowerBlessings_Refresh()
 	PallyPower:SendSelf()
 	PallyPower:SendMessage("REQ")
 	PallyPower:UpdateLayout()
+	PallyPower:UpdateRoster()
 end
 
 function PallyPowerBlessings_Toggle(msg)
@@ -326,6 +333,7 @@ function PallyPowerGridButton_OnMouseWheel(btn, arg1)
 	else
 		PallyPower:PerformCycleBackwards(pname, class)
 	end
+	PallyPower:UpdateRoster()
 end
 
 function PallyPowerBlessingsFrame_MouseUp(self, button)
@@ -355,10 +363,10 @@ function PlayerButton_DragStop(frame)
 		frame:StopMovingOrSizing()
 		for i = 1, PALLYPOWER_MAXCLASSES do
 		    if MouseIsOver(getglobal("PallyPowerBlessingsFrameClassGroup"..i.."ClassButton")) then
-			local _, _, pclass, pnum = sfind(movingPlayerFrame:GetName(), "PallyPowerBlessingsFrameClassGroup(.+)PlayerButton(.+)")
-			pclass, pnum = tonumber(pclass), tonumber(pnum)
-			local unit = classes[pclass][pnum]
-			PallyPower:AssignPlayerAsClass(unit.name, pclass, i)
+					local _, _, pclass, pnum = sfind(movingPlayerFrame:GetName(), "PallyPowerBlessingsFrameClassGroup(.+)PlayerButton(.+)")
+					pclass, pnum = tonumber(pclass), tonumber(pnum)
+					local unit = classes[pclass][pnum]
+					PallyPower:AssignPlayerAsClass(unit.name, pclass, i)
 		    end
 		end
 		frame:SetPoint(point, relativeTo, relativePoint, xOfs, yOfs)
@@ -621,12 +629,12 @@ function PallyPower:PerformCycle(name, class, skipzero)
 		PallyPower_Assignments[name] = { }
 	end
 	if not PallyPower_Assignments[name][class] then
-		cur=0
+		cur = 0
 	else
-		cur=PallyPower_Assignments[name][class]
+		cur = PallyPower_Assignments[name][class]
 	end
 	PallyPower_Assignments[name][class] = 0
-	for test = cur+1, 7 do
+	for test = cur + 1, 7 do
 		if PallyPower:CanBuff(name, test) and (PallyPower:NeedsBuff(class, test) or shift) then
 			cur = test
 			do break end
@@ -657,13 +665,13 @@ function PallyPower:PerformCycleBackwards(name, class, skipzero)
 		PallyPower_Assignments[name] = { }
 	end
 	if not PallyPower_Assignments[name][class] then
-		cur=7
+		cur = 7
 	else
-		cur=PallyPower_Assignments[name][class]
+		cur = PallyPower_Assignments[name][class]
 		if cur == 0 or skipzero and cur == 1 then cur = 7 end
 	end
 	PallyPower_Assignments[name][class] = 0
-	for test = cur-1, 0, -1 do
+	for test = cur - 1, 0, -1 do
 		cur = test
 		if PallyPower:CanBuff(name, test) and (PallyPower:NeedsBuff(class, test) or shift) then
 			do break end
@@ -852,6 +860,9 @@ function PallyPower:ScanSpells()
 			end
 		end
 		PP_IsPally = true
+		if not AllPallys[self.player].subgroup then
+			AllPallys[self.player].subgroup = 1
+		end
 	else
 		PP_IsPally = false
 	end
@@ -942,7 +953,7 @@ function PallyPower:SendSelf()
 end
 
 function PallyPower:SendMessage(msg)
-	self:Debug("SendMessage("..msg..")")
+	--self:Debug("SendMessage("..msg..")")
 	local type
 	local inInstance, instanceType = IsInInstance()
 	if inInstance and instanceType == "pvp" then
@@ -996,13 +1007,16 @@ function PallyPower:CHAT_MSG_SYSTEM(event, text)
 	end
 end
 
-function PallyPower:GROUP_ROSTER_UPDATE()
-	self:Debug("EVENT: GROUP_ROSTER_UPDATE")
-end
-
-function PallyPower:PLAYER_REGEN_ENABLED()
-	self:Debug("EVENT: PLAYER_REGEN_ENABLED")
-	if PP_IsPally then self:UpdateLayout() end
+function PallyPower:UNIT_AURA(event, unitTarget)
+	local ShowPets = self.opt.ShowPets
+	local isPet = unitTarget:find("pet")
+	local pclass = select(2, UnitClass(unitTarget))
+	if ShowPets then
+		if isPet and pclass == "MAGE" then --Warlock Imp pet
+			PallyPower:UpdateRoster()
+			self:Debug("EVENT: UNIT_AURA - [Warlock Imp Changed Phase]")
+		end
+	end
 end
 
 function PallyPower:CanControl(name)
@@ -1188,7 +1202,6 @@ function PallyPower:UpdateRoster()
 	self:Debug("UpdateRoster()")
 	self:CancelTimer(self.InventoryScan)
 	local units
-	local num = GetNumGroupMembers()
 	for i = 1, PALLYPOWER_MAXCLASSES do
 		classlist[i] = 0
 		classes[i] = {}
@@ -1203,16 +1216,48 @@ function PallyPower:UpdateRoster()
 	for _, unitid in ipairs(units) do
 		if unitid and UnitExists(unitid) then
 			local tmp = {}
-			num = num + 1
 			tmp.unitid = unitid
 			tmp.name = UnitName(unitid)
-			tmp.class = select(2, UnitClass(unitid))
+			local ShowPets = self.opt.ShowPets
+			local isPet = tmp.unitid:find("pet")
+			local pclass = select(2, UnitClass(unitid))
+			if ShowPets or not isPet then
+				if isPet and pclass == "MAGE" then --Warlock Imp pet
+					local i = 1
+					local name, icon = UnitBuff(unitid, i)
+					local isPhased = false
+					while name do
+						if icon == 136164 then
+							self:Debug("isPet [isPhased]: "..tmp.name)
+							isPhased = true
+							break
+						end
+						i = i + 1
+						name, icon = UnitBuff(unitid, i)
+					end
+					if not isPhased then
+						self:Debug("isPet [notPhased]: "..tmp.name)
+						tmp.class = "PET"
+					end
+				elseif isPet then --All other pet's
+					self:Debug("isPet: "..tmp.name)
+					tmp.class = "PET"
+				else --Players
+					--self:Debug("isPlayer: "..tmp.name)
+					tmp.class = select(2, UnitClass(unitid))
+				end
+			end
 			if IsInRaid() then
 				local n = select(3, unitid:find("(%d+)"))
 				tmp.rank, tmp.subgroup = select(2, GetRaidRosterInfo(n))
 			else
 				tmp.rank = UnitIsGroupLeader(unitid) and 2 or 0
 				tmp.subgroup = 1
+			end
+			if pclass == "PALADIN" then
+				if AllPallys[tmp.name] then
+					AllPallys[tmp.name].subgroup = tmp.subgroup
+				end
 			end
 			if tmp.rank > 0 then
 				leaders[tmp.name] = true
@@ -2234,11 +2279,26 @@ function PallyPower:SealAssign(seal)
 end
 
 function PallyPower:AutoAssign()
-	PallyPowerBlessings_Clear()
-	WisdomPallys, MightPallys, KingsPallys,  SalvPallys, LightPallys, SancPallys = {}, {}, {}, {}, {}, {}
-	PallyPower:AutoAssignBlessings()
-	local precedence = { 1, 3, 2, 4, 5, 6, 7 }	 -- devotion, concentration, retribution, shadow, frost, fire, sanctity
-	PallyPower:AutoAssignAuras(precedence)
+	if InCombatLockdown() then return end
+	if GetNumGroupMembers() > 0 then
+		if UnitIsGroupLeader(self.player) or UnitIsGroupAssistant(self.player) then
+			PallyPowerBlessings_Clear()
+			WisdomPallys, MightPallys, KingsPallys,  SalvPallys, LightPallys, SancPallys = {}, {}, {}, {}, {}, {}
+			PallyPower:AutoAssignBlessings()
+			local precedence = { 1, 3, 2, 4, 5, 6, 7 }	 -- devotion, concentration, retribution, shadow, frost, fire, sanctity
+			PallyPower:AutoAssignAuras(precedence)
+			PallyPower:UpdateRoster()
+		else
+			self:Print(ERR_NOT_LEADER)
+		end
+	else
+		PallyPowerBlessings_Clear()
+		WisdomPallys, MightPallys, KingsPallys,  SalvPallys, LightPallys, SancPallys = {}, {}, {}, {}, {}, {}
+		PallyPower:AutoAssignBlessings()
+		local precedence = { 1, 3, 2, 4, 5, 6, 7 }	 -- devotion, concentration, retribution, shadow, frost, fire, sanctity
+		PallyPower:AutoAssignAuras(precedence)
+		PallyPower:UpdateRoster()
+	end
 end
 
 function PallyPower:CalcSkillRanks1(name)
@@ -2307,20 +2367,21 @@ function PallyPower:AutoAssignBlessings()
 		end
 	end
 	-- get template for the number of available paladins in the raid
-	if UnitIsGroupLeader(PallyPower.player) or UnitIsGroupAssistant(PallyPower.player) then
-		pallytemplate = PallyPower.LeaderTemplates[pallycount]
+	if IsInRaid() then
+		pallytemplate = PallyPower.RaidTemplates[pallycount]
 	else
 		pallytemplate = PallyPower.Templates[pallycount]
 	end
 	-- assign based on the class templates
-	PallyPower:SelectBuffsByClass(pallycount, 1, pallytemplate[1])  	-- warrior
-	PallyPower:SelectBuffsByClass(pallycount, 2, pallytemplate[2])  	-- rogue
-	PallyPower:SelectBuffsByClass(pallycount, 3, pallytemplate[3])  	-- priest
+	PallyPower:SelectBuffsByClass(pallycount, 1, pallytemplate[1])  -- warrior
+	PallyPower:SelectBuffsByClass(pallycount, 2, pallytemplate[2])  -- rogue
+	PallyPower:SelectBuffsByClass(pallycount, 3, pallytemplate[3])  -- priest
 	PallyPower:SelectBuffsByClass(pallycount, 4, pallytemplate[4]) 	-- druid
 	PallyPower:SelectBuffsByClass(pallycount, 5, pallytemplate[5]) 	-- paladin
 	PallyPower:SelectBuffsByClass(pallycount, 6, pallytemplate[6]) 	-- hunter
 	PallyPower:SelectBuffsByClass(pallycount, 7, pallytemplate[7]) 	-- mage
 	PallyPower:SelectBuffsByClass(pallycount, 8, pallytemplate[8]) 	-- lock
+	PallyPower:SelectBuffsByClass(pallycount, 9, pallytemplate[9]) 	-- pets
 end
 
 function PallyPower:SelectBuffsByClass(pallycount, class, prioritylist)
@@ -2354,6 +2415,8 @@ function PallyPower:BuffSelections(buff, class, pallys)
 	if buff == 5 then t = LightPallys end
 	if buff == 6 then t = SancPallys end
 	local Buffer = ""
+	local pclass = 1
+	local cclass = 1
 	local testrank = 0
 	local testtalent = 0
 	tsort(t, function(a, b) return a.skill > b.skill end)
@@ -2364,8 +2427,20 @@ function PallyPower:BuffSelections(buff, class, pallys)
 		end
 	end
 	if Buffer ~= "" then
+		if IsInRaid() then
+			if buff > 2 then
+				for pclass = 1, PALLYPOWER_MAXCLASSES do
+					PallyPower_Assignments[Buffer][pclass] = buff
+				end
+				PallyPower:SendMessage("MASSIGN "..Buffer.." "..buff)
+			else
+				PallyPower_Assignments[Buffer][class] = buff
+				PallyPower:SendMessage("ASSIGN "..Buffer.." "..class.." "..buff)
+			end
+		else
 			PallyPower_Assignments[Buffer][class] = buff
-			PallyPower:SendMessage("ASSIGN "..Buffer.." "..class.. " " ..buff)
+			PallyPower:SendMessage("ASSIGN "..Buffer.." "..class.." "..buff)
+		end
 	else end
 	return Buffer
 end
@@ -2520,28 +2595,34 @@ end
 
 function PallyPower:AutoAssignAuras(precedence)
 	local pallys = {}
-	for name in pairs(AllPallys) do
-		tinsert(pallys, name)
+	for i = 1, 8 do
+		pallys[("subgroup%d"):format(i)] = {}
 	end
-	for _, aura in pairs(precedence) do
-		local assignee = ""
-		local testRank = 0
-		local testTalent = 0
-		for _, pally in pairs(pallys) do
-			if PallyPower:HasAura(pally, aura) and ( AllPallys[pally].AuraInfo[aura].rank >= testRank ) then
-				testRank = AllPallys[pally].AuraInfo[aura].rank
-				if AllPallys[pally].AuraInfo[aura].talent >= testTalent then
-					testTalent = AllPallys[pally].AuraInfo[aura].talent
-					assignee = pally
+	for name in pairs(AllPallys) do
+		local subgroup = "subgroup"..AllPallys[name].subgroup
+		tinsert(pallys[subgroup], name)
+	end
+	for _, subgroup in pairs(pallys) do
+		for _, aura in pairs(precedence) do
+			local assignee = ""
+			local testRank = 0
+			local testTalent = 0
+			for _, pally in pairs(subgroup) do
+				if PallyPower:HasAura(pally, aura) and (AllPallys[pally].AuraInfo[aura].rank >= testRank) then
+					testRank = AllPallys[pally].AuraInfo[aura].rank
+					if AllPallys[pally].AuraInfo[aura].talent >= testTalent then
+						testTalent = AllPallys[pally].AuraInfo[aura].talent
+						assignee = pally
+					end
 				end
 			end
-		end
-		if assignee ~= "" then
-			for i, name in pairs(pallys) do
-				if assignee == name then
-					tremove(pallys, i)
-					PallyPower_AuraAssignments[assignee] = aura
-					PallyPower:SendMessage("AASSIGN "..assignee.." "..aura)
+			if assignee ~= "" then
+				for i, name in pairs(subgroup) do
+					if assignee == name then
+						tremove(subgroup, i)
+						PallyPower_AuraAssignments[assignee] = aura
+						PallyPower:SendMessage("AASSIGN "..assignee.." "..aura)
+					end
 				end
 			end
 		end
