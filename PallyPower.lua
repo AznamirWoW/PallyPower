@@ -84,6 +84,15 @@ function PallyPower:OnInitialize()
 	LibClassicDurations:Register("PallyPower")
 	self.AutoBuffedList = {}
 	self.PreviousAutoBuffedUnit = nil
+	if not PallyPowerConfigFrame then
+		local pallypowerconfigframe = AceGUI:Create("Frame")
+		--pallypowerconfigframe:SetLayout("Fill")
+		LibStub("AceConfigDialog-3.0"):SetDefaultSize("PallyPower", 625, 580)
+    LibStub("AceConfigDialog-3.0"):Open("PallyPower", pallypowerconfigframe)
+		pallypowerconfigframe:Hide()
+		_G["PallyPowerConfigFrame"] = pallypowerconfigframe.frame
+		table.insert(UISpecialFrames, "PallyPowerConfigFrame")
+	end
 end
 
 function PallyPower:OnProfileChanged()
@@ -150,7 +159,7 @@ end
 function PallyPowerBlessings_Clear()
 	if InCombatLockdown() then return end
 	if GetNumGroupMembers() > 0 then
-		if UnitIsGroupLeader(PallyPower.player) or UnitIsGroupAssistant(PallyPower.player) then
+		if not IsInRaid() or (UnitIsGroupLeader(PallyPower.player) or UnitIsGroupAssistant(PallyPower.player)) then
 			PallyPower:ClearAssignments(UnitName("player"))
 			PallyPower:SendMessage("CLEAR")
 		else
@@ -220,18 +229,11 @@ function PallyPower:OpenConfigWindow()
 	if PallyPowerBlessingsFrame:IsVisible() then
 		PallyPowerBlessingsFrame:Hide()
 	end
-	if not PallyPower.configFrame then
-		PallyPower.configFrame = AceGUI:Create("Frame")
-    PallyPower.configFrame:Hide()
-		_G["PallyPowerConfigFrame"] = PallyPower.configFrame.frame
-		table.insert(UISpecialFrames, "PallyPowerConfigFrame")
-	end
-  if not PallyPower.configFrame:IsShown() then
-		LibStub("AceConfigDialog-3.0"):SetDefaultSize("PallyPower", 625, 580)
-    LibStub("AceConfigDialog-3.0"):Open("PallyPower", PallyPower.configFrame)
+  if not PallyPowerConfigFrame:IsShown() then
+		PallyPowerConfigFrame:Show()
 		PlaySound(SOUNDKIT.IG_SPELLBOOK_OPEN)
   else
-		PallyPower.configFrame:Hide()
+		PallyPowerConfigFrame:Hide()
 		PlaySound(SOUNDKIT.IG_SPELLBOOK_CLOSE)
   end
 end
@@ -2281,9 +2283,9 @@ end
 function PallyPower:AutoAssign()
 	if InCombatLockdown() then return end
 	if GetNumGroupMembers() > 0 then
-		if UnitIsGroupLeader(self.player) or UnitIsGroupAssistant(self.player) then
+		if not IsInRaid() or (UnitIsGroupLeader(PallyPower.player) or UnitIsGroupAssistant(PallyPower.player)) then
 			PallyPowerBlessings_Clear()
-			WisdomPallys, MightPallys, KingsPallys,  SalvPallys, LightPallys, SancPallys = {}, {}, {}, {}, {}, {}
+			WisdomPallysw, MightPallys, KingsPallys,  SalvPallys, LightPallys, SancPallys = {}, {}, {}, {}, {}, {}
 			PallyPower:AutoAssignBlessings()
 			local precedence = { 1, 3, 2, 4, 5, 6, 7 }	 -- devotion, concentration, retribution, shadow, frost, fire, sanctity
 			PallyPower:AutoAssignAuras(precedence)
