@@ -35,6 +35,7 @@ local party_units = {}
 local raid_units = {}
 local leaders = {}
 local roster = {}
+local raidtanks = {}
 
 do
 	table.insert(party_units, "player")
@@ -418,7 +419,7 @@ function PallyPowerBlessingsGrid_Update(self, elapsed)
 			end
 		end
 		PallyPowerBlessingsFrame:SetScale(PallyPower.opt.configscale)
-		for i, name in pairs(SyncList) do
+		for i, name in ipairs(SyncList) do
 			local fname = "PallyPowerBlessingsFramePlayer" .. i
 			local SkillInfo = AllPallys[name]
 			local BuffInfo = PallyPower_Assignments[name]
@@ -785,7 +786,7 @@ function PallyPower:NeedsBuff(class, test, playerName)
 	if playerName then
 		for pname, classes in pairs(PallyPower_NormalAssignments) do
 			if AllPallys[pname] and not pname == self.player then
-				for class_id, tnames in pairs(classes) do
+				for class_id, tnames in ipairs(classes) do
 					for tname, blessing_id in pairs(tnames) do
 						if blessing_id == test then
 							return false
@@ -1033,6 +1034,10 @@ function PallyPower:CheckRaidLeader(nick)
 	return leaders[nick]
 end
 
+function PallyPower:CheckRaidTanks(nick)
+	return raidtanks[nick]
+end
+
 function PallyPower:ClearAssignments(sender)
 	local leader = self:CheckRaidLeader(sender)
 	for name, skills in pairs(PallyPower_Assignments) do
@@ -1044,7 +1049,7 @@ function PallyPower:ClearAssignments(sender)
 	end
 	for pname, classes in pairs(PallyPower_NormalAssignments) do
 		if leader or pname == sender then
-			for class_id, tnames in pairs(classes) do
+			for class_id, tnames in ipairs(classes) do
 				for tname, blessing_id in pairs(tnames) do
 					tnames[tname] = nil
 				end
@@ -1192,7 +1197,7 @@ function PallyPower:FormatTime(time)
 end
 
 function PallyPower:GetClassID(class)
-	for id, name in pairs(self.ClassID) do
+	for id, name in ipairs(self.ClassID) do
 		if (name==class) then
 			return id
 		end
@@ -1215,6 +1220,7 @@ function PallyPower:UpdateRoster()
 	end
 	twipe(roster)
 	twipe(leaders)
+	--twipe(raidtanks)
 	for _, unitid in ipairs(units) do
 		if unitid and UnitExists(unitid) then
 			local tmp = {}
@@ -1252,6 +1258,21 @@ function PallyPower:UpdateRoster()
 			if IsInRaid() then
 				local n = select(3, unitid:find("(%d+)"))
 				tmp.rank, tmp.subgroup = select(2, GetRaidRosterInfo(n))
+				local raidtank = select(10, GetRaidRosterInfo(n))
+				if raidtank ~= nil then
+					if PallyPower_Assignments[UnitName("player")] and (PallyPower_Assignments[UnitName("player")][PallyPower:GetClassID(pclass)] == 4) then
+						SetNormalBlessings(UnitName("player"), PallyPower:GetClassID(pclass), tmp.name, 5)
+					else
+						SetNormalBlessings(UnitName("player"), PallyPower:GetClassID(pclass), tmp.name, 0)
+					end
+					raidtanks[tmp.name] = true
+				end
+				if (raidtank == nil) and (raidtanks[tmp.name] == true) then
+					if PallyPower_NormalAssignments[UnitName("player")] and PallyPower_NormalAssignments[UnitName("player")][PallyPower:GetClassID(pclass)] and PallyPower_NormalAssignments[UnitName("player")][PallyPower:GetClassID(pclass)][tmp.name] == 5 then
+						SetNormalBlessings(UnitName("player"), PallyPower:GetClassID(pclass), tmp.name, 0)
+					end
+					raidtanks[tmp.name] = false
+				end
 			else
 				tmp.rank = UnitIsGroupLeader(unitid) and 2 or 0
 				tmp.subgroup = 1
@@ -1284,7 +1305,7 @@ end
 
 function PallyPower:ScanClass(classID)
 	local class = classes[classID]
-	for playerID, unit in pairs(class) do
+	for playerID, unit in ipairs(class) do
 		if unit.unitid then
 			local spellID, gspellID = self:GetSpellID(classID, unit.name)
 			local spell = PallyPower.Spells[spellID]
@@ -1599,7 +1620,7 @@ function PallyPower:UpdateButton(button, baseName, classID)
 	local nspecial = 0
 	local nhave = 0
 	local ndead = 0
-	for playerID, unit in pairs(classes[classID]) do
+	for playerID, unit in ipairs(classes[classID]) do
 		testbutton = classes
 		if unit.visible then
 			if not unit.hasbuff then
@@ -1664,7 +1685,7 @@ end
 function PallyPower:GetBuffExpiration(classID)
 	local class = classes[classID]
 	local classExpire, classDuration, specialExpire, specialDuration = 9999, 9999, 9999, 9999
-	for playerID, unit in pairs(class) do
+	for playerID, unit in ipairs(class) do
 		if unit.unitid then
 			local j = 1
 			local spellID, gspellID = self:GetSpellID(classID, unit.name)
@@ -1932,7 +1953,7 @@ function PallyPower:GetUnitAndSpellSmart(classID, mousebutton)
 	local spell, gspell
 	if (mousebutton == "LeftButton") then
 		gspell = PallyPower.GSpells[gspellID]
-		for i, unit in pairs(class) do
+		for i, unit in ipairs(class) do
 			if IsSpellInRange(gspell, unit.unitid) == 1 then
 				spellID, gspellID = PallyPower:GetSpellID(classID, unit.name)
 				spell = PallyPower.Spells[spellID]
@@ -1941,7 +1962,7 @@ function PallyPower:GetUnitAndSpellSmart(classID, mousebutton)
 			end
 		end
 	elseif (mousebutton == "RightButton") then
-		for i, unit in pairs(class) do
+		for i, unit in ipairs(class) do
 			spellID, gspellID = PallyPower:GetSpellID(classID, unit.name)
 		 	spell = PallyPower.Spells[spellID]
 			spell2 = PallyPower.GSpells[spellID]
@@ -2305,36 +2326,23 @@ end
 
 function PallyPower:CalcSkillRanks1(name)
 	local wisdom, might, kings, salv, light, sanct
-	if AllPallys[name][1] then
+	if AllPallys[name][1] ~= nil then
 		wisdom = tonumber(AllPallys[name][1].rank) + tonumber(AllPallys[name][1].talent)/12
-	else
-		wisdom = 0
 	end
-	if  AllPallys[name][2] then
+	if  AllPallys[name][2] ~= nil then
 		might  = tonumber(AllPallys[name][2].rank) + tonumber(AllPallys[name][2].talent)/10
-	else
-		might = 0
 	end
-	if AllPallys[name][3] then
+	if AllPallys[name][3] ~= nil then
 		kings  = tonumber(AllPallys[name][3].rank)
-	else
-		kings = 0
 	end
-
-	if AllPallys[name][4] then
+	if AllPallys[name][4] ~= nil then
 		salv  = tonumber(AllPallys[name][4].rank)
-	else
-		salv = 0
 	end
-	if AllPallys[name][5] then
+	if AllPallys[name][5] ~= nil then
 		light  = tonumber(AllPallys[name][5].rank)
-	else
-		light = 0
 	end
-	if AllPallys[name][6] then
+	if AllPallys[name][6] ~= nil then
 		sanct  = tonumber(AllPallys[name][6].rank)
-	else
-		sanct = 0
 	end
 	return wisdom, might, kings, salv, light, sanct
 end
@@ -2394,10 +2402,10 @@ function PallyPower:SelectBuffsByClass(pallycount, class, prioritylist)
 	local bufftable = prioritylist
 	if pallycount > 0 then
 		local pallycounter = 1
-		for i, nextspell in pairs(bufftable) do
+		for i, nextspell in ipairs(bufftable) do
 			if pallycounter <= pallycount then
 				local buffer = PallyPower:BuffSelections(nextspell, class, pallys)
-				for i, v in pairs(pallys) do
+				for i, v in ipairs(pallys) do
 					if buffer == pallys[i] then
 						tremove(pallys, i)
 					end
@@ -2417,10 +2425,7 @@ function PallyPower:BuffSelections(buff, class, pallys)
 	if buff == 5 then t = LightPallys end
 	if buff == 6 then t = SancPallys end
 	local Buffer = ""
-	local pclass = 1
-	local cclass = 1
-	local testrank = 0
-	local testtalent = 0
+	local pclass
 	tsort(t, function(a, b) return a.skill > b.skill end)
 	for i, v in ipairs(t) do
 		if PallyPower:PallyAvailable(v.pallyname, pallys) and v.skill > 0 then
@@ -2429,15 +2434,18 @@ function PallyPower:BuffSelections(buff, class, pallys)
 		end
 	end
 	if Buffer ~= "" then
-		if IsInRaid() then
-			if buff > 2 then
-				for pclass = 1, PALLYPOWER_MAXCLASSES do
-					PallyPower_Assignments[Buffer][pclass] = buff
+		if (IsInRaid()) and (buff > 2) then
+			for pclass = 1, PALLYPOWER_MAXCLASSES do
+				PallyPower_Assignments[Buffer][pclass] = buff
+			end
+			PallyPower:SendMessage("MASSIGN "..Buffer.." "..buff)
+			if (buff == 4) and (class == 1 or class == 4 or class == 5) then
+				for i = 1, MAX_RAID_MEMBERS do
+					local playerName, _, _, _, playerClass = GetRaidRosterInfo(i)
+					if playerName and PallyPower:CheckRaidTanks(playerName) and (class == PallyPower:GetClassID(string.upper(playerClass)))  then
+						SetNormalBlessings(Buffer, class, playerName, 5)
+					end
 				end
-				PallyPower:SendMessage("MASSIGN "..Buffer.." "..buff)
-			else
-				PallyPower_Assignments[Buffer][class] = buff
-				PallyPower:SendMessage("ASSIGN "..Buffer.." "..class.." "..buff)
 			end
 		else
 			PallyPower_Assignments[Buffer][class] = buff
@@ -2449,7 +2457,7 @@ end
 
 function PallyPower:PallyAvailable(pally, pallys)
 	local available = false
-	for i, v in pairs(pallys) do
+	for i, v in ipairs(pallys) do
 		if pallys[i] == pally then available = true end
 	end
 	return available
@@ -2619,7 +2627,7 @@ function PallyPower:AutoAssignAuras(precedence)
 				end
 			end
 			if assignee ~= "" then
-				for i, name in pairs(subgroup) do
+				for i, name in ipairs(subgroup) do
 					if assignee == name then
 						tremove(subgroup, i)
 						PallyPower_AuraAssignments[assignee] = aura
