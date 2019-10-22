@@ -1380,7 +1380,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 	  <Frames>
 		  <Button name="$parentTitle">
 			  <Size>
-				  <AbsDimension x="100" y="20" /> 
+				  <AbsDimension x="940" y="20" /> 
 			  </Size>
 			  <Anchors>
 				  <Anchor point="TOP">

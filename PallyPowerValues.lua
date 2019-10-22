@@ -45,6 +45,8 @@ PALLYPOWER_DEFAULT_VALUES = {
 		},
 		enabled = true,
 		layout = "Layout 2",
+		MainTank = true,
+		MainAssist = false,
 		rfbuff = true,
 		seal = 4,
 		ShowInParty = true,
