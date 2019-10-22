@@ -87,7 +87,6 @@ function PallyPower:OnInitialize()
 	self.PreviousAutoBuffedUnit = nil
 	if not PallyPowerConfigFrame then
 		local pallypowerconfigframe = AceGUI:Create("Frame")
-		--pallypowerconfigframe:SetLayout("Fill")
 		LibStub("AceConfigDialog-3.0"):SetDefaultSize("PallyPower", 625, 580)
     LibStub("AceConfigDialog-3.0"):Open("PallyPower", pallypowerconfigframe)
 		pallypowerconfigframe:Hide()
@@ -219,7 +218,7 @@ end
 
 function PallyPowerBlessings_ShowCredits(self)
 	if PallyPower.opt.ShowTooltips then
-		GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT")
+		GameTooltip:SetOwner(self, "ANCHOR_TOP")
 		GameTooltip:SetText(PallyPower_Credits1, 1, 1, 1)
 		GameTooltip:AddLine(PallyPower_Credits2, 1, 1, 1)
 		GameTooltip:Show()
@@ -336,7 +335,6 @@ function PallyPowerGridButton_OnMouseWheel(btn, arg1)
 	else
 		PallyPower:PerformCycleBackwards(pname, class)
 	end
-	PallyPower:UpdateRoster()
 end
 
 function PallyPowerBlessingsFrame_MouseUp(self, button)
@@ -419,7 +417,7 @@ function PallyPowerBlessingsGrid_Update(self, elapsed)
 			end
 		end
 		PallyPowerBlessingsFrame:SetScale(PallyPower.opt.configscale)
-		for i, name in ipairs(SyncList) do
+		for i, name in pairs(SyncList) do
 			local fname = "PallyPowerBlessingsFramePlayer" .. i
 			local SkillInfo = AllPallys[name]
 			local BuffInfo = PallyPower_Assignments[name]
@@ -659,6 +657,7 @@ function PallyPower:PerformCycle(name, class, skipzero)
 		PallyPower_Assignments[name][class] = cur
 		PallyPower:SendMessage("ASSIGN "..name.." "..class.." "..cur)
 	end
+	PallyPower:UpdateRoster()
 end
 
 function PallyPower:PerformCycleBackwards(name, class, skipzero)
@@ -689,6 +688,7 @@ function PallyPower:PerformCycleBackwards(name, class, skipzero)
 		PallyPower_Assignments[name][class] = cur
 		PallyPower:SendMessage("ASSIGN "..name.." "..class.." "..cur)
 	end
+	PallyPower:UpdateRoster()
 end
 
 function PallyPower:PerformPlayerCycle(self, delta, pname, class)
@@ -706,6 +706,7 @@ function PallyPower:PerformPlayerCycle(self, delta, pname, class)
 		end
 	end
 	SetNormalBlessings(playername, class, pname, test)
+	PallyPower:UpdateRoster()
 end
 
 function PallyPower:AssignPlayerAsClass(pname, pclass, tclass)
@@ -786,7 +787,7 @@ function PallyPower:NeedsBuff(class, test, playerName)
 	if playerName then
 		for pname, classes in pairs(PallyPower_NormalAssignments) do
 			if AllPallys[pname] and not pname == self.player then
-				for class_id, tnames in ipairs(classes) do
+				for class_id, tnames in pairs(classes) do
 					for tname, blessing_id in pairs(tnames) do
 						if blessing_id == test then
 							return false
@@ -1005,6 +1006,10 @@ function PallyPower:CHAT_MSG_SYSTEM(event, text)
 			SyncList = {}
 			PallyPower:ScanSpells()
 			PallyPower:ScanInventory()
+			if PallyPower_NormalAssignments[UnitName("player")] and PallyPower_NormalAssignments[UnitName("player")][PallyPower:GetClassID(string.upper(UnitClass("player")))] and PallyPower_NormalAssignments[UnitName("player")][PallyPower:GetClassID(string.upper(UnitClass("player")))][UnitName("player")] == 5 then
+					SetNormalBlessings(UnitName("player"), PallyPower:GetClassID(string.upper(UnitClass("player"))), UnitName("player"), 0)
+					PallyPower_NormalAssignments = {}
+			end
 			self:Debug("EVENT: CHAT_MSG_SYSTEM")
 		end
 	end
@@ -1049,7 +1054,7 @@ function PallyPower:ClearAssignments(sender)
 	end
 	for pname, classes in pairs(PallyPower_NormalAssignments) do
 		if leader or pname == sender then
-			for class_id, tnames in ipairs(classes) do
+			for class_id, tnames in pairs(classes) do
 				for tname, blessing_id in pairs(tnames) do
 					tnames[tname] = nil
 				end
@@ -1197,7 +1202,7 @@ function PallyPower:FormatTime(time)
 end
 
 function PallyPower:GetClassID(class)
-	for id, name in ipairs(self.ClassID) do
+	for id, name in pairs(self.ClassID) do
 		if (name==class) then
 			return id
 		end
@@ -1220,7 +1225,6 @@ function PallyPower:UpdateRoster()
 	end
 	twipe(roster)
 	twipe(leaders)
-	--twipe(raidtanks)
 	for _, unitid in ipairs(units) do
 		if unitid and UnitExists(unitid) then
 			local tmp = {}
@@ -1259,19 +1263,17 @@ function PallyPower:UpdateRoster()
 				local n = select(3, unitid:find("(%d+)"))
 				tmp.rank, tmp.subgroup = select(2, GetRaidRosterInfo(n))
 				local raidtank = select(10, GetRaidRosterInfo(n))
-				if raidtank ~= nil then
-					if PallyPower_Assignments[UnitName("player")] and (PallyPower_Assignments[UnitName("player")][PallyPower:GetClassID(pclass)] == 4) then
-						SetNormalBlessings(UnitName("player"), PallyPower:GetClassID(pclass), tmp.name, 5)
-					else
-						SetNormalBlessings(UnitName("player"), PallyPower:GetClassID(pclass), tmp.name, 0)
-					end
-					raidtanks[tmp.name] = true
+				if PallyPower_NormalAssignments[UnitName("player")] and PallyPower_NormalAssignments[UnitName("player")][PallyPower:GetClassID(pclass)] and PallyPower_NormalAssignments[UnitName("player")][PallyPower:GetClassID(pclass)][tmp.name] == 5 then
+					SetNormalBlessings(UnitName("player"), PallyPower:GetClassID(pclass), tmp.name, 0)
 				end
-				if (raidtank == nil) and (raidtanks[tmp.name] == true) then
-					if PallyPower_NormalAssignments[UnitName("player")] and PallyPower_NormalAssignments[UnitName("player")][PallyPower:GetClassID(pclass)] and PallyPower_NormalAssignments[UnitName("player")][PallyPower:GetClassID(pclass)][tmp.name] == 5 then
-						SetNormalBlessings(UnitName("player"), PallyPower:GetClassID(pclass), tmp.name, 0)
+				raidtanks[tmp.name] = false
+				if PallyPower.opt.MainTank or PallyPower.opt.MainAssist then
+					if (raidtank == "MAINTANK" and PallyPower.opt.MainTank) or (raidtank == "MAINASSIST" and PallyPower.opt.MainAssist) then
+						if PallyPower_Assignments[UnitName("player")] and (PallyPower_Assignments[UnitName("player")][PallyPower:GetClassID(pclass)] == 4) then
+							SetNormalBlessings(UnitName("player"), PallyPower:GetClassID(pclass), tmp.name, 5)
+							raidtanks[tmp.name] = true
+						end
 					end
-					raidtanks[tmp.name] = false
 				end
 			else
 				tmp.rank = UnitIsGroupLeader(unitid) and 2 or 0
@@ -1305,7 +1307,7 @@ end
 
 function PallyPower:ScanClass(classID)
 	local class = classes[classID]
-	for playerID, unit in ipairs(class) do
+	for playerID, unit in pairs(class) do
 		if unit.unitid then
 			local spellID, gspellID = self:GetSpellID(classID, unit.name)
 			local spell = PallyPower.Spells[spellID]
@@ -1620,7 +1622,7 @@ function PallyPower:UpdateButton(button, baseName, classID)
 	local nspecial = 0
 	local nhave = 0
 	local ndead = 0
-	for playerID, unit in ipairs(classes[classID]) do
+	for playerID, unit in pairs(classes[classID]) do
 		testbutton = classes
 		if unit.visible then
 			if not unit.hasbuff then
@@ -1685,7 +1687,7 @@ end
 function PallyPower:GetBuffExpiration(classID)
 	local class = classes[classID]
 	local classExpire, classDuration, specialExpire, specialDuration = 9999, 9999, 9999, 9999
-	for playerID, unit in ipairs(class) do
+	for playerID, unit in pairs(class) do
 		if unit.unitid then
 			local j = 1
 			local spellID, gspellID = self:GetSpellID(classID, unit.name)
@@ -1697,10 +1699,12 @@ function PallyPower:GetBuffExpiration(classID)
 				if (buffName == gspell) then
 					classExpire = min(classExpire, buffExpire)
 					classDuration = min(classDuration, buffDuration)
+					--self:Debug("[GetBuffExpiration] buffName: "..buffName.." | classExpire: "..classExpire.." | classDuration: "..classDuration)
 					break
 				elseif (buffName == spell) then
 					specialExpire = min(specialExpire, buffExpire)
 					specialDuration = min(specialDuration, buffDuration)
+					--self:Debug("[GetBuffExpiration] buffName: "..buffName.." | specialExpire: "..classExpire.." | specialDuration: "..classDuration)
 					break
 				end
 				j = j + 1
@@ -1953,7 +1957,7 @@ function PallyPower:GetUnitAndSpellSmart(classID, mousebutton)
 	local spell, gspell
 	if (mousebutton == "LeftButton") then
 		gspell = PallyPower.GSpells[gspellID]
-		for i, unit in ipairs(class) do
+		for i, unit in pairs(class) do
 			if IsSpellInRange(gspell, unit.unitid) == 1 then
 				spellID, gspellID = PallyPower:GetSpellID(classID, unit.name)
 				spell = PallyPower.Spells[spellID]
@@ -1962,7 +1966,7 @@ function PallyPower:GetUnitAndSpellSmart(classID, mousebutton)
 			end
 		end
 	elseif (mousebutton == "RightButton") then
-		for i, unit in ipairs(class) do
+		for i, unit in pairs(class) do
 			spellID, gspellID = PallyPower:GetSpellID(classID, unit.name)
 		 	spell = PallyPower.Spells[spellID]
 			spell2 = PallyPower.GSpells[spellID]
@@ -1984,6 +1988,7 @@ function PallyPower:IsBuffActive(spellName, gspellName, unitID)
 			if buffExpire then
 				buffExpire = buffExpire - GetTime()
 			end
+			--self:Debug("[IsBuffActive] buffName: "..buffName.." | buffExpire: "..buffExpire.." | buffDuration: "..buffDuration)
 			return buffExpire, buffDuration, buffName
 		end
 		j = j + 1
@@ -2402,10 +2407,10 @@ function PallyPower:SelectBuffsByClass(pallycount, class, prioritylist)
 	local bufftable = prioritylist
 	if pallycount > 0 then
 		local pallycounter = 1
-		for i, nextspell in ipairs(bufftable) do
+		for i, nextspell in pairs(bufftable) do
 			if pallycounter <= pallycount then
 				local buffer = PallyPower:BuffSelections(nextspell, class, pallys)
-				for i, v in ipairs(pallys) do
+				for i, v in pairs(pallys) do
 					if buffer == pallys[i] then
 						tremove(pallys, i)
 					end
@@ -2457,7 +2462,7 @@ end
 
 function PallyPower:PallyAvailable(pally, pallys)
 	local available = false
-	for i, v in ipairs(pallys) do
+	for i, v in pairs(pallys) do
 		if pallys[i] == pally then available = true end
 	end
 	return available
@@ -2627,7 +2632,7 @@ function PallyPower:AutoAssignAuras(precedence)
 				end
 			end
 			if assignee ~= "" then
-				for i, name in ipairs(subgroup) do
+				for i, name in pairs(subgroup) do
 					if assignee == name then
 						tremove(subgroup, i)
 						PallyPower_AuraAssignments[assignee] = aura

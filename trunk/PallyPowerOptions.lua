@@ -74,8 +74,64 @@ PallyPower.options = {
 						},
 					},
 				},
-				settings_frames = {
+				settings_buffs = {
 					order = 2,
+					name = "What to buff with PallyPower",
+					type = "group",
+					inline = true,
+					disabled = function(info) return PallyPower.opt.enabled == false end,
+					args = {
+						maintank_buff = {
+							order = 1,
+							type = "toggle",
+							name = L["MAINTANK"],
+							desc = L["MAINTANK_DESC"],
+							width = 1.2,
+							get = function(info) return PallyPower.opt.MainTank end,
+							set = function(info, val)
+								PallyPower.opt.MainTank = val
+								PallyPower:UpdateRoster()
+							end,
+						},
+						mainassist_buff = {
+							order = 2,
+							type = "toggle",
+							name = L["MAINASSISTANT"],
+							desc = L["MAINASSISTANT_DESC"],
+							width = 1.2,
+							get = function(info) return PallyPower.opt.MainAssist end,
+							set = function(info, val)
+								PallyPower.opt.MainAssist = val
+								PallyPower:UpdateRoster()
+							end,
+						},
+						smart_buff = {
+							order = 3,
+							type = "toggle",
+							name = L["SMARTBUFF"],
+							desc = L["SMARTBUFF_DESC"],
+							width = 1.2,
+							get = function(info) return PallyPower.opt.SmartBuffs end,
+							set = function(info, val)
+								PallyPower.opt.SmartBuffs = val
+								PallyPower:UpdateRoster()
+							end,
+						},
+						showpets_buff = {
+							order = 4,
+							type = "toggle",
+							name = L["SHOWPETS"],
+							desc = L["SHOWPETS_DESC"],
+							get = function(info) return PallyPower.opt.ShowPets end,
+							set = function(info, val)
+								PallyPower.opt.ShowPets = val
+								PallyPower:UpdateRoster()
+							end,
+						},
+					},
+				},
+				settings_frames = {
+					order = 3,
 					name = L["PP_LOOKS"],
 					type = "group",
 					inline = true,
@@ -86,7 +142,7 @@ PallyPower.options = {
 							name = L["BSC"],
 							desc = L["BSC_DESC"],
 							type = "range",
-							width = 1.65,
+							width = 1.50,
 							min = 0.4,
 							max = 1.5,
 							step = 0.05,
@@ -96,12 +152,30 @@ PallyPower.options = {
 								PallyPower:UpdateLayout()
 							end,
 						},
-						skin = {
+						layout = {
 							order = 2,
+							type = "select",
+							width = 1.5,
+							name = L["LAYOUT"],
+							desc = L["LAYOUT_DESC"],
+							get = function(info) return PallyPower.opt.layout end,
+							set = function(info,val)
+								PallyPower.opt.layout = val
+								PallyPower:UpdateLayout()
+							end,
+							values = {
+								["Layout 1"] = L["Right"],
+								["Layout 2"] = L["Left"],
+								["Layout 3"] = L["Down"],
+								["Layout 4"] = L["Up"],
+							},
+						},
+						skin = {
+							order = 3,
 							name = L["SKIN"],
 							desc = L["SKIN_DESC"],
 							type = "select",
-							width = 1.65,
+							width = 1.5,
 							dialogControl = "LSM30_Background",
 							values = AceGUIWidgetLSMlists.background,
 							get = function(info) return PallyPower.opt.skin end,
@@ -111,11 +185,11 @@ PallyPower.options = {
 							end,
 						},
 						edges = {
-							order = 3,
+							order = 4,
 							name = L["DISPEDGES"],
 							desc = L["DISPEDGES_DESC"],
 							type = "select",
-							width = 1.65,
+							width = 1.5,
 							dialogControl = "LSM30_Border",
 							values = AceGUIWidgetLSMlists.border,
 							get = function(info) return PallyPower.opt.border end,
@@ -124,36 +198,17 @@ PallyPower.options = {
 								PallyPower:ApplySkin()
 							end,
 						},
-						frame_layout = {
-							order = 4,
-							name = "",
-							type = "group",
-							inline = true,
-							args = {
-								layout = {
-									order = 1,
-									type = "select",
-									width = 1.2,
-									name = L["LAYOUT"],
-									desc = L["LAYOUT_DESC"],
-									get = function(info) return PallyPower.opt.layout end,
-									set = function(info,val)
-										PallyPower.opt.layout = val
-										PallyPower:UpdateLayout()
-									end,
-									values = {
-										["Layout 1"] = L["Right"],
-										["Layout 2"] = L["Left"],
-										["Layout 3"] = L["Down"],
-										["Layout 4"] = L["Up"],
-									},
-								},
-							},
+						reset = {
+							order = 5,
+							name = L["RESET"],
+							desc = L["RESET_DESC"],
+							type = "execute",
+							func = function() PallyPower:Reset() end,
 						},
 					},
 				},
 				settings_color = {
-					order = 3,
+					order = 4,
 					name = L["PP_COLOR"],
 					type = "group",
 					inline = true,
@@ -198,22 +253,6 @@ PallyPower.options = {
 								PallyPower.opt.cBuffNeedAll.t = t
 							end,
 							hasAlpha = true,
-						},
-					},
-				},
-				settings_reset = {
-					order = 4,
-					name = L["PP_RESET"],
-					type = "group",
-					inline = true,
-					disabled = function(info) return PallyPower.opt.enabled == false end,
-					args = {
-						reset = {
-							order = 1,
-							name = L["RESET"],
-							desc = L["RESET_DESC"],
-							type = "execute",
-							func = function() PallyPower:Reset() end,
 						},
 					},
 				},
@@ -409,16 +448,16 @@ PallyPower.options = {
 						},
 					},
 				},
-				misc_button = {
+				drag_button = {
 					order = 5,
-					name = L["MISCBTNS"],
+					name = L["DRAG"],
 					type = "group",
 					inline = true,
 					args = {
 						misc_desc = {
 							order = 0,
 							type = "description",
-							name = L["MISCBTNS_DESC"],
+							name = L["DRAG_DESC"],
 						},
 						drag_enable = {
 							order = 1,
@@ -429,29 +468,6 @@ PallyPower.options = {
 							get = function(info) return PallyPower.opt.display.enableDragHandle end,
 							set = function(info, val)
 								PallyPower.opt.display.enableDragHandle = val
-								PallyPower:UpdateRoster()
-							end,
-						},
-						smart_buffs = {
-							order = 2,
-							type = "toggle",
-							name = L["SMARTBUFF"],
-							desc = L["SMARTBUFF_DESC"],
-							width = 1.1,
-							get = function(info) return PallyPower.opt.SmartBuffs end,
-							set = function(info, val)
-								PallyPower.opt.SmartBuffs = val
-								PallyPower:UpdateRoster()
-							end,
-						},
-						show_pets = {
-							order = 3,
-							type = "toggle",
-							name = L["SHOWPETS"],
-							desc = L["SHOWPETS_DESC"],
-							get = function(info) return PallyPower.opt.ShowPets end,
-							set = function(info, val)
-								PallyPower.opt.ShowPets = val
 								PallyPower:UpdateRoster()
 							end,
 						},
