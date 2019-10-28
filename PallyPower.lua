@@ -13,7 +13,7 @@ local sfind = string.find
 local ssub = string.sub
 local sformat = string.format
 
-local WisdomPallys, MightPallys, KingsPallys,  SalvPallys, LightPallys, SancPallys = {}, {}, {}, {}, {}, {}
+local WisdomPallys, MightPallys, KingsPallys, SalvPallys, LightPallys, SancPallys = {}, {}, {}, {}, {}, {}
 local classlist, classes = {}, {}
 LastCast = {}
 PallyPower_Assignments = {}
@@ -2439,8 +2439,7 @@ function PallyPower:SelectBuffsByClass(pallycount, class, prioritylist)
 				local buffer = PallyPower:BuffSelections(nextspell, class, pallys)
 				for i, v in pairs(pallys) do
 					if buffer == pallys[i] then
-						pallys = {}
-						--tremove(pallys, i)
+						tremove(pallys, i)
 					end
 				end
 				if buffer ~= "" then pallycounter = pallycounter + 1 end
@@ -2458,11 +2457,13 @@ function PallyPower:BuffSelections(buff, class, pallys)
 	if buff == 5 then t = LightPallys end
 	if buff == 6 then t = SancPallys end
 	local Buffer = ""
+	local BufferIndex = 0
 	local pclass
 	tsort(t, function(a, b) return a.skill > b.skill end)
-	for i, v in ipairs(t) do
+	for i, v in pairs(t) do
 		if PallyPower:PallyAvailable(v.pallyname, pallys) and v.skill > 0 then
 			Buffer = v.pallyname
+			BufferIndex = i
 			break
 		end
 	end
@@ -2472,6 +2473,10 @@ function PallyPower:BuffSelections(buff, class, pallys)
 				PallyPower_Assignments[Buffer][pclass] = buff
 			end
 			PallyPower:SendMessage("MASSIGN "..Buffer.." "..buff)
+			if buff == 3 and class == 9 then tremove(KingsPallys, BufferIndex) end
+			if buff == 4 and class == 9 then tremove(SalvPallys, BufferIndex) end
+			if buff == 5 and class == 9 then tremove(LightPallys, BufferIndex) end
+			if buff == 6 and class == 9 then tremove(SancPallys, BufferIndex) end
 			if (buff == PallyPower.opt.mainTankGSpells) and (class == 1 or class == 4 or class == 5) then
 				for i = 1, MAX_RAID_MEMBERS do
 					local playerName, _, _, _, playerClass = GetRaidRosterInfo(i)
