@@ -624,8 +624,9 @@ function PallyPower:Report(type)
 end
 
 function PallyPower:PerformCycle(name, class, skipzero)
-	local shift = IsShiftKeyDown()
-	if shift then class = 6 end
+	local shift = (IsShiftKeyDown() and PallyPowerBlessingsFrame:IsMouseOver())
+	local cur
+	if shift then class = 5 end
 	if not PallyPower_Assignments[name] then
 		PallyPower_Assignments[name] = { }
 	end
@@ -635,22 +636,30 @@ function PallyPower:PerformCycle(name, class, skipzero)
 		cur = PallyPower_Assignments[name][class]
 	end
 	PallyPower_Assignments[name][class] = 0
-	for test = cur + 1, 7 do
-		if PallyPower:CanBuff(name, test) and (PallyPower:NeedsBuff(class, test) or shift) then
-			cur = test
+	local testB
+	for testB = cur + 1, 7 do
+		if PallyPower:CanBuff(name, testB) and (PallyPower:NeedsBuff(class, testB) or shift) then
+			cur = testB
 			do break end
 		end
 	end
 	if cur == 7 then
 		if skipzero then
-			cur = 1
+			if PallyPower:CanBuff(name, 1) then
+				cur = 1
+			elseif PallyPower:CanBuff(name, 2) then
+				cur = 2
+			else
+				cur = 0
+			end
 		else
 			cur = 0
 		end
 	end
 	if shift then
-		for test = 1, PALLYPOWER_MAXCLASSES do
-			PallyPower_Assignments[name][test] = cur
+		local testC
+		for testC = 1, PALLYPOWER_MAXCLASSES do
+			PallyPower_Assignments[name][testC] = cur
 		end
 		PallyPower:SendMessage("MASSIGN "..name.." "..cur)
 	else
@@ -661,8 +670,9 @@ function PallyPower:PerformCycle(name, class, skipzero)
 end
 
 function PallyPower:PerformCycleBackwards(name, class, skipzero)
-	local shift=IsShiftKeyDown()
-	if shift then class=6 end
+	local shift = (IsShiftKeyDown() and PallyPowerBlessingsFrame:IsMouseOver())
+	local cur
+	if shift then class = 5 end
 	if not PallyPower_Assignments[name] then
 		PallyPower_Assignments[name] = { }
 	end
@@ -670,18 +680,27 @@ function PallyPower:PerformCycleBackwards(name, class, skipzero)
 		cur = 7
 	else
 		cur = PallyPower_Assignments[name][class]
-		if cur == 0 or skipzero and cur == 1 then cur = 7 end
+		local testB
+		if PallyPower:CanBuff(name, 1) then
+			testB = 1
+		elseif PallyPower:CanBuff(name, 2) then
+			testB = 2
+		else
+			testB = 0
+		end
+		if cur == 0 or skipzero and cur == testB then cur = 7 end
 	end
 	PallyPower_Assignments[name][class] = 0
-	for test = cur - 1, 0, -1 do
-		cur = test
-		if PallyPower:CanBuff(name, test) and (PallyPower:NeedsBuff(class, test) or shift) then
+	local testC
+	for testC = cur - 1, 0, -1 do
+		cur = testC
+		if PallyPower:CanBuff(name, testC) and (PallyPower:NeedsBuff(class, testC) or shift) then
 			do break end
 		end
 	end
 	if shift then
-		for test = 1, PALLYPOWER_MAXCLASSES do
-			PallyPower_Assignments[name][test] = cur
+		for testC = 1, PALLYPOWER_MAXCLASSES do
+			PallyPower_Assignments[name][testC] = cur
 		end
 		PallyPower:SendMessage("MASSIGN "..name.." "..cur)
 	else
@@ -817,25 +836,23 @@ function PallyPower:ScanSpells()
 				spellName = GetSpellInfo(PallyPower.Spells[i])
 				spellRank = GetSpellSubtext(GetSpellInfo(PallyPower.Spells[i]))
 			end
-			if not spellRank or spellRank == "" then -- spells without ranks
-				spellRank = "1"		 -- BoK and BoS
-			end
-			local rank = select(3, sfind(spellRank, "(%d+)"))
-			local talent = 0
-			rank = tonumber(rank)
 			if spellName then
 				RankInfo[i] = {}
-				RankInfo[i].rank = rank
-				if i == 1 then  -- wisdom
-					talent = talent + select(5, GetTalentInfo(1, 10))
-				elseif i == 2 then -- might
-			    talent = talent + select(5, GetTalentInfo(3, 1))
-			  elseif i == 3 then -- kings
-					talent = talent + select(5, GetTalentInfo(2, 6))
-				elseif i == 6 then -- sanc
-					talent = talent + select(5, GetTalentInfo(2, 12))
+				if not spellRank or spellRank == "" then -- spells without ranks
+					spellRank = "1"		 -- BoK and BoS
+				end
+				local talent = 0
+				if i == 1 then
+					talent = talent + select(5, GetTalentInfo(1, 10)) -- Improved Blessing of Wisdom
+				elseif i == 2 then
+			    talent = talent + select(5, GetTalentInfo(3, 1)) -- Improved Blessing of Might
+			  elseif i == 3 then
+					talent = talent + select(5, GetTalentInfo(2, 6)) -- Blessing of Kings
+				elseif i == 6 then
+					talent = talent + select(5, GetTalentInfo(2, 12)) -- Blessing of Sanctuary
 				end
 				RankInfo[i].talent = talent
+				RankInfo[i].rank = tonumber(select(3, sfind(spellRank, "(%d+)")))
 			end
 		end
 		self:SyncAdd(self.player)
@@ -2422,7 +2439,8 @@ function PallyPower:SelectBuffsByClass(pallycount, class, prioritylist)
 				local buffer = PallyPower:BuffSelections(nextspell, class, pallys)
 				for i, v in pairs(pallys) do
 					if buffer == pallys[i] then
-						tremove(pallys, i)
+						pallys = {}
+						--tremove(pallys, i)
 					end
 				end
 				if buffer ~= "" then pallycounter = pallycounter + 1 end
