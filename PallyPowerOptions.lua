@@ -5,11 +5,34 @@ PallyPower.options = {
   type = "group",
   childGroups = "tab",
 	args = {
-		settings = {
+		blessings = {
 			order = 1,
+			name = "Blessing Assignements",
+			type = "execute",
+			guiHidden = true,
+			func = function()
+				if not (UnitAffectingCombat("player")) then
+					PallyPowerBlessings_Toggle()
+				end
+			end,
+		},
+		options = {
+			order = 2,
+			name = "Options",
+			type = "execute",
+			guiHidden = true,
+			func = function()
+				if not (UnitAffectingCombat("player")) then
+					PallyPower:OpenConfigWindow()
+				end
+			end,
+		},
+		settings = {
+			order = 3,
 			name = L["SETTINGS"],
 			desc = L["SETTINGS_DESC"],
 			type = "group",
+			cmdHidden = true,
 			args = {
 				settings_show = {
 					order = 1,
@@ -141,10 +164,14 @@ PallyPower.options = {
 								PallyPower:UpdateLayout()
 							end,
 							values = {
-								["Layout 1"] = L["Right"],
-								["Layout 2"] = L["Left"],
-								["Layout 3"] = L["Down"],
-								["Layout 4"] = L["Up"],
+								["Layout 1"] = L["VerDownRight"],
+								["Layout 2"] = L["VerDownLeft"],
+								["Layout 3"] = L["VerUpRight"],
+								["Layout 4"] = L["VerUpLeft"],
+								["Layout 5"] = L["HorRightDown"],
+								["Layout 6"] = L["HorRightUp"],
+								["Layout 7"] = L["HorLeftDown"],
+								["Layout 8"] = L["HorLeftUp"],
 							},
 						},
 						skin = {
@@ -236,10 +263,11 @@ PallyPower.options = {
 			},
 		},
 		buttons = {
-			order = 2,
+			order = 4,
 			name = L["BUTTONS"],
 			desc = L["BUTTONS_DESC"],
 			type = "group",
+			cmdHidden = true,
 			disabled = function(info) return PallyPower.opt.enabled == false end,
 			args = {
 				aura_button = {
@@ -453,10 +481,11 @@ PallyPower.options = {
 			},
 		},
 		raids = {
-			order = 3,
+			order = 5,
 			name = L["RAID"],
 			desc = L["RAID_DESC"],
 			type = "group",
+			cmdHidden = true,
 			disabled = function(info) return (not PallyPower.opt.enabled) end,
 			args = {
 				mainroles = {

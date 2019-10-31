@@ -66,7 +66,7 @@ function PallyPower:OnInitialize()
 	self.db.RegisterCallback(self, "OnProfileReset", "OnProfileChanged")
 	self.opt = self.db.profile
 	PallyPower.options.args.profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db)
-	LibStub("AceConfig-3.0"):RegisterOptionsTable("PallyPower", PallyPower.options, "pp")
+	LibStub("AceConfig-3.0"):RegisterOptionsTable("PallyPower", PallyPower.options, {"pp", "pallypower"})
 	self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("PallyPower", "PallyPower")
 	LSM3:Register("background", "None", "Interface\\Tooltips\\UI-Tooltip-Background")
 	LSM3:Register("background", "Banto", "Interface\\AddOns\\PallyPower\\Skins\\Banto")
@@ -646,11 +646,17 @@ function PallyPower:PerformCycle(name, class, skipzero)
 	if cur == 7 then
 		if skipzero then
 			if PallyPower:CanBuff(name, 1) then
-				cur = 1
+				if self.opt.SmartBuffs and (class == 1 or class == 2) then
+					cur = 2
+				else
+					cur = 1
+				end
 			elseif PallyPower:CanBuff(name, 2) then
-				cur = 2
-			else
-				cur = 0
+				if self.opt.SmartBuffs and (class == 3 or class == 6 or class == 7 or class == 8) then
+					cur = 1
+				else
+					cur = 2
+				end
 			end
 		else
 			cur = 0
@@ -682,9 +688,17 @@ function PallyPower:PerformCycleBackwards(name, class, skipzero)
 		cur = PallyPower_Assignments[name][class]
 		local testB
 		if PallyPower:CanBuff(name, 1) then
-			testB = 1
+			if self.opt.SmartBuffs and (class == 1 or class == 2) then
+				testB = 2
+			else
+				testB = 1
+			end
 		elseif PallyPower:CanBuff(name, 2) then
-			testB = 2
+			if self.opt.SmartBuffs and (class == 3 or class == 6 or class == 7 or class == 8) then
+				testB = 1
+			else
+				testB = 2
+			end
 		else
 			testB = 0
 		end
@@ -830,12 +844,8 @@ function PallyPower:ScanSpells()
 	if (class == "PALADIN") then
 		local RankInfo = {}
 		for i = 1, 6 do -- find max spell ranks
-			local spellName = GetSpellInfo(PallyPower.GSpells[i])
-			local spellRank = GetSpellSubtext(GetSpellInfo(PallyPower.GSpells[i]))
-			if not spellName then -- fallback to lower blessings
-				spellName = GetSpellInfo(PallyPower.Spells[i])
-				spellRank = GetSpellSubtext(GetSpellInfo(PallyPower.Spells[i]))
-			end
+			spellName = GetSpellInfo(PallyPower.Spells[i])
+			spellRank = GetSpellSubtext(GetSpellInfo(PallyPower.Spells[i]))
 			if spellName then
 				RankInfo[i] = {}
 				if not spellRank or spellRank == "" then -- spells without ranks
@@ -1105,14 +1115,15 @@ end
 function PallyPower:ParseMessage(sender, msg)
 	--self:Debug("[Parse Message] sender: "..sender.." | msg: "..msg)
 	if sender == self.player then return end
+	if not initalized then PallyPower:ScanSpells() end
 	local leader = self:CheckRaidLeader(sender)
 	if msg == "REQ" then
 		self:SendSelf()
 	end
 	if sfind(msg, "^SELF") then
 		PallyPower_NormalAssignments[sender] = {}
-		PallyPower_Assignments[sender] = { }
-		AllPallys[sender] = { }
+		PallyPower_Assignments[sender] = {}
+		AllPallys[sender] = {}
 		self:SyncAdd(sender)
 		_, _, numbers, assign = sfind(msg, "SELF ([0-9n]*)@([0-9n]*)")
 		for i = 1, 6 do
@@ -1282,13 +1293,18 @@ function PallyPower:UpdateRoster()
 				local raidtank = select(10, GetRaidRosterInfo(n))
 				local class = PallyPower:GetClassID(pclass)
 				if (class == 1 or class == 4 or class == 5) then
-					if PallyPower_NormalAssignments[UnitName("player")] and PallyPower_NormalAssignments[UnitName("player")][class] and PallyPower_NormalAssignments[UnitName("player")][class][tmp.name] == PallyPower.opt.mainTankSpells then
-						SetNormalBlessings(UnitName("player"), class, tmp.name, 0)
+					if (raidtanks[tmp.name] == true) then
+						if PallyPower_NormalAssignments[UnitName("player")] and PallyPower_NormalAssignments[UnitName("player")][class] and PallyPower_NormalAssignments[UnitName("player")][class][tmp.name] == PallyPower.opt.mainTankSpells then
+							SetNormalBlessings(UnitName("player"), class, tmp.name, 0)
+							raidtanks[tmp.name] = false
+						end
 					end
-					if PallyPower_NormalAssignments[UnitName("player")] and PallyPower_NormalAssignments[UnitName("player")][class] and PallyPower_NormalAssignments[UnitName("player")][class][tmp.name] == PallyPower.opt.mainAssistSpells then
-						SetNormalBlessings(UnitName("player"), class, tmp.name, 0)
+					if (raidtanks[tmp.name] == true) then
+						if PallyPower_NormalAssignments[UnitName("player")] and PallyPower_NormalAssignments[UnitName("player")][class] and PallyPower_NormalAssignments[UnitName("player")][class][tmp.name] == PallyPower.opt.mainAssistSpells then
+							SetNormalBlessings(UnitName("player"), class, tmp.name, 0)
+							raidtanks[tmp.name] = false
+						end
 					end
-					raidtanks[tmp.name] = false
 					if (raidtank == "MAINTANK" and PallyPower.opt.mainTank) then
 						if PallyPower_Assignments[UnitName("player")] and (PallyPower_Assignments[UnitName("player")][class] == PallyPower.opt.mainTankGSpells) then
 							SetNormalBlessings(UnitName("player"), class, tmp.name, PallyPower.opt.mainTankSpells)
@@ -1497,15 +1513,17 @@ function PallyPower:UpdateLayout()
 	else
 		autob:Hide()
 	end
-	ox = layout.rf.x * x
-	oy = layout.rf.y * y
 	local rfb = self.rfButton
 	if self.opt.autobuff.autobutton then
+		ox = layout.rf.x * x
+		oy = layout.rf.y * y
 		rfb:ClearAllPoints()
 		rfb:SetPoint(point, self.Header, "CENTER", ox, oy)
 	else
+		ox = layout.rfd.x * x
+		oy = layout.rfd.y * y
 		rfb:ClearAllPoints()
-		rfb:SetPoint(point, self.Header, "CENTER", ox, oy-34)
+		rfb:SetPoint(point, self.Header, "CENTER", ox, oy)
 	end
 	rfb:SetAttribute("type1", "spell")
 	rfb:SetAttribute("unit1", "player")
@@ -1518,16 +1536,20 @@ function PallyPower:UpdateLayout()
 	else
 		rfb:Hide()
 	end
-	ox = layout.au.x * x
-	oy = layout.au.y * y
 	local auraBtn = self.auraButton
 	if (not self.opt.autobuff.autobutton and self.opt.rfbuff) or (self.opt.autobuff.autobutton and not self.opt.rfbuff) then
+		ox = layout.aud1.x * x
+		oy = layout.aud1.y * y
 		auraBtn:ClearAllPoints()
-		auraBtn:SetPoint(point, self.Header, "CENTER", ox, oy-34)
+		auraBtn:SetPoint(point, self.Header, "CENTER", ox, oy)
 	elseif not self.opt.autobuff.autobutton and not self.opt.rfbuff then
+		ox = layout.aud2.x * x
+		oy = layout.aud2.y * y
 		auraBtn:ClearAllPoints()
-		auraBtn:SetPoint(point, self.Header, "CENTER", ox, oy-68)
+		auraBtn:SetPoint(point, self.Header, "CENTER", ox, oy)
 	else
+		ox = layout.au.x * x
+		oy = layout.au.y * y
 		auraBtn:ClearAllPoints()
 		auraBtn:SetPoint(point, self.Header, "CENTER", ox, oy)
 	end
@@ -2386,7 +2408,7 @@ function PallyPower:AutoAssignBlessings()
 		pallycount = pallycount + 1
 	end
 	if pallycount == 0 then return end
-	if pallycount > 4 then pallycount = 4 end
+	if pallycount > 5 then pallycount = 5 end
 	for name in pairs(AllPallys) do
 		local wisdom, might, kings, salv, light, sanct = PallyPower:CalcSkillRanks1(name)
 		if wisdom then
@@ -2457,26 +2479,40 @@ function PallyPower:BuffSelections(buff, class, pallys)
 	if buff == 5 then t = LightPallys end
 	if buff == 6 then t = SancPallys end
 	local Buffer = ""
-	local BufferIndex = 0
+	local BufferSkill = 0
 	local pclass
 	tsort(t, function(a, b) return a.skill > b.skill end)
 	for i, v in pairs(t) do
 		if PallyPower:PallyAvailable(v.pallyname, pallys) and v.skill > 0 then
 			Buffer = v.pallyname
-			BufferIndex = i
+			BufferSkill = v.skill
 			break
 		end
 	end
 	if Buffer ~= "" then
 		if (IsInRaid()) and (buff > 2) then
-			for pclass = 1, PALLYPOWER_MAXCLASSES do
-				PallyPower_Assignments[Buffer][pclass] = buff
+			local pallyleadercount = 0
+			for name in pairs(AllPallys) do
+				if PallyPower:CheckRaidLeader(name) then
+					pallyleadercount = pallyleadercount + 1
+				end
 			end
-			PallyPower:SendMessage("MASSIGN "..Buffer.." "..buff)
-			if buff == 3 and class == 9 then tremove(KingsPallys, BufferIndex) end
-			if buff == 4 and class == 9 then tremove(SalvPallys, BufferIndex) end
-			if buff == 5 and class == 9 then tremove(LightPallys, BufferIndex) end
-			if buff == 6 and class == 9 then tremove(SancPallys, BufferIndex) end
+			if pallyleadercount == 1 and PallyPower:CheckRaidLeader(Buffer) and (buff == 4) then
+				for pclass = 1, PALLYPOWER_MAXCLASSES do
+					PallyPower_Assignments[Buffer][pclass] = buff
+				end
+				PallyPower:SendMessage("MASSIGN "..Buffer.." "..buff)
+				SalvPallys = {}; tinsert(SalvPallys, {pallyname = Buffer, skill = BufferSkill})
+			else
+				for pclass = 1, PALLYPOWER_MAXCLASSES do
+					PallyPower_Assignments[Buffer][pclass] = buff
+				end
+				PallyPower:SendMessage("MASSIGN "..Buffer.." "..buff)
+				if buff == 3 then KingsPallys = {}; tinsert(KingsPallys, {pallyname = Buffer, skill = BufferSkill}) end
+				if buff == 4 then SalvPallys = {}; tinsert(SalvPallys, {pallyname = Buffer, skill = BufferSkill}) end
+				if buff == 5 then LightPallys = {}; tinsert(LightPallys, {pallyname = Buffer, skill = BufferSkill}) end
+				if buff == 6 then SancPallys = {}; tinsert(SancPallys, {pallyname = Buffer, skill = BufferSkill}) end
+			end
 			if (buff == PallyPower.opt.mainTankGSpells) and (class == 1 or class == 4 or class == 5) then
 				for i = 1, MAX_RAID_MEMBERS do
 					local playerName, _, _, _, playerClass = GetRaidRosterInfo(i)
@@ -2496,6 +2532,8 @@ function PallyPower:BuffSelections(buff, class, pallys)
 		else
 			PallyPower_Assignments[Buffer][class] = buff
 			PallyPower:SendMessage("ASSIGN "..Buffer.." "..class.." "..buff)
+			if buff == 1 then WisdomPallys = {}; tinsert(WisdomPallys, {pallyname = Buffer, skill = BufferSkill}) end
+			if buff == 2 then MightPallys = {}; tinsert(MightPallys, {pallyname = Buffer, skill = BufferSkill}) end
 		end
 	else end
 	return Buffer
