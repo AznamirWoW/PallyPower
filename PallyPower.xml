@@ -113,7 +113,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 	  </Backdrop>
 	  <Layers>
 		  <Layer level="OVERLAY">
-			  <Texture name="$parentIcon" file="Interface\Icons\Spell_Holy_RighteousFury">
+			  <Texture name="$parentIcon" file="Interface\AddOns\PallyPower\Icons\SummonChampion">
 				  <Size>
 					  <AbsDimension x="26" y="26" /> 
 				  </Size>

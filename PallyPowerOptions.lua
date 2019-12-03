@@ -5,30 +5,8 @@ PallyPower.options = {
   type = "group",
   childGroups = "tab",
 	args = {
-		blessings = {
-			order = 1,
-			name = "Blessing Assignements",
-			type = "execute",
-			guiHidden = true,
-			func = function()
-				if not (UnitAffectingCombat("player")) then
-					PallyPowerBlessings_Toggle()
-				end
-			end,
-		},
-		options = {
-			order = 2,
-			name = "Options",
-			type = "execute",
-			guiHidden = true,
-			func = function()
-				if not (UnitAffectingCombat("player")) then
-					PallyPower:OpenConfigWindow()
-				end
-			end,
-		},
 		settings = {
-			order = 3,
+			order = 1,
 			name = L["SETTINGS"],
 			desc = L["SETTINGS_DESC"],
 			type = "group",
@@ -263,7 +241,7 @@ PallyPower.options = {
 			},
 		},
 		buttons = {
-			order = 4,
+			order = 2,
 			name = L["BUTTONS"],
 			desc = L["BUTTONS_DESC"],
 			type = "group",
@@ -481,7 +459,7 @@ PallyPower.options = {
 			},
 		},
 		raids = {
-			order = 5,
+			order = 3,
 			name = L["RAID"],
 			desc = L["RAID_DESC"],
 			type = "group",
@@ -504,24 +482,24 @@ PallyPower.options = {
 							type = "toggle",
 							name = L["MAINTANK"],
 							desc = L["MAINTANK_DESC"],
-							disabled = function(info) return (IsInRaid() == false) end,
-							width = 1.1,
+							width = "full",
+							disabled = function(info) return (IsInRaid() == false or #SyncList > 4) end,
 							get = function(info) return PallyPower.opt.mainTank end,
 							set = function(info, val)
 								PallyPower.opt.mainTank = val
 								PallyPower:UpdateRoster()
 							end,
 						},
-						maintank_gBlessing = {
+						maintank_GBWarrior = {
 							order = 2,
 							type = "select",
-							name = L["MAINTANKGBUFF"],
-							desc = L["MAINTANKGBUFF_DESC"],
+							name = L["MAINTANKGBUFFW"],
+							desc = L["MAINTANKGBUFFW_DESC"],
 							width = 1.2,
-							disabled = function(info) return (not (PallyPower.opt.mainTank and IsInRaid())) end,
-							get = function(info) return PallyPower.opt.mainTankGSpells end,
+							disabled = function(info) return (not (PallyPower.opt.mainTank and IsInRaid() and #SyncList < 5)) end,
+							get = function(info) return PallyPower.opt.mainTankGSpellsW end,
 							set = function(info, val)
-								PallyPower.opt.mainTankGSpells = val
+								PallyPower.opt.mainTankGSpellsW = val
 								PallyPower:UpdateRoster()
 							end,
 							values = {
@@ -534,16 +512,60 @@ PallyPower.options = {
 								[6] = PallyPower.GSpells[6], -- Greater Blessing of Sanctuary
 							},
 						},
-						maintank_nBlessing = {
+						maintank_NBWarrior = {
 							order = 3,
 							type = "select",
-							name = L["MAINTANKNBUFF"],
-							desc = L["MAINTANKNBUFF_DESC"],
+							name = L["MAINTANKNBUFFW"],
+							desc = L["MAINTANKNBUFFW_DESC"],
 							width = 0.9,
-							disabled = function(info) return (not (PallyPower.opt.mainTank and IsInRaid())) end,
-							get = function(info) return PallyPower.opt.mainTankSpells end,
+							disabled = function(info) return (not (PallyPower.opt.mainTank and IsInRaid() and #SyncList < 5)) end,
+							get = function(info) return PallyPower.opt.mainTankSpellsW end,
 							set = function(info, val)
-								PallyPower.opt.mainTankSpells = val
+								PallyPower.opt.mainTankSpellsW = val
+								PallyPower:UpdateRoster()
+							end,
+							values = {
+								[0] = L["None"],
+								[1] = PallyPower.Spells[1], -- Blessing of Wisdom
+								[2] = PallyPower.Spells[2], -- Blessing of Might
+								[3] = PallyPower.Spells[3], -- Blessing of Kings
+								[4] = PallyPower.Spells[4], -- Blessing of Salvation
+								[5] = PallyPower.Spells[5], -- Blessing of Light
+								[6] = PallyPower.Spells[6], -- Blessing of Sanctuary
+							},
+						},
+						maintank_GBDruidPPaladin = {
+							order = 4,
+							type = "select",
+							name = L["MAINTANKGBUFFDP"],
+							desc = L["MAINTANKGBUFFDP_DESC"],
+							width = 1.2,
+							disabled = function(info) return (not (PallyPower.opt.mainTank and IsInRaid() and #SyncList < 5)) end,
+							get = function(info) return PallyPower.opt.mainTankGSpellsDP end,
+							set = function(info, val)
+								PallyPower.opt.mainTankGSpellsDP = val
+								PallyPower:UpdateRoster()
+							end,
+							values = {
+								[0] = L["None"],
+								[1] = PallyPower.GSpells[1], -- Greater Blessing of Wisdom
+								[2] = PallyPower.GSpells[2], -- Greater Blessing of Might
+								[3] = PallyPower.GSpells[3], -- Greater Blessing of Kings
+								[4] = PallyPower.GSpells[4], -- Greater Blessing of Salvation
+								[5] = PallyPower.GSpells[5], -- Greater Blessing of Light
+								[6] = PallyPower.GSpells[6], -- Greater Blessing of Sanctuary
+							},
+						},
+						maintank_NBDruidPPaladin = {
+							order = 5,
+							type = "select",
+							name = L["MAINTANKNBUFFDP"],
+							desc = L["MAINTANKNBUFFDP_DESC"],
+							width = 0.9,
+							disabled = function(info) return (not (PallyPower.opt.mainTank and IsInRaid() and #SyncList < 5)) end,
+							get = function(info) return PallyPower.opt.mainTankSpellsDP end,
+							set = function(info, val)
+								PallyPower.opt.mainTankSpellsDP = val
 								PallyPower:UpdateRoster()
 							end,
 							values = {
@@ -557,28 +579,28 @@ PallyPower.options = {
 							},
 						},
 						mainassist_buff = {
-							order = 4,
+							order = 6,
 							type = "toggle",
 							name = L["MAINASSISTANT"],
 							desc = L["MAINASSISTANT_DESC"],
-							width = 1.1,
-							disabled = function(info) return (IsInRaid() == false) end,
+							width = "full",
+							disabled = function(info) return (IsInRaid() == false or #SyncList > 4) end,
 							get = function(info) return PallyPower.opt.mainAssist end,
 							set = function(info, val)
 								PallyPower.opt.mainAssist = val
 								PallyPower:UpdateRoster()
 							end,
 						},
-						mainassist_gBlessing = {
-							order = 5,
+						mainassist_GBWarrior = {
+							order = 7,
 							type = "select",
-							name = L["MAINASSISTANTGBUFF"],
-							desc = L["MAINASSISTANTGBUFF_DESC"],
+							name = L["MAINASSISTANTGBUFFW"],
+							desc = L["MAINASSISTANTGBUFFW_DESC"],
 							width = 1.2,
-							disabled = function(info) return (not (PallyPower.opt.mainAssist and IsInRaid())) end,
-							get = function(info) return PallyPower.opt.mainAssistGSpells end,
+							disabled = function(info) return (not (PallyPower.opt.mainAssist and IsInRaid() and #SyncList < 5)) end,
+							get = function(info) return PallyPower.opt.mainAssistGSpellsW end,
 							set = function(info, val)
-								PallyPower.opt.mainAssistGSpells = val
+								PallyPower.opt.mainAssistGSpellsW = val
 								PallyPower:UpdateRoster()
 							end,
 							values = {
@@ -591,16 +613,60 @@ PallyPower.options = {
 								[6] = PallyPower.GSpells[6], -- Greater Blessing of Sanctuary
 							},
 						},
-						mainassist_nBlessing = {
-							order = 6,
+						mainassist_NBWarrior = {
+							order = 8,
 							type = "select",
-							name = L["MAINASSISTANTNBUFF"],
-							desc = L["MAINASSISTANTNBUFF_DESC"],
+							name = L["MAINASSISTANTNBUFFW"],
+							desc = L["MAINASSISTANTNBUFFW_DESC"],
 							width = 0.9,
-							disabled = function(info) return (not (PallyPower.opt.mainAssist and IsInRaid())) end,
-							get = function(info) return PallyPower.opt.mainAssistSpells end,
+							disabled = function(info) return (not (PallyPower.opt.mainAssist and IsInRaid() and #SyncList < 5)) end,
+							get = function(info) return PallyPower.opt.mainAssistSpellsW end,
 							set = function(info, val)
-								PallyPower.opt.mainAssistSpells = val
+								PallyPower.opt.mainAssistSpellsW = val
+								PallyPower:UpdateRoster()
+							end,
+							values = {
+								[0] = L["None"],
+								[1] = PallyPower.Spells[1], -- Blessing of Wisdom
+								[2] = PallyPower.Spells[2], -- Blessing of Might
+								[3] = PallyPower.Spells[3], -- Blessing of Kings
+								[4] = PallyPower.Spells[4], -- Blessing of Salvation
+								[5] = PallyPower.Spells[5], -- Blessing of Light
+								[6] = PallyPower.Spells[6], -- Blessing of Sanctuary
+							},
+						},
+						mainassist_GBDruidPaladin = {
+							order = 9,
+							type = "select",
+							name = L["MAINASSISTANTGBUFFDP"],
+							desc = L["MAINASSISTANTGBUFFDP_DESC"],
+							width = 1.2,
+							disabled = function(info) return (not (PallyPower.opt.mainAssist and IsInRaid() and #SyncList < 5)) end,
+							get = function(info) return PallyPower.opt.mainAssistGSpellsDP end,
+							set = function(info, val)
+								PallyPower.opt.mainAssistGSpellsDP = val
+								PallyPower:UpdateRoster()
+							end,
+							values = {
+								[0] = L["None"],
+								[1] = PallyPower.GSpells[1], -- Greater Blessing of Wisdom
+								[2] = PallyPower.GSpells[2], -- Greater Blessing of Might
+								[3] = PallyPower.GSpells[3], -- Greater Blessing of Kings
+								[4] = PallyPower.GSpells[4], -- Greater Blessing of Salvation
+								[5] = PallyPower.GSpells[5], -- Greater Blessing of Light
+								[6] = PallyPower.GSpells[6], -- Greater Blessing of Sanctuary
+							},
+						},
+						mainassist_NBDruidPaladin = {
+							order = 10,
+							type = "select",
+							name = L["MAINASSISTANTNBUFFDP"],
+							desc = L["MAINASSISTANTNBUFFDP_DESC"],
+							width = 0.9,
+							disabled = function(info) return (not (PallyPower.opt.mainAssist and IsInRaid() and #SyncList < 5)) end,
+							get = function(info) return PallyPower.opt.mainAssistSpellsDP end,
+							set = function(info, val)
+								PallyPower.opt.mainAssistSpellsDP = val
 								PallyPower:UpdateRoster()
 							end,
 							values = {
@@ -616,6 +682,28 @@ PallyPower.options = {
 					},
 				},
 			},
+		},
+		blessings = {
+			order = 4,
+			name = "Blessing Assignements",
+			type = "execute",
+			guiHidden = true,
+			func = function()
+				if not (UnitAffectingCombat("player")) then
+					PallyPowerBlessings_Toggle()
+				end
+			end,
+		},
+		options = {
+			order = 5,
+			name = "PallyPower Options",
+			type = "execute",
+			guiHidden = true,
+			func = function()
+				if not (UnitAffectingCombat("player")) then
+					PallyPower:OpenConfigWindow()
+				end
+			end,
 		},
 	},
 }
