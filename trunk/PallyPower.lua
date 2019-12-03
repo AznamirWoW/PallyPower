@@ -610,6 +610,11 @@ function PallyPower:Report(type)
 					SendChatMessage(name ..": ".. blessings, type)
 				end
 				SendChatMessage(PALLYPOWER_ASSIGNMENTS2, type)
+				if IsInRaid() and #SyncList > 4 then
+					SendChatMessage(" ", "RAID")
+					SendChatMessage(PALLYPOWER_ASSIGNMENTS3, "RAID_WARNING")
+					SendChatMessage(PALLYPOWER_ASSIGNMENTS4, "RAID_WARNING")
+				end
 			else
 				self:Print(ERR_NOT_LEADER)
 			end
@@ -1024,16 +1029,16 @@ end
 
 function PallyPower:CHAT_MSG_SYSTEM(event, text)
 	if text then
-		if sfind(text, ERR_RAID_YOU_JOINED) then
+		if sfind(text, ERR_RAID_YOU_JOINED) or sfind(text, ERR_PARTY_CONVERTED_TO_RAID) then
 			self:SendSelf()
 			self:SendMessage("REQ")
 			self:Debug("EVENT: CHAT_MSG_SYSTEM")
-		elseif sfind(text, ERR_RAID_YOU_LEFT) or sfind(text, ERR_LEFT_GROUP_YOU) or sfind(text, ERR_GROUP_DISBANDED) then
+		elseif sfind(text, ERR_RAID_YOU_LEFT) or sfind(text, ERR_LEFT_GROUP_YOU) or sfind(text, ERR_UNINVITE_YOU) or sfind(text, ERR_GROUP_DISBANDED) or sfind(text, ERR_RAID_CONVERTED_TO_PARTY) then
 			AllPallys = {}
 			SyncList = {}
 			PallyPower:ScanSpells()
 			PallyPower:ScanInventory()
-			if PallyPower_NormalAssignments[UnitName("player")] and PallyPower_NormalAssignments[UnitName("player")][PallyPower:GetClassID(string.upper(UnitClass("player")))] and PallyPower_NormalAssignments[UnitName("player")][PallyPower:GetClassID(string.upper(UnitClass("player")))][UnitName("player")] == (PallyPower.opt.mainTankSpells or PallyPower.opt.mainAssistSpells) then
+			if PallyPower_NormalAssignments[UnitName("player")] and PallyPower_NormalAssignments[UnitName("player")][PallyPower:GetClassID(string.upper(UnitClass("player")))] and PallyPower_NormalAssignments[UnitName("player")][PallyPower:GetClassID(string.upper(UnitClass("player")))][UnitName("player")] == (PallyPower.opt.mainTankSpellsW or PallyPower.opt.mainAssistSpellsW or PallyPower.opt.mainTankSpellsDP or PallyPower.opt.mainAssistSpellsDP) then
 					SetNormalBlessings(UnitName("player"), PallyPower:GetClassID(string.upper(UnitClass("player"))), UnitName("player"), 0)
 					PallyPower_NormalAssignments = {}
 			end
@@ -1292,28 +1297,56 @@ function PallyPower:UpdateRoster()
 				tmp.rank, tmp.subgroup = select(2, GetRaidRosterInfo(n))
 				local raidtank = select(10, GetRaidRosterInfo(n))
 				local class = PallyPower:GetClassID(pclass)
-				if (class == 1 or class == 4 or class == 5) then
+				-- Warriors
+				if (class == 1) then
 					if (raidtanks[tmp.name] == true) then
-						if PallyPower_NormalAssignments[UnitName("player")] and PallyPower_NormalAssignments[UnitName("player")][class] and PallyPower_NormalAssignments[UnitName("player")][class][tmp.name] == PallyPower.opt.mainTankSpells then
+						if PallyPower_NormalAssignments[UnitName("player")] and PallyPower_NormalAssignments[UnitName("player")][class] and PallyPower_NormalAssignments[UnitName("player")][class][tmp.name] == PallyPower.opt.mainTankSpellsW then
 							SetNormalBlessings(UnitName("player"), class, tmp.name, 0)
 							raidtanks[tmp.name] = false
 						end
 					end
 					if (raidtanks[tmp.name] == true) then
-						if PallyPower_NormalAssignments[UnitName("player")] and PallyPower_NormalAssignments[UnitName("player")][class] and PallyPower_NormalAssignments[UnitName("player")][class][tmp.name] == PallyPower.opt.mainAssistSpells then
+						if PallyPower_NormalAssignments[UnitName("player")] and PallyPower_NormalAssignments[UnitName("player")][class] and PallyPower_NormalAssignments[UnitName("player")][class][tmp.name] == PallyPower.opt.mainAssistSpellsW then
 							SetNormalBlessings(UnitName("player"), class, tmp.name, 0)
 							raidtanks[tmp.name] = false
 						end
 					end
 					if (raidtank == "MAINTANK" and PallyPower.opt.mainTank) then
-						if PallyPower_Assignments[UnitName("player")] and (PallyPower_Assignments[UnitName("player")][class] == PallyPower.opt.mainTankGSpells) then
-							SetNormalBlessings(UnitName("player"), class, tmp.name, PallyPower.opt.mainTankSpells)
+						if PallyPower_Assignments[UnitName("player")] and (PallyPower_Assignments[UnitName("player")][class] == PallyPower.opt.mainTankGSpellsW) then
+							SetNormalBlessings(UnitName("player"), class, tmp.name, PallyPower.opt.mainTankSpellsW)
 							raidtanks[tmp.name] = true
 						end
 					end
 					if (raidtank == "MAINASSIST" and PallyPower.opt.mainAssist) then
-						if PallyPower_Assignments[UnitName("player")] and (PallyPower_Assignments[UnitName("player")][class] == PallyPower.opt.mainAssistGSpells) then
-							SetNormalBlessings(UnitName("player"), class, tmp.name, PallyPower.opt.mainAssistSpells)
+						if PallyPower_Assignments[UnitName("player")] and (PallyPower_Assignments[UnitName("player")][class] == PallyPower.opt.mainAssistGSpellsW) then
+							SetNormalBlessings(UnitName("player"), class, tmp.name, PallyPower.opt.mainAssistSpellsW)
+							raidtanks[tmp.name] = true
+						end
+					end
+				end
+				-- Druids and Paladins
+				if (class == 4 or class == 5) then
+					if (raidtanks[tmp.name] == true) then
+						if PallyPower_NormalAssignments[UnitName("player")] and PallyPower_NormalAssignments[UnitName("player")][class] and PallyPower_NormalAssignments[UnitName("player")][class][tmp.name] == PallyPower.opt.mainTankSpellsDP then
+							SetNormalBlessings(UnitName("player"), class, tmp.name, 0)
+							raidtanks[tmp.name] = false
+						end
+					end
+					if (raidtanks[tmp.name] == true) then
+						if PallyPower_NormalAssignments[UnitName("player")] and PallyPower_NormalAssignments[UnitName("player")][class] and PallyPower_NormalAssignments[UnitName("player")][class][tmp.name] == PallyPower.opt.mainAssistSpellsDP then
+							SetNormalBlessings(UnitName("player"), class, tmp.name, 0)
+							raidtanks[tmp.name] = false
+						end
+					end
+					if (raidtank == "MAINTANK" and PallyPower.opt.mainTank) then
+						if PallyPower_Assignments[UnitName("player")] and (PallyPower_Assignments[UnitName("player")][class] == PallyPower.opt.mainTankGSpellsDP) then
+							SetNormalBlessings(UnitName("player"), class, tmp.name, PallyPower.opt.mainTankSpellsDP)
+							raidtanks[tmp.name] = true
+						end
+					end
+					if (raidtank == "MAINASSIST" and PallyPower.opt.mainAssist) then
+						if PallyPower_Assignments[UnitName("player")] and (PallyPower_Assignments[UnitName("player")][class] == PallyPower.opt.mainAssistGSpellsDP) then
+							SetNormalBlessings(UnitName("player"), class, tmp.name, PallyPower.opt.mainAssistSpellsDP)
 							raidtanks[tmp.name] = true
 						end
 					end
@@ -2362,7 +2395,7 @@ function PallyPower:AutoAssign()
 			PallyPowerBlessings_Clear()
 			WisdomPallysw, MightPallys, KingsPallys,  SalvPallys, LightPallys, SancPallys = {}, {}, {}, {}, {}, {}
 			PallyPower:AutoAssignBlessings()
-			local precedence = { 1, 3, 2, 4, 5, 6, 7 }	 -- devotion, concentration, retribution, shadow, frost, fire, sanctity
+			local precedence = { 6, 1, 3, 2, 4, 5, 7 }	 -- fire, devotion, concentration, retribution, shadow, frost, sanctity
 			PallyPower:AutoAssignAuras(precedence)
 			PallyPower:UpdateRoster()
 		else
@@ -2491,49 +2524,63 @@ function PallyPower:BuffSelections(buff, class, pallys)
 	end
 	if Buffer ~= "" then
 		if (IsInRaid()) and (buff > 2) then
-			local pallyleadercount = 0
-			for name in pairs(AllPallys) do
-				if PallyPower:CheckRaidLeader(name) then
-					pallyleadercount = pallyleadercount + 1
-				end
-			end
-			if pallyleadercount == 1 and PallyPower:CheckRaidLeader(Buffer) and (buff == 4) then
-				for pclass = 1, PALLYPOWER_MAXCLASSES do
-					PallyPower_Assignments[Buffer][pclass] = buff
-				end
-				PallyPower:SendMessage("MASSIGN "..Buffer.." "..buff)
+			if Buffer == PallyPower.player then
 				SalvPallys = {}; tinsert(SalvPallys, {pallyname = Buffer, skill = BufferSkill})
-			else
 				for pclass = 1, PALLYPOWER_MAXCLASSES do
 					PallyPower_Assignments[Buffer][pclass] = buff
 				end
 				PallyPower:SendMessage("MASSIGN "..Buffer.." "..buff)
+			else
 				if buff == 3 then KingsPallys = {}; tinsert(KingsPallys, {pallyname = Buffer, skill = BufferSkill}) end
-				if buff == 4 then SalvPallys = {}; tinsert(SalvPallys, {pallyname = Buffer, skill = BufferSkill}) end
 				if buff == 5 then LightPallys = {}; tinsert(LightPallys, {pallyname = Buffer, skill = BufferSkill}) end
 				if buff == 6 then SancPallys = {}; tinsert(SancPallys, {pallyname = Buffer, skill = BufferSkill}) end
+				for pclass = 1, PALLYPOWER_MAXCLASSES do
+					PallyPower_Assignments[Buffer][pclass] = buff
+				end
+				PallyPower:SendMessage("MASSIGN "..Buffer.." "..buff)
 			end
-			if (buff == PallyPower.opt.mainTankGSpells) and (class == 1 or class == 4 or class == 5) then
+			-----------------------------------------------------------------------------------------------------------------
+			-- Warriors
+			-----------------------------------------------------------------------------------------------------------------
+			if (buff == PallyPower.opt.mainTankGSpellsW) and (class == 1) then
 				for i = 1, MAX_RAID_MEMBERS do
 					local playerName, _, _, _, playerClass = GetRaidRosterInfo(i)
 					if playerName and PallyPower:CheckRaidTanks(playerName) and (class == PallyPower:GetClassID(string.upper(playerClass)))  then
-						SetNormalBlessings(Buffer, class, playerName, PallyPower.opt.mainTankSpells)
+						SetNormalBlessings(Buffer, class, playerName, PallyPower.opt.mainTankSpellsW)
 					end
 				end
 			end
-			if (buff == PallyPower.opt.mainAssistGSpells) and (class == 1 or class == 4 or class == 5) then
+			if (buff == PallyPower.opt.mainAssistGSpellsW) and (class == 1) then
 				for i = 1, MAX_RAID_MEMBERS do
 					local playerName, _, _, _, playerClass = GetRaidRosterInfo(i)
 					if playerName and PallyPower:CheckRaidTanks(playerName) and (class == PallyPower:GetClassID(string.upper(playerClass)))  then
-						SetNormalBlessings(Buffer, class, playerName, PallyPower.opt.mainAssistSpells)
+						SetNormalBlessings(Buffer, class, playerName, PallyPower.opt.mainAssistSpellsW)
 					end
 				end
 			end
+			-----------------------------------------------------------------------------------------------------------------
+			-- Druids and Paladins
+			-----------------------------------------------------------------------------------------------------------------
+			if (buff == PallyPower.opt.mainTankGSpellsDP) and (class == 4 or class == 5) then
+				for i = 1, MAX_RAID_MEMBERS do
+					local playerName, _, _, _, playerClass = GetRaidRosterInfo(i)
+					if playerName and PallyPower:CheckRaidTanks(playerName) and (class == PallyPower:GetClassID(string.upper(playerClass)))  then
+						SetNormalBlessings(Buffer, class, playerName, PallyPower.opt.mainTankSpellsDP)
+					end
+				end
+			end
+			if (buff == PallyPower.opt.mainAssistGSpellsDP) and (class == 4 or class == 5) then
+				for i = 1, MAX_RAID_MEMBERS do
+					local playerName, _, _, _, playerClass = GetRaidRosterInfo(i)
+					if playerName and PallyPower:CheckRaidTanks(playerName) and (class == PallyPower:GetClassID(string.upper(playerClass)))  then
+						SetNormalBlessings(Buffer, class, playerName, PallyPower.opt.mainAssistSpellsDP)
+					end
+				end
+			end
+			-----------------------------------------------------------------------------------------------------------------
 		else
 			PallyPower_Assignments[Buffer][class] = buff
 			PallyPower:SendMessage("ASSIGN "..Buffer.." "..class.." "..buff)
-			if buff == 1 then WisdomPallys = {}; tinsert(WisdomPallys, {pallyname = Buffer, skill = BufferSkill}) end
-			if buff == 2 then MightPallys = {}; tinsert(MightPallys, {pallyname = Buffer, skill = BufferSkill}) end
 		end
 	else end
 	return Buffer
