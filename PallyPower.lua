@@ -158,13 +158,9 @@ end
 
 function PallyPowerBlessings_Clear()
 	if InCombatLockdown() then return end
-	if GetNumGroupMembers() > 0 then
-		if not IsInRaid() or (UnitIsGroupLeader(PallyPower.player) or UnitIsGroupAssistant(PallyPower.player)) then
-			PallyPower:ClearAssignments(UnitName("player"))
-			PallyPower:SendMessage("CLEAR")
-		else
-			PallyPower:Print(ERR_NOT_LEADER)
-		end
+	if PallyPower:CheckRaidLeader(PallyPower.player) then
+		PallyPower:ClearAssignments(UnitName("player"))
+		PallyPower:SendMessage("CLEAR")
 	else
 		PallyPower:ClearAssignments(UnitName("player"))
 	end
@@ -348,31 +344,6 @@ function PallyPowerBlessingsFrame_MouseDown(self, button)
 	if ( ( ( not PallyPowerBlessingsFrame.isLocked ) or ( PallyPowerBlessingsFrame.isLocked == 0 ) ) and ( button == "LeftButton" ) ) then
 		PallyPowerBlessingsFrame:StartMoving()
 		PallyPowerBlessingsFrame.isMoving = true
-	end
-end
-
-local point, relativeTo, relativePoint, xOfs, yOfs, movingPlayerFrame
-function PlayerButton_DragStart(frame)
-	movingPlayerFrame = frame
-	point, relativeTo, relativePoint, xOfs, yOfs = frame:GetPoint()
-	frame:SetMovable(true)
-	frame:StartMoving()
-end
-
-function PlayerButton_DragStop(frame)
-	if movingPlayerFrame then
-		frame:StopMovingOrSizing()
-		for i = 1, PALLYPOWER_MAXCLASSES do
-		    if MouseIsOver(getglobal("PallyPowerBlessingsFrameClassGroup"..i.."ClassButton")) then
-					local _, _, pclass, pnum = sfind(movingPlayerFrame:GetName(), "PallyPowerBlessingsFrameClassGroup(.+)PlayerButton(.+)")
-					pclass, pnum = tonumber(pclass), tonumber(pnum)
-					local unit = classes[pclass][pnum]
-					PallyPower:AssignPlayerAsClass(unit.name, pclass, i)
-		    end
-		end
-		frame:SetPoint(point, relativeTo, relativePoint, xOfs, yOfs)
-		frame:SetMovable(false)
-		movingPlayerFrame = nil
 	end
 end
 
@@ -574,10 +545,14 @@ end
 function PallyPower:Report(type)
 	if GetNumGroupMembers() > 0 then
 		if not type then
-			if IsInRaid() then
-				type = "RAID"
+			if IsInGroup(LE_PARTY_CATEGORY_INSTANCE) and IsInInstance() then
+				type = "INSTANCE_CHAT"
 			else
-				type = "PARTY"
+				if IsInRaid() then
+					type = "RAID"
+				elseif IsInGroup(LE_PARTY_CATEGORY_HOME) then
+					type = "PARTY"
+				end
 			end
 			if PallyPower:CheckRaidLeader(self.player) then
 				SendChatMessage(PALLYPOWER_ASSIGNMENTS1, type)
@@ -610,8 +585,8 @@ function PallyPower:Report(type)
 					SendChatMessage(name ..": ".. blessings, type)
 				end
 				SendChatMessage(PALLYPOWER_ASSIGNMENTS2, type)
-				if IsInRaid() and #SyncList > 4 then
-					SendChatMessage(" ", "RAID")
+				if IsInRaid() and #SyncList > 4 and type == "RAID" then
+					SendChatMessage(" ", type)
 					SendChatMessage(PALLYPOWER_ASSIGNMENTS3, "RAID_WARNING")
 					SendChatMessage(PALLYPOWER_ASSIGNMENTS4, "RAID_WARNING")
 				end
@@ -920,7 +895,7 @@ function PallyPower:InventoryScan()
 end
 
 function PallyPower:SendSelf()
-	self:Debug("SendSelf()")
+	--self:Debug("SendSelf()")
 	if not initalized then PallyPower:ScanSpells() end
 	if not AllPallys[self.player] then return end
 	local s
@@ -991,14 +966,15 @@ end
 function PallyPower:SendMessage(msg)
 	--self:Debug("SendMessage("..msg..")")
 	local type
-	local inInstance, instanceType = IsInInstance()
-	if inInstance and instanceType == "pvp" then
-		type = "BATTLEGROUND"
+	if IsInGroup(LE_PARTY_CATEGORY_INSTANCE) and IsInInstance() then
+		type = "INSTANCE_CHAT"
 	else
-		if (IsInRaid() == true) then
+		if IsInRaid() then
 			type = "RAID"
-		else
+		elseif IsInGroup(LE_PARTY_CATEGORY_HOME) then
 			type = "PARTY"
+		else
+			type = "WHISPER"
 		end
 	end
 	C_ChatInfo.SendAddonMessage(PallyPower.commPrefix, msg, type, self.player)
@@ -1022,7 +998,7 @@ function PallyPower:CHAT_MSG_ADDON(event, prefix, message, distribution, source)
 	if prefix == PallyPower.commPrefix then
 		--self:Debug("[EVENT: CHAT_MSG_ADDON] prefix: "..prefix.." | message: "..message.." | distribution: "..distribution.." | sender: "..sender)
 	end
-	if prefix == PallyPower.commPrefix and (distribution == "PARTY" or distribution == "RAID" or distribution == "BATTLEGROUND") then
+	if prefix == PallyPower.commPrefix and (distribution == "PARTY" or distribution == "RAID" or distribution == "INSTANCE_CHAT") then
 		self:ParseMessage(sender, message)
 	end
 end
@@ -1251,10 +1227,10 @@ function PallyPower:UpdateRoster()
 		classlist[i] = 0
 		classes[i] = {}
 	end
-	if not IsInRaid() then
-		units = party_units
-	else
+	if IsInRaid() then
 		units = raid_units
+	else
+		units = party_units
 	end
 	twipe(roster)
 	twipe(leaders)
@@ -2390,22 +2366,35 @@ end
 
 function PallyPower:AutoAssign()
 	if InCombatLockdown() then return end
-	if GetNumGroupMembers() > 0 then
-		if not IsInRaid() or (UnitIsGroupLeader(PallyPower.player) or UnitIsGroupAssistant(PallyPower.player)) then
+	local pallycount = 0
+	local pallytemplate
+	for name in pairs(AllPallys) do
+		pallycount = pallycount + 1
+	end
+	local precedence
+	if IsInGroup(LE_PARTY_CATEGORY_INSTANCE) and IsInInstance() then
+		precedence = { 1, 3, 2, 4, 5, 6, 7 }	 -- devotion, concentration, retribution, shadow, frost, fire, sanctity
+	else
+		if IsInRaid() then
+			precedence = { 6, 1, 3, 2, 4, 5, 7 }	 -- fire, devotion, concentration, retribution, shadow, frost, sanctity
+		else
+			precedence = { 1, 3, 2, 4, 5, 6, 7 }	 -- devotion, concentration, retribution, shadow, frost, fire, sanctity
+		end
+	end
+	if pallycount > 1 then
+		if PallyPower:CheckRaidLeader(self.player) then
 			PallyPowerBlessings_Clear()
 			WisdomPallysw, MightPallys, KingsPallys,  SalvPallys, LightPallys, SancPallys = {}, {}, {}, {}, {}, {}
 			PallyPower:AutoAssignBlessings()
-			local precedence = { 6, 1, 3, 2, 4, 5, 7 }	 -- fire, devotion, concentration, retribution, shadow, frost, sanctity
 			PallyPower:AutoAssignAuras(precedence)
 			PallyPower:UpdateRoster()
 		else
-			self:Print(ERR_NOT_LEADER)
+			PallyPower:Print(ERR_NOT_LEADER)
 		end
 	else
 		PallyPowerBlessings_Clear()
-		WisdomPallys, MightPallys, KingsPallys,  SalvPallys, LightPallys, SancPallys = {}, {}, {}, {}, {}, {}
+		WisdomPallysw, MightPallys, KingsPallys,  SalvPallys, LightPallys, SancPallys = {}, {}, {}, {}, {}, {}
 		PallyPower:AutoAssignBlessings()
-		local precedence = { 1, 3, 2, 4, 5, 6, 7 }	 -- devotion, concentration, retribution, shadow, frost, fire, sanctity
 		PallyPower:AutoAssignAuras(precedence)
 		PallyPower:UpdateRoster()
 	end
@@ -2464,10 +2453,14 @@ function PallyPower:AutoAssignBlessings()
 		end
 	end
 	-- get template for the number of available paladins in the raid
-	if IsInRaid() then
-		pallytemplate = PallyPower.RaidTemplates[pallycount]
+	if IsInGroup(LE_PARTY_CATEGORY_INSTANCE) and IsInInstance() then
+		pallytemplate = PallyPower.BattleGroundTemplates[pallycount]
 	else
-		pallytemplate = PallyPower.Templates[pallycount]
+		if IsInRaid() then
+			pallytemplate = PallyPower.RaidTemplates[pallycount]
+		else
+			pallytemplate = PallyPower.Templates[pallycount]
+		end
 	end
 	-- assign based on the class templates
 	PallyPower:SelectBuffsByClass(pallycount, 1, pallytemplate[1])  -- warrior
