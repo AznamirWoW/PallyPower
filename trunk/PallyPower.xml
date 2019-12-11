@@ -578,12 +578,6 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 		  self:RegisterForDrag("LeftButton");
 		  self:EnableMouseWheel(1);
 	  </OnLoad>
-	  <OnDragStart>
-		  PlayerButton_DragStart(self, button)
-	  </OnDragStart>
-	  <OnDragStop>
-		  PlayerButton_DragStop(self, button)
-	  </OnDragStop>
 	  <OnClick>
 		  PallyPowerPlayerButton_OnClick(self, button, down);
 	  </OnClick>
