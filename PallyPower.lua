@@ -158,11 +158,11 @@ end
 
 function PallyPowerBlessings_Clear()
 	if InCombatLockdown() then return end
-	if PallyPower:CheckRaidLeader(PallyPower.player) then
-		PallyPower:ClearAssignments(UnitName("player"))
-		PallyPower:SendMessage("CLEAR")
+	if IsInRaid() and not PallyPower:CheckRaidLeader(PallyPower.player) and not (IsInGroup(LE_PARTY_CATEGORY_INSTANCE) and IsInInstance()) then
+		PallyPower:Print(ERR_NOT_LEADER)
 	else
 		PallyPower:ClearAssignments(UnitName("player"))
+		PallyPower:SendMessage("CLEAR")
 	end
 	PallyPower:UpdateRoster()
 end
@@ -554,7 +554,7 @@ function PallyPower:Report(type)
 					type = "PARTY"
 				end
 			end
-			if PallyPower:CheckRaidLeader(self.player) then
+			if PallyPower:CheckRaidLeader(self.player) and type ~= "INSTANCE_CHAT" then
 				SendChatMessage(PALLYPOWER_ASSIGNMENTS1, type)
 				local list = {}
 				for name in pairs(AllPallys) do
@@ -591,7 +591,11 @@ function PallyPower:Report(type)
 					SendChatMessage(PALLYPOWER_ASSIGNMENTS4, "RAID_WARNING")
 				end
 			else
-				self:Print(ERR_NOT_LEADER)
+				if type == "INSTANCE_CHAT" then
+					self:Print("Blessings Report is disabled in Battlegrounds.")
+				else
+					self:Print(ERR_NOT_LEADER)
+				end
 			end
 		end
 	else
@@ -1070,7 +1074,7 @@ function PallyPower:ClearAssignments(sender)
 		end
 	end
 	for name, auras in pairs(PallyPower_AuraAssignments) do
-		if leader or name ==sender then
+		if leader or name == sender then
 			PallyPower_AuraAssignments[name] = 0
 		end
 	end
@@ -1164,6 +1168,8 @@ function PallyPower:ParseMessage(sender, msg)
 	if sfind(msg, "^CLEAR") then
 		if leader then
 			self:ClearAssignments(sender)
+		elseif self.opt.freeassign then
+			self:ClearAssignments(UnitName("player"))
 		end
 	end
 	if msg == "FREEASSIGN YES" and AllPallys[sender] then
@@ -1337,7 +1343,11 @@ function PallyPower:UpdateRoster()
 				end
 			end
 			if tmp.rank > 0 then
-				leaders[tmp.name] = true
+				if IsInGroup(LE_PARTY_CATEGORY_INSTANCE) and IsInInstance() then
+					leaders[tmp.name] = false
+				else
+					leaders[tmp.name] = true
+				end
 			end
 			if tmp.subgroup then
 				tinsert(roster, tmp)
@@ -2365,36 +2375,20 @@ function PallyPower:SealAssign(seal)
 end
 
 function PallyPower:AutoAssign()
+	local shift = (IsShiftKeyDown() and PallyPowerBlessingsFrame:IsMouseOver())
 	if InCombatLockdown() then return end
-	local pallycount = 0
-	local pallytemplate
-	for name in pairs(AllPallys) do
-		pallycount = pallycount + 1
-	end
 	local precedence
-	if IsInGroup(LE_PARTY_CATEGORY_INSTANCE) and IsInInstance() then
-		precedence = { 1, 3, 2, 4, 5, 6, 7 }	 -- devotion, concentration, retribution, shadow, frost, fire, sanctity
+	if IsInRaid() and not (IsInGroup(LE_PARTY_CATEGORY_INSTANCE) and IsInInstance() or shift) then
+		precedence = { 6, 1, 3, 2, 4, 5, 7 }	 -- fire, devotion, concentration, retribution, shadow, frost, sanctity
 	else
-		if IsInRaid() then
-			precedence = { 6, 1, 3, 2, 4, 5, 7 }	 -- fire, devotion, concentration, retribution, shadow, frost, sanctity
-		else
-			precedence = { 1, 3, 2, 4, 5, 6, 7 }	 -- devotion, concentration, retribution, shadow, frost, fire, sanctity
-		end
+		precedence = { 1, 3, 2, 4, 5, 6, 7 }	 -- devotion, concentration, retribution, shadow, frost, fire, sanctity
 	end
-	if pallycount > 1 then
-		if PallyPower:CheckRaidLeader(self.player) then
-			PallyPowerBlessings_Clear()
-			WisdomPallysw, MightPallys, KingsPallys,  SalvPallys, LightPallys, SancPallys = {}, {}, {}, {}, {}, {}
-			PallyPower:AutoAssignBlessings()
-			PallyPower:AutoAssignAuras(precedence)
-			PallyPower:UpdateRoster()
-		else
-			PallyPower:Print(ERR_NOT_LEADER)
-		end
+	if IsInRaid() and not PallyPower:CheckRaidLeader(self.player) and not (IsInGroup(LE_PARTY_CATEGORY_INSTANCE) and IsInInstance()) then
+		PallyPower:Print(ERR_NOT_LEADER)
 	else
 		PallyPowerBlessings_Clear()
 		WisdomPallysw, MightPallys, KingsPallys,  SalvPallys, LightPallys, SancPallys = {}, {}, {}, {}, {}, {}
-		PallyPower:AutoAssignBlessings()
+		PallyPower:AutoAssignBlessings(shift)
 		PallyPower:AutoAssignAuras(precedence)
 		PallyPower:UpdateRoster()
 	end
@@ -2423,7 +2417,7 @@ function PallyPower:CalcSkillRanks1(name)
 	return wisdom, might, kings, salv, light, sanct
 end
 
-function PallyPower:AutoAssignBlessings()
+function PallyPower:AutoAssignBlessings(shift)
 	local pallycount = 0
 	local pallytemplate
 	for name in pairs(AllPallys) do
@@ -2453,7 +2447,7 @@ function PallyPower:AutoAssignBlessings()
 		end
 	end
 	-- get template for the number of available paladins in the raid
-	if IsInGroup(LE_PARTY_CATEGORY_INSTANCE) and IsInInstance() then
+	if IsInGroup(LE_PARTY_CATEGORY_INSTANCE) and IsInInstance() or shift then
 		pallytemplate = PallyPower.BattleGroundTemplates[pallycount]
 	else
 		if IsInRaid() then
@@ -2517,7 +2511,7 @@ function PallyPower:BuffSelections(buff, class, pallys)
 	end
 	if Buffer ~= "" then
 		if (IsInRaid()) and (buff > 2) then
-			if Buffer == PallyPower.player then
+			if Buffer == PallyPower.player and (not IsInGroup(LE_PARTY_CATEGORY_INSTANCE)) then
 				SalvPallys = {}; tinsert(SalvPallys, {pallyname = Buffer, skill = BufferSkill})
 				for pclass = 1, PALLYPOWER_MAXCLASSES do
 					PallyPower_Assignments[Buffer][pclass] = buff
