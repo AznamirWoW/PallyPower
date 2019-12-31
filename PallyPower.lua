@@ -998,7 +998,7 @@ function PallyPower:PLAYER_ENTERING_WORLD()
 end
 
 function PallyPower:CHAT_MSG_ADDON(event, prefix, message, distribution, source)
-	local sender, server = string.match(source, "(.*)-(.*)")
+	local sender = Ambiguate(source, "none")
 	if prefix == PallyPower.commPrefix then
 		--self:Debug("[EVENT: CHAT_MSG_ADDON] prefix: "..prefix.." | message: "..message.." | distribution: "..distribution.." | sender: "..sender)
 	end
@@ -1099,7 +1099,7 @@ end
 
 function PallyPower:ParseMessage(sender, msg)
 	--self:Debug("[Parse Message] sender: "..sender.." | msg: "..msg)
-	if sender == self.player then return end
+	if sender == self.player or sender == nil then return end
 	if not initalized then PallyPower:ScanSpells() end
 	local leader = self:CheckRaidLeader(sender)
 	if msg == "REQ" then

@@ -707,6 +707,51 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				  </Anchor>
 			  </Anchors>
 		  </Button>
+		  <Button name="$parentPlayerButton11" inherits="PlayerButtonTemplate">
+			  <Anchors>
+				  <Anchor point="TOPLEFT">
+					  <Offset>
+						  <AbsDimension x="3" y="-171" /> 
+					  </Offset>
+				  </Anchor>
+			  </Anchors>
+		  </Button>
+		  <Button name="$parentPlayerButton12" inherits="PlayerButtonTemplate">
+			  <Anchors>
+				  <Anchor point="TOPLEFT">
+					  <Offset>
+						  <AbsDimension x="3" y="-171" /> 
+					  </Offset>
+				  </Anchor>
+			  </Anchors>
+		  </Button>
+		  <Button name="$parentPlayerButton13" inherits="PlayerButtonTemplate">
+			  <Anchors>
+				  <Anchor point="TOPLEFT">
+					  <Offset>
+						  <AbsDimension x="3" y="-171" /> 
+					  </Offset>
+				  </Anchor>
+			  </Anchors>
+		  </Button>
+		  <Button name="$parentPlayerButton14" inherits="PlayerButtonTemplate">
+			  <Anchors>
+				  <Anchor point="TOPLEFT">
+					  <Offset>
+						  <AbsDimension x="3" y="-171" /> 
+					  </Offset>
+				  </Anchor>
+			  </Anchors>
+		  </Button>
+		  <Button name="$parentPlayerButton15" inherits="PlayerButtonTemplate">
+			  <Anchors>
+				  <Anchor point="TOPLEFT">
+					  <Offset>
+						  <AbsDimension x="3" y="-171" /> 
+					  </Offset>
+				  </Anchor>
+			  </Anchors>
+		  </Button>
 	  </Frames>
   </Frame>
 
@@ -1747,6 +1792,31 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 		  <Frame name="$parentPlayer10" inherits="UserTemplate">
 			  <Anchors>
 				  <Anchor point="TOPLEFT" relativeTo="$parentPlayer9" relativePoint="BOTTOMLEFT" /> 
+			  </Anchors>
+		  </Frame>
+		  <Frame name="$parentPlayer11" inherits="UserTemplate">
+			  <Anchors>
+				  <Anchor point="TOPLEFT" relativeTo="$parentPlayer10" relativePoint="BOTTOMLEFT" /> 
+			  </Anchors>
+		  </Frame>
+		  <Frame name="$parentPlayer12" inherits="UserTemplate">
+			  <Anchors>
+				  <Anchor point="TOPLEFT" relativeTo="$parentPlayer11" relativePoint="BOTTOMLEFT" /> 
+			  </Anchors>
+		  </Frame>
+		  <Frame name="$parentPlayer13" inherits="UserTemplate">
+			  <Anchors>
+				  <Anchor point="TOPLEFT" relativeTo="$parentPlayer12" relativePoint="BOTTOMLEFT" /> 
+			  </Anchors>
+		  </Frame>
+		  <Frame name="$parentPlayer14" inherits="UserTemplate">
+			  <Anchors>
+				  <Anchor point="TOPLEFT" relativeTo="$parentPlayer13" relativePoint="BOTTOMLEFT" /> 
+			  </Anchors>
+		  </Frame>
+		  <Frame name="$parentPlayer15" inherits="UserTemplate">
+			  <Anchors>
+				  <Anchor point="TOPLEFT" relativeTo="$parentPlayer14" relativePoint="BOTTOMLEFT" /> 
 			  </Anchors>
 		  </Frame>
 	  </Frames>
