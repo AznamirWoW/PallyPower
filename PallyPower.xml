@@ -711,7 +711,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			  <Anchors>
 				  <Anchor point="TOPLEFT">
 					  <Offset>
-						  <AbsDimension x="3" y="-171" /> 
+						  <AbsDimension x="3" y="-184" /> 
 					  </Offset>
 				  </Anchor>
 			  </Anchors>
@@ -720,7 +720,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			  <Anchors>
 				  <Anchor point="TOPLEFT">
 					  <Offset>
-						  <AbsDimension x="3" y="-171" /> 
+						  <AbsDimension x="3" y="-197" /> 
 					  </Offset>
 				  </Anchor>
 			  </Anchors>
@@ -729,7 +729,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			  <Anchors>
 				  <Anchor point="TOPLEFT">
 					  <Offset>
-						  <AbsDimension x="3" y="-171" /> 
+						  <AbsDimension x="3" y="-210" /> 
 					  </Offset>
 				  </Anchor>
 			  </Anchors>
@@ -738,7 +738,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			  <Anchors>
 				  <Anchor point="TOPLEFT">
 					  <Offset>
-						  <AbsDimension x="3" y="-171" /> 
+						  <AbsDimension x="3" y="-223" /> 
 					  </Offset>
 				  </Anchor>
 			  </Anchors>
@@ -747,7 +747,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			  <Anchors>
 				  <Anchor point="TOPLEFT">
 					  <Offset>
-						  <AbsDimension x="3" y="-171" /> 
+						  <AbsDimension x="3" y="-236" /> 
 					  </Offset>
 				  </Anchor>
 			  </Anchors>
