@@ -158,12 +158,8 @@ end
 
 function PallyPowerBlessings_Clear()
 	if InCombatLockdown() then return end
-	if IsInRaid() and not PallyPower:CheckRaidLeader(PallyPower.player) and not (IsInGroup(LE_PARTY_CATEGORY_INSTANCE) and IsInInstance()) then
-		PallyPower:Print(ERR_NOT_LEADER)
-	else
-		PallyPower:ClearAssignments(UnitName("player"))
-		PallyPower:SendMessage("CLEAR")
-	end
+	PallyPower:ClearAssignments(UnitName("player"))
+	PallyPower:SendMessage("CLEAR")
 	PallyPower:UpdateRoster()
 end
 
@@ -366,7 +362,8 @@ function PallyPowerBlessingsGrid_Update(self, elapsed)
 				local pbnt = fname.."PlayerButton"..j
 				if classes[i] and classes[i][j] then
 					local unit = classes[i][j]
-					getglobal(pbnt.."Text"):SetText(unit.name)
+					local shortname = Ambiguate(unit.name, "short")
+					getglobal(pbnt.."Text"):SetText(shortname)
 					local normal, greater = PallyPower:GetSpellID(i, unit.name)
 					local icon
 					if normal ~= greater and movingPlayerFrame ~= getglobal(pbnt) then
@@ -393,11 +390,12 @@ function PallyPowerBlessingsGrid_Update(self, elapsed)
 			local SkillInfo = AllPallys[name]
 			local BuffInfo = PallyPower_Assignments[name]
 			local NormalBuffInfo = PallyPower_NormalAssignments[name]
-			getglobal(fname .. "Name"):SetText(name)
+			local shortname = Ambiguate(name, "short")
+			getglobal(fname .. "Name"):SetText(shortname)
 			if PallyPower:CanControl(name) then
 				getglobal(fname.."Name"):SetTextColor(1,1,1)
 			else
-				if PallyPower:CheckRaidLeader(name) then
+				if PallyPower:CheckLeader(name) then
 					getglobal(fname.."Name"):SetTextColor(0,1,0)
 				else
 					getglobal(fname.."Name"):SetTextColor(1,0,0)
@@ -554,7 +552,7 @@ function PallyPower:Report(type)
 					type = "PARTY"
 				end
 			end
-			if PallyPower:CheckRaidLeader(self.player) and type ~= "INSTANCE_CHAT" then
+			if PallyPower:CheckLeader(self.player) and type ~= "INSTANCE_CHAT" then
 				SendChatMessage(PALLYPOWER_ASSIGNMENTS1, type)
 				local list = {}
 				for name in pairs(AllPallys) do
@@ -593,6 +591,8 @@ function PallyPower:Report(type)
 			else
 				if type == "INSTANCE_CHAT" then
 					self:Print("Blessings Report is disabled in Battlegrounds.")
+				elseif type == "RAID" then
+					self:Print("You are not the raid leader or do not have raid assist.")
 				else
 					self:Print(ERR_NOT_LEADER)
 				end
@@ -1040,15 +1040,23 @@ function PallyPower:UNIT_AURA(event, unitTarget)
 end
 
 function PallyPower:CanControl(name)
-	if UnitIsGroupLeader(self.player) or UnitIsGroupAssistant(self.player) then
-		return true
-	else
+	if IsInGroup(LE_PARTY_CATEGORY_INSTANCE) and IsInInstance() then
 		return (name==self.player) or (AllPallys[name] and (AllPallys[name].freeassign == true))
+	else
+		if UnitIsGroupLeader(self.player) or UnitIsGroupAssistant(self.player) then
+			return true
+		else
+			return (name==self.player) or (AllPallys[name] and (AllPallys[name].freeassign == true))
+		end
 	end
 end
 
-function PallyPower:CheckRaidLeader(nick)
-	return leaders[nick]
+function PallyPower:CheckLeader(nick)
+	if leaders[nick] == true then
+		return true
+	else
+		return false
+	end
 end
 
 function PallyPower:CheckRaidTanks(nick)
@@ -1056,7 +1064,7 @@ function PallyPower:CheckRaidTanks(nick)
 end
 
 function PallyPower:ClearAssignments(sender)
-	local leader = self:CheckRaidLeader(sender)
+	local leader = self:CheckLeader(sender)
 	for name, skills in pairs(PallyPower_Assignments) do
 		if leader or name == sender then
 			for i = 1, PALLYPOWER_MAXCLASSES do
@@ -1101,7 +1109,7 @@ function PallyPower:ParseMessage(sender, msg)
 	--self:Debug("[Parse Message] sender: "..sender.." | msg: "..msg)
 	if sender == self.player or sender == nil then return end
 	if not initalized then PallyPower:ScanSpells() end
-	local leader = self:CheckRaidLeader(sender)
+	local leader = self:CheckLeader(sender)
 	if msg == "REQ" then
 		self:SendSelf()
 	end
@@ -1276,7 +1284,7 @@ function PallyPower:UpdateRoster()
 			end
 			if IsInRaid() then
 				local n = select(3, unitid:find("(%d+)"))
-				tmp.rank, tmp.subgroup = select(2, GetRaidRosterInfo(n))
+				tmp.name, tmp.rank, tmp.subgroup = GetRaidRosterInfo(n)
 				local raidtank = select(10, GetRaidRosterInfo(n))
 				local class = PallyPower:GetClassID(pclass)
 				-- Warriors
@@ -1888,7 +1896,8 @@ function PallyPower:UpdatePButton(button, baseName, classID, playerID)
 				dead:SetAlpha(0)
 			end
 		end
-		name:SetText(unit.name)
+		local shortname = Ambiguate(unit.name, "short")
+		name:SetText(shortname)
 	else
 		self:ApplyBackdrop(button, self.opt.cBuffGood)
 		buffIcon:SetAlpha(0)
@@ -2383,15 +2392,11 @@ function PallyPower:AutoAssign()
 	else
 		precedence = { 1, 3, 2, 4, 5, 6, 7 }	 -- devotion, concentration, retribution, shadow, frost, fire, sanctity
 	end
-	if IsInRaid() and not PallyPower:CheckRaidLeader(self.player) and not (IsInGroup(LE_PARTY_CATEGORY_INSTANCE) and IsInInstance()) then
-		PallyPower:Print(ERR_NOT_LEADER)
-	else
-		PallyPowerBlessings_Clear()
-		WisdomPallysw, MightPallys, KingsPallys,  SalvPallys, LightPallys, SancPallys = {}, {}, {}, {}, {}, {}
-		PallyPower:AutoAssignBlessings(shift)
-		PallyPower:AutoAssignAuras(precedence)
-		PallyPower:UpdateRoster()
-	end
+	PallyPowerBlessings_Clear()
+	WisdomPallysw, MightPallys, KingsPallys,  SalvPallys, LightPallys, SancPallys = {}, {}, {}, {}, {}, {}
+	PallyPower:AutoAssignBlessings(shift)
+	PallyPower:AutoAssignAuras(precedence)
+	PallyPower:UpdateRoster()
 end
 
 function PallyPower:CalcSkillRanks1(name)
@@ -2471,7 +2476,9 @@ end
 function PallyPower:SelectBuffsByClass(pallycount, class, prioritylist)
 	local pallys = {}
 	for name in pairs(AllPallys) do
-		tinsert(pallys, name)
+		if PallyPower:CanControl(name) then
+			tinsert(pallys, name)
+		end
 	end
 	local bufftable = prioritylist
 	if pallycount > 0 then
@@ -2699,14 +2706,16 @@ function PallyPower:UpdateAuraButton(aura)
 	-- only support two lines of text, so only deal with the first two players in the list...
 	local player1 = _G["PallyPowerAuraPlayer1"]
 	if pallys[1] then
-		player1:SetText(pallys[1])
+		local shortpally1 = Ambiguate(pallys[1], "short")
+		player1:SetText(shortpally1)
 		player1:SetTextColor(1.0, 1.0, 1.0)
 	else
 		player1:SetText("")
 	end
 	local player2 = _G["PallyPowerAuraPlayer2"]
 	if pallys[2] then
-		player2:SetText(pallys[2])
+		local shortpally2 = Ambiguate(pallys[2], "short")
+		player2:SetText(shortpally2)
 		player2:SetTextColor(1.0, 1.0, 1.0)
 	else
 		player2:SetText("")
@@ -2727,8 +2736,12 @@ function PallyPower:AutoAssignAuras(precedence)
 		pallys[("subgroup%d"):format(i)] = {}
 	end
 	for name in pairs(AllPallys) do
-		local subgroup = "subgroup"..AllPallys[name].subgroup
-		tinsert(pallys[subgroup], name)
+		if AllPallys[name].subgroup then
+			local subgroup = "subgroup"..AllPallys[name].subgroup
+			if PallyPower:CanControl(name) then
+				tinsert(pallys[subgroup], name)
+			end
+		end
 	end
 	for _, subgroup in pairs(pallys) do
 		for _, aura in pairs(precedence) do
