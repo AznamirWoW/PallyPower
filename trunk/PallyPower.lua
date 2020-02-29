@@ -88,7 +88,7 @@ function PallyPower:OnInitialize()
 	if not PallyPowerConfigFrame then
 		local pallypowerconfigframe = AceGUI:Create("Frame")
 		LibStub("AceConfigDialog-3.0"):SetDefaultSize("PallyPower", 625, 580)
-    LibStub("AceConfigDialog-3.0"):Open("PallyPower", pallypowerconfigframe)
+		LibStub("AceConfigDialog-3.0"):Open("PallyPower", pallypowerconfigframe)
 		pallypowerconfigframe:Hide()
 		_G["PallyPowerConfigFrame"] = pallypowerconfigframe.frame
 		table.insert(UISpecialFrames, "PallyPowerConfigFrame")
@@ -97,7 +97,7 @@ end
 
 function PallyPower:OnProfileChanged()
   self.opt = self.db.profile
-	PallyPower:UpdateLayout()
+	self:UpdateLayout()
 end
 
 function PallyPower:OnEnable()
@@ -109,12 +109,11 @@ function PallyPower:OnEnable()
 	self:RegisterEvent("UPDATE_BINDINGS", "BindKeys")
 	self:RegisterEvent("UNIT_AURA")
 	self:RegisterBucketEvent("SPELLS_CHANGED", 1, "SPELLS_CHANGED")
-	self:RegisterBucketEvent({"GROUP_ROSTER_UPDATE", "PLAYER_REGEN_ENABLED", "UNIT_PET"}, 1, "UpdateRoster")
+	self:RegisterBucketEvent({"PLAYER_ENTERING_WORLD", "GROUP_ROSTER_UPDATE", "PLAYER_REGEN_ENABLED", "UNIT_PET"}, 1, "UpdateRoster")
 	if PP_IsPally then
 		self:ScheduleRepeatingTimer(self.InventoryScan, 60, self)
 		self:ScheduleRepeatingTimer(self.ButtonsUpdate, 1, self)
 	end
-	self:UpdateRoster()
 	self:BindKeys()
 end
 
@@ -1248,7 +1247,7 @@ function PallyPower:UpdateRoster()
 	end
 	twipe(roster)
 	twipe(leaders)
-	for _, unitid in ipairs(units) do
+	for _, unitid in pairs(units) do
 		if unitid and UnitExists(unitid) then
 			local tmp = {}
 			tmp.unitid = unitid
@@ -1282,7 +1281,7 @@ function PallyPower:UpdateRoster()
 					tmp.class = select(2, UnitClass(unitid))
 				end
 			end
-			if IsInRaid() then
+			if IsInRaid() and not isPet then
 				local n = select(3, unitid:find("(%d+)"))
 				tmp.name, tmp.rank, tmp.subgroup = GetRaidRosterInfo(n)
 				local raidtank = select(10, GetRaidRosterInfo(n))
@@ -2393,7 +2392,7 @@ function PallyPower:AutoAssign()
 		precedence = { 1, 3, 2, 4, 5, 6, 7 }	 -- devotion, concentration, retribution, shadow, frost, fire, sanctity
 	end
 	PallyPowerBlessings_Clear()
-	WisdomPallysw, MightPallys, KingsPallys,  SalvPallys, LightPallys, SancPallys = {}, {}, {}, {}, {}, {}
+	WisdomPallys, MightPallys, KingsPallys,  SalvPallys, LightPallys, SancPallys = {}, {}, {}, {}, {}, {}
 	PallyPower:AutoAssignBlessings(shift)
 	PallyPower:AutoAssignAuras(precedence)
 	PallyPower:UpdateRoster()
