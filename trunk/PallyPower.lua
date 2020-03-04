@@ -997,7 +997,9 @@ function PallyPower:PLAYER_ENTERING_WORLD()
 end
 
 function PallyPower:CHAT_MSG_ADDON(event, prefix, message, distribution, source)
-	local sender = Ambiguate(source, "none")
+	if source then
+		local sender = Ambiguate(source, "none")
+	end
 	if prefix == PallyPower.commPrefix then
 		--self:Debug("[EVENT: CHAT_MSG_ADDON] prefix: "..prefix.." | message: "..message.." | distribution: "..distribution.." | sender: "..sender)
 	end
@@ -1349,7 +1351,7 @@ function PallyPower:UpdateRoster()
 					AllPallys[tmp.name].subgroup = tmp.subgroup
 				end
 			end
-			if tmp.rank > 0 then
+			if leaders[tmp.name] and tmp.rank > 0 then
 				if IsInGroup(LE_PARTY_CATEGORY_INSTANCE) and IsInInstance() then
 					leaders[tmp.name] = false
 				else
@@ -1895,8 +1897,10 @@ function PallyPower:UpdatePButton(button, baseName, classID, playerID)
 				dead:SetAlpha(0)
 			end
 		end
-		local shortname = Ambiguate(unit.name, "short")
-		name:SetText(shortname)
+		if unit.name then
+			local shortname = Ambiguate(unit.name, "short")
+			name:SetText(shortname)
+		end
 	else
 		self:ApplyBackdrop(button, self.opt.cBuffGood)
 		buffIcon:SetAlpha(0)
