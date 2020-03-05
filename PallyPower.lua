@@ -997,9 +997,7 @@ function PallyPower:PLAYER_ENTERING_WORLD()
 end
 
 function PallyPower:CHAT_MSG_ADDON(event, prefix, message, distribution, source)
-	if source then
-		local sender = Ambiguate(source, "none")
-	end
+	local sender = Ambiguate(source, "none")
 	if prefix == PallyPower.commPrefix then
 		--self:Debug("[EVENT: CHAT_MSG_ADDON] prefix: "..prefix.." | message: "..message.." | distribution: "..distribution.." | sender: "..sender)
 	end
@@ -1283,7 +1281,7 @@ function PallyPower:UpdateRoster()
 					tmp.class = select(2, UnitClass(unitid))
 				end
 			end
-			if IsInRaid() and not isPet then
+			if IsInRaid() and (not isPet) then
 				local n = select(3, unitid:find("(%d+)"))
 				tmp.name, tmp.rank, tmp.subgroup = GetRaidRosterInfo(n)
 				local raidtank = select(10, GetRaidRosterInfo(n))
@@ -1351,9 +1349,8 @@ function PallyPower:UpdateRoster()
 					AllPallys[tmp.name].subgroup = tmp.subgroup
 				end
 			end
-			if leaders[tmp.name] and tmp.rank > 0 then
+			if tmp.name and (tmp.rank > 0) then
 				if IsInGroup(LE_PARTY_CATEGORY_INSTANCE) and IsInInstance() then
-					leaders[tmp.name] = false
 				else
 					leaders[tmp.name] = true
 				end
@@ -1396,7 +1393,7 @@ function PallyPower:CreateLayout()
 	self:Debug("CreateLayout()")
 	local p = _G["PallyPowerFrame"]
 	self.Header = p
-  self.autoButton = CreateFrame("Button", "PallyPowerAuto", self.Header, "SecureHandlerShowHideTemplate, SecureHandlerEnterLeaveTemplate, SecureHandlerStateTemplate, SecureActionButtonTemplate, PallyPowerAutoButtonTemplate")
+    self.autoButton = CreateFrame("Button", "PallyPowerAuto", self.Header, "SecureHandlerShowHideTemplate, SecureHandlerEnterLeaveTemplate, SecureHandlerStateTemplate, SecureActionButtonTemplate, PallyPowerAutoButtonTemplate")
 	self.autoButton:RegisterForClicks("LeftButtonDown", "RightButtonDown")
 	self.rfButton = CreateFrame("Button", "PallyPowerRF", self.Header, "PallyPowerRFButtonTemplate")
 	self.rfButton:RegisterForClicks("LeftButtonDown", "RightButtonDown")
@@ -1408,13 +1405,13 @@ function PallyPower:CreateLayout()
 	for cbNum = 1, PALLYPOWER_MAXCLASSES do
 		local cButton = CreateFrame("Button", "PallyPowerC" .. cbNum, self.Header, "SecureHandlerShowHideTemplate, SecureHandlerEnterLeaveTemplate, SecureHandlerStateTemplate, SecureActionButtonTemplate, PallyPowerButtonTemplate")
  		SecureHandlerSetFrameRef(self.autoButton, "child", cButton)
-	  SecureHandlerExecute(self.autoButton, [[
+		SecureHandlerExecute(self.autoButton, [[
 			local child = self:GetFrameRef("child")
 			childs[#childs+1] = child;
 		]])
-    cButton:Execute([[others = table.new()]])
+		cButton:Execute([[others = table.new()]])
 		cButton:Execute([[childs = table.new()]])
-    cButton:SetAttribute("_onenter", [[
+		cButton:SetAttribute("_onenter", [[
 			for _, other in ipairs(others) do
 				 other:SetAttribute("state-inactive", self)
 			end
@@ -1434,20 +1431,20 @@ function PallyPower:CreateLayout()
 					leadChild:AddToAutoHide(self)
 			end
 		]])
-    cButton:SetAttribute("_onstate-inactive", [[
+		cButton:SetAttribute("_onstate-inactive", [[
 			childs[1]:Hide()
 		]])
 		cButton:RegisterForClicks("LeftButtonDown", "RightButtonDown")
 		cButton:EnableMouseWheel(1)
-    self.classButtons[cbNum] = cButton
+		self.classButtons[cbNum] = cButton
 		self.playerButtons[cbNum] = {}
 		local pButtons = self.playerButtons[cbNum]
-    local leadChild
+		local leadChild
 		for pbNum = 1, PALLYPOWER_MAXPERCLASS do -- create player buttons for each class
 			local pButton = CreateFrame("Button","PallyPowerC".. cbNum .. "P" .. pbNum, UIParent, "SecureHandlerShowHideTemplate, SecureHandlerEnterLeaveTemplate, SecureActionButtonTemplate, PallyPowerPopupTemplate")
 			pButton:SetParent(cButton)
 			SecureHandlerSetFrameRef(cButton, "child", pButton)
-	    SecureHandlerExecute(cButton, [[
+			SecureHandlerExecute(cButton, [[
 				local child = self:GetFrameRef("child")
 				childs[#childs+1] = child;
 			]])
@@ -1461,7 +1458,7 @@ function PallyPower:CreateLayout()
 				leadChild = pButton
 			else
 				SecureHandlerSetFrameRef(leadChild, "sibling", pButton)
-	      SecureHandlerExecute(leadChild, [[
+				SecureHandlerExecute(leadChild, [[
 					local sibling = self:GetFrameRef("sibling")
 					siblings[#siblings+1] = sibling;
 				]])
@@ -2152,7 +2149,10 @@ function PallyPower:AutoBuff(button, mousebutton)
 	self:Debug("AutoBuff(): mousebutton["..mousebutton.."]")
 	if InCombatLockdown() then return end
 	local now = time()
-	local greater = (mousebutton == "LeftButton" or mousebutton == "Hotkey2")
+	local greater = false
+	if mousebutton == "LeftButton" or mousebutton == "Hotkey2" then
+		greater = mousebutton
+	end
 	if greater then
 		self:Debug("AutoBuff(): Greater Blessing")
 		local groupCount = {}
