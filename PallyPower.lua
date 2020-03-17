@@ -103,13 +103,11 @@ end
 function PallyPower:OnEnable()
 	self.opt.enable = true
 	self:ScanSpells()
-	self:RegisterEvent("PLAYER_ENTERING_WORLD")
 	self:RegisterEvent("CHAT_MSG_ADDON")
 	self:RegisterEvent("CHAT_MSG_SYSTEM")
 	self:RegisterEvent("UPDATE_BINDINGS", "BindKeys")
-	self:RegisterEvent("UNIT_AURA")
 	self:RegisterBucketEvent("SPELLS_CHANGED", 1, "SPELLS_CHANGED")
-	self:RegisterBucketEvent({"PLAYER_ENTERING_WORLD", "GROUP_ROSTER_UPDATE", "PLAYER_REGEN_ENABLED", "UNIT_PET"}, 1, "UpdateRoster")
+	self:RegisterBucketEvent("PLAYER_ENTERING_WORLD", 2, "PLAYER_ENTERING_WORLD")
 	if PP_IsPally then
 		self:ScheduleRepeatingTimer(self.InventoryScan, 60, self)
 		self:ScheduleRepeatingTimer(self.ButtonsUpdate, 1, self)
@@ -361,10 +359,11 @@ function PallyPowerBlessingsGrid_Update(self, elapsed)
 				local pbnt = fname.."PlayerButton"..j
 				if classes[i] and classes[i][j] then
 					local unit = classes[i][j]
-					local shortname = Ambiguate(unit.name, "short")
-					getglobal(pbnt.."Text"):SetText(shortname)
-					local normal, greater = PallyPower:GetSpellID(i, unit.name)
-					local icon
+					if unit.name then
+						local shortname = Ambiguate(unit.name, "short")
+						getglobal(pbnt.."Text"):SetText(shortname)
+						local normal, greater = PallyPower:GetSpellID(i, unit.name)
+					end
 					if normal ~= greater and movingPlayerFrame ~= getglobal(pbnt) then
 						if normal ~= greater then
 							getglobal(pbnt.."Icon"):SetTexture(PallyPower.NormalBlessingIcons[normal])
@@ -993,6 +992,7 @@ end
 
 function PallyPower:PLAYER_ENTERING_WORLD()
 	self:Debug("EVENT: PLAYER_ENTERING_WORLD")
+	self:RegisterBucketEvent({"GROUP_ROSTER_UPDATE", "PLAYER_REGEN_ENABLED", "UNIT_PET", "UNIT_AURA"}, 1, "UpdateRoster")
 	--if UnitName("player") == "Dyaxler" then PP_DebugEnabled = true end
 end
 
