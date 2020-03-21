@@ -1576,9 +1576,13 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				  </Anchor>
 			  </Anchors>
 			  <Scripts>
-				  <OnClick>
-					  PallyPower:Report();
-				  </OnClick> 
+					<OnClick>
+						if PallyPower.opt.ReportChannel > 0 then
+							PallyPower:Report("CHANNEL", PallyPower.opt.ReportChannel);
+						else
+							PallyPower:Report();
+						end
+					</OnClick> 
 					<OnEnter>
 						if PallyPower.opt.ShowTooltips then
 							GameTooltip:SetOwner(self, "ANCHOR_BOTTOM");

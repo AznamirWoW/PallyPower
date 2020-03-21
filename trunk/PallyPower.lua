@@ -87,6 +87,7 @@ function PallyPower:OnInitialize()
 	self.PreviousAutoBuffedUnit = nil
 	if not PallyPowerConfigFrame then
 		local pallypowerconfigframe = AceGUI:Create("Frame")
+		pallypowerconfigframe:EnableResize(false)
 		LibStub("AceConfigDialog-3.0"):SetDefaultSize("PallyPower", 625, 580)
 		LibStub("AceConfigDialog-3.0"):Open("PallyPower", pallypowerconfigframe)
 		pallypowerconfigframe:Hide()
@@ -106,6 +107,7 @@ function PallyPower:OnEnable()
 	self:RegisterEvent("CHAT_MSG_ADDON")
 	self:RegisterEvent("CHAT_MSG_SYSTEM")
 	self:RegisterEvent("UPDATE_BINDINGS", "BindKeys")
+	self:RegisterEvent("CHANNEL_UI_UPDATE", "ReportChannels")
 	self:RegisterBucketEvent("SPELLS_CHANGED", 1, "SPELLS_CHANGED")
 	self:RegisterBucketEvent("PLAYER_ENTERING_WORLD", 2, "PLAYER_ENTERING_WORLD")
 	if PP_IsPally then
@@ -218,13 +220,13 @@ function PallyPower:OpenConfigWindow()
 	if PallyPowerBlessingsFrame:IsVisible() then
 		PallyPowerBlessingsFrame:Hide()
 	end
-  if not PallyPowerConfigFrame:IsShown() then
+	if not PallyPowerConfigFrame:IsShown() then
 		PallyPowerConfigFrame:Show()
 		PlaySound(SOUNDKIT.IG_SPELLBOOK_OPEN)
-  else
+	else
 		PallyPowerConfigFrame:Hide()
 		PlaySound(SOUNDKIT.IG_SPELLBOOK_CLOSE)
-  end
+	end
 end
 
 function GetNormalBlessings(pname, class, tname)
@@ -538,9 +540,22 @@ function PallyPower_ScalingFrame_Update(self, elapsed)
 	end
 end
 
-function PallyPower:Report(type)
-	if GetNumGroupMembers() > 0 then
-		if not type then
+function PallyPower:ReportChannels()
+	local channels = {GetChannelList()}
+	PallyPower_ChanNames = {}
+	PallyPower_ChanNames[0] = "None"
+	for i = 1, #channels / 3 do
+		local chanName = channels[i * 3 - 1]
+		if chanName ~= "LookingForGroup" and chanName ~= "General" and chanName ~= "Trade" and chanName ~= "LocalDefense" and chanName ~= "WorldDefense" and chanName ~= "GuildRecruitment" then
+			PallyPower_ChanNames[i] = chanName
+		end
+	end
+	return PallyPower_ChanNames
+end
+
+function PallyPower:Report(type, chanNum)
+	if not type then
+		if GetNumGroupMembers() > 0 then
 			if IsInGroup(LE_PARTY_CATEGORY_INSTANCE) and IsInInstance() then
 				type = "INSTANCE_CHAT"
 			else
@@ -595,12 +610,58 @@ function PallyPower:Report(type)
 					self:Print(ERR_NOT_LEADER)
 				end
 			end
+		else
+			if type == "RAID" then
+				self:Print(ERR_NOT_IN_RAID)
+			else
+				self:Print(ERR_NOT_IN_GROUP)
+			end
 		end
 	else
-		if type == "RAID" then
-			self:Print(ERR_NOT_IN_RAID)
+		if PallyPower:CheckLeader(self.player) and (type and chanNum) and not (IsInGroup(LE_PARTY_CATEGORY_INSTANCE) and IsInInstance()) then
+			SendChatMessage(PALLYPOWER_ASSIGNMENTS1, type, nil, chanNum)
+			local list = {}
+			for name in pairs(AllPallys) do
+				local blessings
+				for i = 1, 6 do
+					list[i] = 0
+				end
+				for id = 1, PALLYPOWER_MAXCLASSES do
+					local bid = PallyPower_Assignments[name][id]
+					if bid and bid > 0 then
+						list[bid] = list[bid] + 1
+					end
+				end
+				for id = 1, 6 do
+					if (list[id] > 0) then
+						if (blessings) then
+							blessings = blessings .. ", "
+						else
+							blessings = ""
+						end
+						local spell = PallyPower.Spells[id]
+						blessings = blessings .. spell
+					end
+				end
+				if not (blessings) then
+					blessings = "Nothing"
+				end
+				SendChatMessage(name ..": ".. blessings, type, nil, chanNum)
+			end
+			SendChatMessage(PALLYPOWER_ASSIGNMENTS2, type, nil, chanNum)
 		else
+			if IsInGroup(LE_PARTY_CATEGORY_INSTANCE) and IsInInstance() then
+				self:Print("Blessings Report is disabled in Battlegrounds.")
+			elseif IsInRaid() then
+				self:Print("You are not the raid leader or do not have raid assist.")
+			elseif IsInGroup(LE_PARTY_CATEGORY_HOME) then
+				self:Print(ERR_NOT_LEADER)
+			end
+		end
+		if not IsInGroup() then
 			self:Print(ERR_NOT_IN_GROUP)
+		elseif not IsInRaid() then
+			self:Print(ERR_NOT_IN_RAID)
 		end
 	end
 end
@@ -993,6 +1054,8 @@ end
 function PallyPower:PLAYER_ENTERING_WORLD()
 	self:Debug("EVENT: PLAYER_ENTERING_WORLD")
 	self:RegisterBucketEvent({"GROUP_ROSTER_UPDATE", "PLAYER_REGEN_ENABLED", "UNIT_PET", "UNIT_AURA"}, 1, "UpdateRoster")
+	self:UpdateRoster()
+	self:ReportChannels()
 	--if UnitName("player") == "Dyaxler" then PP_DebugEnabled = true end
 end
 

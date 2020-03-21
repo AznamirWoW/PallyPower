@@ -55,6 +55,7 @@ PALLYPOWER_DEFAULT_VALUES = {
 		mainAssistSpellsDP = 5,
 		mainAssistGSpellsW = 4,
 		mainAssistSpellsW = 5,
+		ReportChannel = 0,
 		rfbuff = true,
 		seal = 4,
 		ShowInParty = true,
@@ -140,7 +141,7 @@ PallyPower.AuraIcons = {
 };
 
 -- XML Aliases
-PALLYPOWER_NAME = "PallyPower Classic ("..string.trim(GetAddOnMetadata("PallyPower","Version"))..")"
+PALLYPOWER_NAME = L["PP_NAME"].." ("..string.trim(GetAddOnMetadata("PallyPower","Version"))..")";
 PALLYPOWER_CLEAR = L["PP_CLEAR"];
 PALLYPOWER_CLEAR_DESC = L["PP_CLEAR_DESC"];
 PALLYPOWER_REFRESH = L["PP_REFRESH"];
@@ -195,7 +196,6 @@ PallyPower.Skins = {
 };
 
 PallyPower.Edge = 'Interface\\Tooltips\\UI-Tooltip-Border'
---PallyPower.Edge = ''
 
 PallyPower.Seals = {
     [0] = "",

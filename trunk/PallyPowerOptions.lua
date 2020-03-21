@@ -2,8 +2,8 @@ local L = LibStub("AceLocale-3.0"):GetLocale("PallyPower")
 
 PallyPower.options = {
 	name = L["PP_NAME"],
-  type = "group",
-  childGroups = "tab",
+	type = "group",
+	childGroups = "tab",
 	args = {
 		settings = {
 			order = 1,
@@ -23,7 +23,7 @@ PallyPower.options = {
 							name = L["SHOWGLOBAL"],
 							desc = L["SHOWGLOBAL_DESC"],
 							type = "toggle",
-							width = 1.20,
+							width = 1.1,
 							get = function(info) return PallyPower.opt.enabled end,
 							set = function(info, val)
 								PallyPower.opt.enabled = val
@@ -39,7 +39,7 @@ PallyPower.options = {
 							name = L["SHOWPARTY"],
 							desc = L["SHOWPARTY_DESC"],
 							type = "toggle",
-							width = 1.20,
+							width = 1.1,
 							disabled = function(info) return PallyPower.opt.enabled == false end,
 							get = function(info) return PallyPower.opt.ShowInParty end,
 							set = function(info, val)
@@ -52,7 +52,7 @@ PallyPower.options = {
 							name = L["SHOWSOLO"],
 							desc = L["SHOWSOLO_DESC"],
 							type = "toggle",
-							width = 1.20,
+							width = 1.1,
 							disabled = function(info) return PallyPower.opt.enabled == false end,
 							get = function(info) return PallyPower.opt.ShowWhenSolo end,
 							set = function(info, val)
@@ -65,7 +65,7 @@ PallyPower.options = {
 							name = L["SHOWTIPS"],
 							desc = L["SHOWTIPS_DESC"],
 							type = "toggle",
-							width = 1.20,
+							width = 1.1,
 							disabled = function(info) return PallyPower.opt.enabled == false end,
 							get = function(info) return PallyPower.opt.ShowTooltips end,
 							set = function(info, val)
@@ -73,11 +73,23 @@ PallyPower.options = {
 								PallyPower:UpdateRoster()
 							end,
 						},
+						reportchannel = {
+							order = 5,
+							type = "select",
+							name = L["REPORTCHANNEL"],
+							desc = L["REPORTCHANNEL_DESC"],
+							width = 1.0,
+							values = function() return PallyPower:ReportChannels() end,
+							get = function(info) return PallyPower.opt.ReportChannel end,
+							set = function(info, val)
+								PallyPower.opt.ReportChannel = val
+							end,
+						},
 					},
 				},
 				settings_buffs = {
 					order = 2,
-					name = "What to buff with PallyPower",
+					name = L["SETTINGSBUFF"],
 					type = "group",
 					inline = true,
 					disabled = function(info) return PallyPower.opt.enabled == false end,
@@ -120,7 +132,7 @@ PallyPower.options = {
 							name = L["BSC"],
 							desc = L["BSC_DESC"],
 							type = "range",
-							width = 1.50,
+							width = 1.5,
 							min = 0.4,
 							max = 1.5,
 							step = 0.05,
@@ -130,10 +142,16 @@ PallyPower.options = {
 								PallyPower:UpdateLayout()
 							end,
 						},
-						layout = {
+						padding1 = {
 							order = 2,
+							name = "",
+							type = "description",
+							width = .2,
+						},
+						layout = {
+							order = 3,
 							type = "select",
-							width = 1.5,
+							width = 1.4,
 							name = L["LAYOUT"],
 							desc = L["LAYOUT_DESC"],
 							get = function(info) return PallyPower.opt.layout end,
@@ -153,7 +171,7 @@ PallyPower.options = {
 							},
 						},
 						skin = {
-							order = 3,
+							order = 4,
 							name = L["SKIN"],
 							desc = L["SKIN_DESC"],
 							type = "select",
@@ -166,12 +184,18 @@ PallyPower.options = {
 								PallyPower:ApplySkin()
 							end,
 						},
+						padding2 = {
+							order = 5,
+							name = "",
+							type = "description",
+							width = .2,
+						},
 						edges = {
-							order = 4,
+							order = 6,
 							name = L["DISPEDGES"],
 							desc = L["DISPEDGES_DESC"],
 							type = "select",
-							width = 1.5,
+							width = 1.4,
 							dialogControl = "LSM30_Border",
 							values = AceGUIWidgetLSMlists.border,
 							get = function(info) return PallyPower.opt.border end,
@@ -181,7 +205,7 @@ PallyPower.options = {
 							end,
 						},
 						reset = {
-							order = 5,
+							order = 7,
 							name = L["RESET"],
 							desc = L["RESET_DESC"],
 							type = "execute",
