@@ -364,8 +364,8 @@ function PallyPowerBlessingsGrid_Update(self, elapsed)
 					if unit.name then
 						local shortname = Ambiguate(unit.name, "short")
 						getglobal(pbnt.."Text"):SetText(shortname)
-						local normal, greater = PallyPower:GetSpellID(i, unit.name)
 					end
+					local normal, greater = PallyPower:GetSpellID(i, unit.name)
 					if normal ~= greater and movingPlayerFrame ~= getglobal(pbnt) then
 						if normal ~= greater then
 							getglobal(pbnt.."Icon"):SetTexture(PallyPower.NormalBlessingIcons[normal])
