@@ -596,11 +596,15 @@ function PallyPower:Report(type, chanNum)
 					SendChatMessage(name ..": ".. blessings, type)
 				end
 				SendChatMessage(PALLYPOWER_ASSIGNMENTS2, type)
+				--[[
+				-- Not really needed anymore since the Paladin assigned to GB
+				-- Salvation can use Blessing of Sacrifice to wipe Salvation
 				if IsInRaid() and #SyncList > 4 and type == "RAID" then
 					SendChatMessage(" ", type)
 					SendChatMessage(PALLYPOWER_ASSIGNMENTS3, "RAID_WARNING")
 					SendChatMessage(PALLYPOWER_ASSIGNMENTS4, "RAID_WARNING")
 				end
+				--]]
 			else
 				if type == "INSTANCE_CHAT" then
 					self:Print("Blessings Report is disabled in Battlegrounds.")
@@ -773,9 +777,16 @@ function PallyPower:PerformPlayerCycle(self, delta, pname, class)
 	if PallyPower_NormalAssignments[playername] and PallyPower_NormalAssignments[playername][class] and PallyPower_NormalAssignments[playername][class][pname] then
 		blessing = PallyPower_NormalAssignments[playername][class][pname]
 	end
-	local test = (blessing - delta) % 7
-	while not (PallyPower:CanBuff(playername, test) and PallyPower:NeedsBuff(class, test, pname)) and test > 0 do
-		test = (test - delta) % 7
+	local count
+	-- Can't give Blessing of Sacrifice to yourself
+	if pname == playername then
+		count = 7
+	else
+		count = 8
+	end
+	local test = (blessing - delta) % count
+	while not (PallyPower:CanBuff(playername, test, true) and PallyPower:NeedsBuff(class, test, pname, true)) and test > 0 do
+		test = (test - delta) % count
 		if test == blessing then
 			test = 0
 			break
@@ -836,9 +847,15 @@ function PallyPower:AssignPlayerAsClass(pname, pclass, tclass)
 	end
 end
 
-function PallyPower:CanBuff(name, test)
-	if test==7 then
-		return true
+function PallyPower:CanBuff(name, test, alternate)
+	if alternate then
+		if test==8 then
+			return true
+		end
+	else
+		if test==7 then
+			return true
+		end
 	end
 	if (not AllPallys[name][test]) or (AllPallys[name][test].rank == 0) then
 		return false
@@ -846,9 +863,15 @@ function PallyPower:CanBuff(name, test)
 	return true
 end
 
-function PallyPower:NeedsBuff(class, test, playerName)
-	if test==7 or test==0 then
-		return true
+function PallyPower:NeedsBuff(class, test, playerName, alternate)
+	if alternate then
+		if test==8 or test==0 then
+			return true
+		end
+	else
+		if test==7 or test==0 then
+			return true
+		end
 	end
 	if self.opt.SmartBuffs then
 		-- no wisdom for warriors and rogues
@@ -886,7 +909,7 @@ function PallyPower:ScanSpells()
 	local _, class=UnitClass("player")
 	if (class == "PALADIN") then
 		local RankInfo = {}
-		for i = 1, 6 do -- find max spell ranks
+		for i = 1, #PallyPower.Spells do -- find max spell ranks
 			spellName = GetSpellInfo(PallyPower.Spells[i])
 			spellRank = GetSpellSubtext(GetSpellInfo(PallyPower.Spells[i]))
 			if spellName then
