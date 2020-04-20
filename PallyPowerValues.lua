@@ -85,15 +85,15 @@ PallyPower.ClassID = {
 };
 
 PallyPower.ClassToID = {
-	["WARRIOR"] 	= 1,
-	["ROGUE"] 		= 2,
-	["PRIEST"] 		= 3,
-	["DRUID"] 		= 4,
-	["PALADIN"] 	= 5,
-	["HUNTER"] 		= 6,
-	["MAGE"] 		  = 7,
-	["WARLOCK"]		= 8,
-	["PET"]			  = 9,
+	["WARRIOR"] = 1,
+	["ROGUE"] = 2,
+	["PRIEST"] = 3,
+	["DRUID"] = 4,
+	["PALADIN"] = 5,
+	["HUNTER"] = 6,
+	["MAGE"] = 7,
+	["WARLOCK"] = 8,
+	["PET"] = 9,
 };
 
 PallyPower.ClassIcons = {
@@ -109,28 +109,30 @@ PallyPower.ClassIcons = {
 };
 
 PallyPower.BlessingIcons = {
-  [-1] = "",
+	[-1] = "",
 	[1] = "Interface\\Icons\\Spell_Holy_GreaterBlessingofWisdom",
 	[2] = "Interface\\Icons\\Spell_Holy_GreaterBlessingofKings",
 	[3] = "Interface\\Icons\\Spell_Magic_GreaterBlessingofKings",
 	[4] = "Interface\\Icons\\Spell_Holy_GreaterBlessingofSalvation",
 	[5] = "Interface\\Icons\\Spell_Holy_GreaterBlessingofLight",
 	[6] = "Interface\\Icons\\Spell_Holy_GreaterBlessingofSanctuary",
+	[7] = "Interface\\Icons\\Spell_Holy_SealOfSacrifice",
 
 };
 
 PallyPower.NormalBlessingIcons = {
-  [-1] = "",
+	[-1] = "",
 	[1] = "Interface\\Icons\\Spell_Holy_SealOfWisdom",
 	[2] = "Interface\\Icons\\Spell_Holy_FistOfJustice",
 	[3] = "Interface\\Icons\\Spell_Magic_MageArmor",
 	[4] = "Interface\\Icons\\Spell_Holy_SealOfSalvation",
 	[5] = "Interface\\Icons\\Spell_Holy_PrayerOfHealing02",
 	[6] = "Interface\\Icons\\Spell_Nature_LightningShield",
+	[7] = "Interface\\Icons\\Spell_Holy_SealOfSacrifice",
 };
 
 PallyPower.AuraIcons = {
-  [-1] = "",
+	[-1] = "",
 	[1] = "Interface\\Icons\\Spell_Holy_DevotionAura",
 	[2] = "Interface\\Icons\\Spell_Holy_AuraOfLight",
 	[3] = "Interface\\Icons\\Spell_Holy_MindSooth",
@@ -168,6 +170,7 @@ PallyPower.Spells = {
 	[4] = GetSpellInfo(1038),  --BS["Blessing of Salvation"],
 	[5] = GetSpellInfo(19977), --BS["Blessing of Light"],
 	[6] = GetSpellInfo(20911), --BS["Blessing of Sanctuary"],
+	[7] = GetSpellInfo(6940), --BS["Blessing of Sacrifice"],
 };
 
 PallyPower.GSpells = {
@@ -200,10 +203,10 @@ PallyPower.Edge = 'Interface\\Tooltips\\UI-Tooltip-Border'
 PallyPower.Seals = {
     [0] = "",
     [1] = GetSpellInfo(20164), -- seal of justice
-		[2] = GetSpellInfo(20165), -- seal of light
+	[2] = GetSpellInfo(20165), -- seal of light
     [3] = GetSpellInfo(20166), -- seal of wisdom
     [4] = GetSpellInfo(21084), -- seal of righteousness
-		[5] = GetSpellInfo(21082), -- seal of the crusader
+	[5] = GetSpellInfo(21082), -- seal of the crusader
     [6] = GetSpellInfo(20375), -- seal of command
 };
 
