@@ -33,4 +33,4 @@ externals:
 		https://repos.curseforge.com/wow/ace-gui-3-0-shared-media-widgets/trunk
 
 required-dependencies:
-	323800-LibClassicDurations
+	- LibClassicDurations
