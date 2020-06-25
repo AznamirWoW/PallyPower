@@ -953,37 +953,37 @@ function PallyPower:CanBuffBlessing(spellId, gspellId, unitId)
         local normalBuffs = {
             [0] = {{1, ""}},
             [1] = {
-                {60, GetSpellInfo(25290) .. "(" .. GetSpellSubtext(25290) .. ")"},
-                {54, GetSpellInfo(19854) .. "(" .. GetSpellSubtext(19854) .. ")"},
-                {44, GetSpellInfo(19853) .. "(" .. GetSpellSubtext(19853) .. ")"},
-                {34, GetSpellInfo(19852) .. "(" .. GetSpellSubtext(19852) .. ")"},
-                {24, GetSpellInfo(19850) .. "(" .. GetSpellSubtext(19850) .. ")"},
-                {14, GetSpellInfo(19742) .. "(" .. GetSpellSubtext(19742) .. ")"}
+                {60, 25290},
+                {54, 19854},
+                {44, 19853},
+                {34, 19852},
+                {24, 19850},
+                {14, 19742}
             },
             [2] = {
-                {60, GetSpellInfo(25291) .. "(" .. GetSpellSubtext(25291) .. ")"},
-                {52, GetSpellInfo(19838) .. "(" .. GetSpellSubtext(19838) .. ")"},
-                {42, GetSpellInfo(19837) .. "(" .. GetSpellSubtext(19837) .. ")"},
-                {32, GetSpellInfo(19836) .. "(" .. GetSpellSubtext(19836) .. ")"},
-                {22, GetSpellInfo(19835) .. "(" .. GetSpellSubtext(19835) .. ")"},
-                {12, GetSpellInfo(19834) .. "(" .. GetSpellSubtext(19834) .. ")"},
-                {4,  GetSpellInfo(19740) .. "(" .. GetSpellSubtext(19740) .. ")"}
+                {60, 25291},
+                {52, 19838},
+                {42, 19837},
+                {32, 19836},
+                {22, 19835},
+                {12, 19834},
+                {4,  19740}
             },
-            [3] = {{10, GetSpellInfo(20217) .. "(" .. GetSpellSubtext(20217) .. ")"}},
-            [4] = {{26, GetSpellInfo(1038) .. "(" .. GetSpellSubtext(1038) .. ")"}},
+            [3] = {{10, 20217}},
+            [4] = {{26, 1038}},
             [5] = {
-                {60, GetSpellInfo(19979) .. "(" .. GetSpellSubtext(19979) .. ")"},
-                {50, GetSpellInfo(19978) .. "(" .. GetSpellSubtext(19978) .. ")"},
-                {40, GetSpellInfo(19977) .. "(" .. GetSpellSubtext(19977) .. ")"}
+                {60, 19979},
+                {50, 19978},
+                {40, 19977}
             },
-            [6] = {{30, GetSpellInfo(20911) .. "(" .. GetSpellSubtext(20911) .. ")"}},
-            [7] = {{46, GetSpellInfo(6940) .. "(" .. GetSpellSubtext(6940) .. ")"}}
+            [6] = {{30, 20911}},
+            [7] = {{46, 6940}}
         }
         if spellId then
             for k, v in pairs(normalBuffs[spellId]) do
                 if UnitLevel(unitId) >= v[1] then
-                    if GetSpellBookItemInfo(v[2]) then
-                        normSpell = v[2]
+                    if GetSpellBookItemInfo(GetSpellInfo(v[2])) then
+                        normSpell = GetSpellInfo(v[2]) .. "(" .. GetSpellSubtext(v[2]) .. ")"
                         break
                     end
                 end
@@ -992,25 +992,25 @@ function PallyPower:CanBuffBlessing(spellId, gspellId, unitId)
         local greaterBuffs = {
             [0] = {{1, ""}},
             [1] = {
-                {60, GetSpellInfo(25918) .. "(" .. GetSpellSubtext(25918) .. ")"},
-                {54, GetSpellInfo(25894) .. "(" .. GetSpellSubtext(25894) .. ")"}
+                {60, 25918},
+                {54, 25894}
             },
             [2] = {
-                {60, GetSpellInfo(25916) .. "(" .. GetSpellSubtext(25916) .. ")"},
-                {52, GetSpellInfo(25782) .. "(" .. GetSpellSubtext(25782) .. ")"}
+                {60, 25916},
+                {52, 25782}
             },
-            [3] = {{60, GetSpellInfo(25898) .. "(" .. GetSpellSubtext(25898) .. ")"}},
-            [4] = {{60, GetSpellInfo(25895) .. "(" .. GetSpellSubtext(25895) .. ")"}},
-            [5] = {{60, GetSpellInfo(25890) .. "(" .. GetSpellSubtext(25890) .. ")"}},
-            [6] = {{60, GetSpellInfo(25899) .. "(" .. GetSpellSubtext(25899) .. ")"}},
-            [7] = {{46, GetSpellInfo(6940) .. "(" .. GetSpellSubtext(6940) .. ")"}}
+            [3] = {{60, 25898}},
+            [4] = {{60, 25895}},
+            [5] = {{60, 25890}},
+            [6] = {{60, 25899}},
+            [7] = {{46, 6940}}
         }
 
         if gspellId then
             for k, v in pairs(greaterBuffs[spellId]) do
                 if UnitLevel(unitId) >= v[1] then
-                    if GetSpellBookItemInfo(v[2]) then
-                        greatSpell = v[2]
+                    if GetSpellBookItemInfo(GetSpellInfo(v[2])) then
+                        greatSpell = GetSpellInfo(v[2]) .. "(" .. GetSpellSubtext(v[2]) .. ")"
                         break
                     end
                 end
@@ -1262,7 +1262,7 @@ end
 function PallyPower:SPELLS_CHANGED()
     self:Debug("EVENT: SPELLS_CHANGED")
     if not initalized then
-        return
+        self:ScanSpells()
     end
     self:ScanSpells()
     self:UpdateLayout()
@@ -1275,7 +1275,7 @@ function PallyPower:PLAYER_ENTERING_WORLD()
     self:UpdateRoster()
     self:ReportChannels()
     if UnitName("player") == "Dyaxler" or UnitName("player") == "Minidyax" then
-    --PP_DebugEnabled = true
+        --PP_DebugEnabled = true
     end
 end
 
