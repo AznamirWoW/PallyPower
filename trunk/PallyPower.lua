@@ -14,12 +14,14 @@ local ssub = string.sub
 local sformat = string.format
 
 local WisdomPallys, MightPallys, KingsPallys, SalvPallys, LightPallys, SancPallys = {}, {}, {}, {}, {}, {}
-classlist, classes = {}, {}
+local classlist, classes = {}, {}
 LastCast = {}
 PallyPower_Assignments = {}
 PallyPower_NormalAssignments = {}
 PallyPower_AuraAssignments = {}
 PallyPower_SavedPresets = {}
+LCD_Data = {}
+LCD_GUIDAccess = {}
 
 AllPallys = {}
 SyncList = {}
@@ -34,7 +36,7 @@ local raid_units = {}
 local leaders = {}
 local roster = {}
 local raidmaintanks = {}
-classmaintanks = {}
+local classmaintanks = {}
 local raidmainassists = {}
 
 do
