@@ -952,37 +952,19 @@ function PallyPower:CanBuffBlessing(spellId, gspellId, unitId)
     if unitId then
         local normalBuffs = {
             [0] = {{1, ""}},
-            [1] = {
-                {60, 25290},
-                {54, 19854},
-                {44, 19853},
-                {34, 19852},
-                {24, 19850},
-                {14, 19742}
-            },
-            [2] = {
-                {60, 25291},
-                {52, 19838},
-                {42, 19837},
-                {32, 19836},
-                {22, 19835},
-                {12, 19834},
-                {4,  19740}
-            },
+            [1] = {{60, 25290}, {54, 19854}, {44, 19853}, {34, 19852}, {24, 19850}, {14, 19742}},
+            [2] = {{60, 25291}, {52, 19838}, {42, 19837}, {32, 19836}, {22, 19835}, {12, 19834}, {4, 19740}},
             [3] = {{10, 20217}},
             [4] = {{26, 1038}},
-            [5] = {
-                {60, 19979},
-                {50, 19978},
-                {40, 19977}
-            },
+            [5] = {{60, 19979}, {50, 19978}, {40, 19977}},
             [6] = {{30, 20911}},
             [7] = {{46, 6940}}
         }
         if spellId then
             for k, v in pairs(normalBuffs[spellId]) do
                 if UnitLevel(unitId) >= v[1] then
-                    if GetSpellBookItemInfo(GetSpellInfo(v[2])) then
+                    local _, spellID = GetSpellBookItemInfo(GetSpellInfo(v[2]))
+                    if spellID == v[2] then
                         normSpell = GetSpellInfo(v[2]) .. "(" .. GetSpellSubtext(v[2]) .. ")"
                         break
                     end
@@ -991,25 +973,19 @@ function PallyPower:CanBuffBlessing(spellId, gspellId, unitId)
         end
         local greaterBuffs = {
             [0] = {{1, ""}},
-            [1] = {
-                {60, 25918},
-                {54, 25894}
-            },
-            [2] = {
-                {60, 25916},
-                {52, 25782}
-            },
+            [1] = {{60, 25918}, {54, 25894}},
+            [2] = {{60, 25916}, {52, 25782}},
             [3] = {{60, 25898}},
             [4] = {{60, 25895}},
             [5] = {{60, 25890}},
             [6] = {{60, 25899}},
             [7] = {{46, 6940}}
         }
-
         if gspellId then
             for k, v in pairs(greaterBuffs[spellId]) do
                 if UnitLevel(unitId) >= v[1] then
-                    if GetSpellBookItemInfo(GetSpellInfo(v[2])) then
+                    local _, spellID = GetSpellBookItemInfo(GetSpellInfo(v[2]))
+                    if spellID == v[2] then
                         greatSpell = GetSpellInfo(v[2]) .. "(" .. GetSpellSubtext(v[2]) .. ")"
                         break
                     end
