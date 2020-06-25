@@ -1,7 +1,7 @@
 ## Interface: 11304
 ## Author: Aznamir,Dyaxler
 ## Title: PallyPower Classic
-## Version: v1.2.0-classic
+## Version: @project-version@
 ## Notes: Raid/Party Paladin buffs.
 ## DefaultState: enabled
 ## Dependencies:
