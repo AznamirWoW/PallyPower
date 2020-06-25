@@ -588,8 +588,8 @@ PallyPower.options = {
 						maintank_buff = {
 							order = 1,
 							type = "toggle",
-							name = L["MAINTANK"],
-							desc = L["MAINTANK_DESC"],
+							name = L["PPMAINTANK"],
+							desc = L["PPMAINTANK_DESC"],
 							width = "full",
 							get = function(info)
 								return PallyPower.opt.mainTank
