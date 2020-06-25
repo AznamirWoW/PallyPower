@@ -952,13 +952,32 @@ function PallyPower:CanBuffBlessing(spellId, gspellId, unitId)
     if unitId then
         local normalBuffs = {
             [0] = {{1, ""}},
-            [1] = {{60, "Blessing of Wisdom(Rank 6)"}, {54, "Blessing of Wisdom(Rank 5)"}, {44, "Blessing of Wisdom(Rank 4)"}, {34, "Blessing of Wisdom(Rank 3)"}, {24, "Blessing of Wisdom(Rank 2)"}, {14, "Blessing of Wisdom(Rank 1)"}},
-            [2] = {{60, "Blessing of Might(Rank 7)"}, {52, "Blessing of Might(Rank 6)"}, {42, "Blessing of Might(Rank 5)"}, {32, "Blessing of Might(Rank 4)"}, {22, "Blessing of Might(Rank 3)"}, {12, "Blessing of Might(Rank 2)"}, {4, "Blessing of Might(Rank 1)"}},
-            [3] = {{10, "Blessing of Kings"}},
-            [4] = {{26, "Blessing of Salvation"}},
-            [5] = {{60, "Blessing of Light(Rank 3)"}, {50, "Blessing of Light(Rank 2)"}, {40, "Blessing of Light(Rank 1)"}},
-            [6] = {{30, "Blessing of Sanctuary"}},
-            [7] = {{46, "Blessing of Sacrifice"}}
+            [1] = {
+                {60, GetSpellInfo(25290) .. "(" .. GetSpellSubtext(25290) .. ")"},
+                {54, GetSpellInfo(19854) .. "(" .. GetSpellSubtext(19854) .. ")"},
+                {44, GetSpellInfo(19853) .. "(" .. GetSpellSubtext(19853) .. ")"},
+                {34, GetSpellInfo(19852) .. "(" .. GetSpellSubtext(19852) .. ")"},
+                {24, GetSpellInfo(19850) .. "(" .. GetSpellSubtext(19850) .. ")"},
+                {14, GetSpellInfo(19742) .. "(" .. GetSpellSubtext(19742) .. ")"}
+            },
+            [2] = {
+                {60, GetSpellInfo(25291) .. "(" .. GetSpellSubtext(25291) .. ")"},
+                {52, GetSpellInfo(19838) .. "(" .. GetSpellSubtext(19838) .. ")"},
+                {42, GetSpellInfo(19837) .. "(" .. GetSpellSubtext(19837) .. ")"},
+                {32, GetSpellInfo(19836) .. "(" .. GetSpellSubtext(19836) .. ")"},
+                {22, GetSpellInfo(19835) .. "(" .. GetSpellSubtext(19835) .. ")"},
+                {12, GetSpellInfo(19834) .. "(" .. GetSpellSubtext(19834) .. ")"},
+                {4,  GetSpellInfo(19740) .. "(" .. GetSpellSubtext(19740) .. ")"}
+            },
+            [3] = {{10, GetSpellInfo(20217) .. "(" .. GetSpellSubtext(20217) .. ")"}},
+            [4] = {{26, GetSpellInfo(1038) .. "(" .. GetSpellSubtext(1038) .. ")"}},
+            [5] = {
+                {60, GetSpellInfo(19979) .. "(" .. GetSpellSubtext(19979) .. ")"},
+                {50, GetSpellInfo(19978) .. "(" .. GetSpellSubtext(19978) .. ")"},
+                {40, GetSpellInfo(19977) .. "(" .. GetSpellSubtext(19977) .. ")"}
+            },
+            [6] = {{30, GetSpellInfo(20911) .. "(" .. GetSpellSubtext(20911) .. ")"}},
+            [7] = {{46, GetSpellInfo(6940) .. "(" .. GetSpellSubtext(6940) .. ")"}}
         }
         if spellId then
             for k, v in pairs(normalBuffs[spellId]) do
@@ -972,14 +991,21 @@ function PallyPower:CanBuffBlessing(spellId, gspellId, unitId)
         end
         local greaterBuffs = {
             [0] = {{1, ""}},
-            [1] = {{60, "Greater Blessing of Wisdom(Rank 2)"}, {54, "Greater Blessing of Wisdom(Rank 1)"}},
-            [2] = {{60, "Greater Blessing of Might(Rank 2)"}, {52, "Greater Blessing of Might(Rank 1)"}},
-            [3] = {{60, "Greater Blessing of Kings"}},
-            [4] = {{60, "Greater Blessing of Salvation"}},
-            [5] = {{60, "Greater Blessing of Light"}},
-            [6] = {{60, "Greater Blessing of Sanctuary"}},
-            [7] = {{46, "Blessing of Sacrifice"}}
+            [1] = {
+                {60, GetSpellInfo(25918) .. "(" .. GetSpellSubtext(25918) .. ")"},
+                {54, GetSpellInfo(25894) .. "(" .. GetSpellSubtext(25894) .. ")"}
+            },
+            [2] = {
+                {60, GetSpellInfo(25916) .. "(" .. GetSpellSubtext(25916) .. ")"},
+                {52, GetSpellInfo(25782) .. "(" .. GetSpellSubtext(25782) .. ")"}
+            },
+            [3] = {{60, GetSpellInfo(25898) .. "(" .. GetSpellSubtext(25898) .. ")"}},
+            [4] = {{60, GetSpellInfo(25895) .. "(" .. GetSpellSubtext(25895) .. ")"}},
+            [5] = {{60, GetSpellInfo(25890) .. "(" .. GetSpellSubtext(25890) .. ")"}},
+            [6] = {{60, GetSpellInfo(25899) .. "(" .. GetSpellSubtext(25899) .. ")"}},
+            [7] = {{46, GetSpellInfo(6940) .. "(" .. GetSpellSubtext(6940) .. ")"}}
         }
+
         if gspellId then
             for k, v in pairs(greaterBuffs[spellId]) do
                 if UnitLevel(unitId) >= v[1] then
@@ -2368,16 +2394,15 @@ function PallyPower:UpdatePButton(button, baseName, classID, playerID, mousebutt
             end
         end
         if (not InCombatLockdown()) then
-            -- Used to prevent double buffing or accidental clicks. If a player has a Greater Blessing duration longer then 5 min:
-            -- Normal Blessing [disabled] / Greater Blessing [disabled]
             if unit.hasbuff and unit.hasbuff > 300 then
-                -- If a player has a Normal Blessing or if a Greater Blessings duration falls below 5 min:
-                -- Normal Blessing [disabled] / Greater Blessing [enabled]
+                -- If a player has a Blessing duration longer then 5 min:
+                -- Normal Blessing [disabled] / Greater Blessing [disabled]
                 button:SetAttribute("spell1", nil)
                 button:SetAttribute("spell2", nil)
+
             elseif unit.hasbuff and (unit.hasbuff < 300 and unit.hasbuff > 240) then
-                -- If either buff duration falls below 4 min:
-                -- Normal Blessing [enabled] / Greater Blessing [enabled]
+                -- If a player has a Normal Blessing or if a Greater Blessings duration falls below 5 min:
+                -- Normal Blessing [disabled] / Greater Blessing [enabled]
                 -- If alternate blessing assignment: disable greater blessing
                 if spellID ~= gspellID then
                     gSpell = nil
@@ -2388,7 +2413,10 @@ function PallyPower:UpdatePButton(button, baseName, classID, playerID, mousebutt
                     button:SetAttribute("spell1", gSpell)
                 end
                 button:SetAttribute("spell2", nil)
+
             elseif unit.hasbuff and unit.hasbuff < 240 then
+                -- If either buff duration falls below 4 min:
+                -- Normal Blessing [enabled] / Greater Blessing [enabled]
                 -- If alternate blessing assignment: use normal blessing
                 if spellID ~= gspellID then
                     gSpell = nSpell
@@ -2603,7 +2631,7 @@ function PallyPower:GetUnitAndSpellSmart(classID, mousebutton)
             end
 
             -- Refresh any greater blessing under a 4 min duration
-            if ((not buffExpire or buffExpire < 240) and ((IsSpellInRange(gspell, unitID) == 1 and (not UnitIsAFK(unitID))) or not self.opt.autobuff.waitforpeople) and (not UnitIsDeadOrGhost(unitID))) then
+            if ((not buffExpire or buffExpire < 300) and ((IsSpellInRange(gspell, unitID) == 1 and (not UnitIsAFK(unitID))) or not self.opt.autobuff.waitforpeople) and (not UnitIsDeadOrGhost(unitID))) then
                 return unitID, nSpell, gSpell
             end
         end
@@ -2775,9 +2803,9 @@ function PallyPower:AutoBuff(button, mousebutton)
                 groupCount[subgroup] = (groupCount[subgroup] or 0) + 1
             end
         end
-        local minExpire, minUnit, minSpell, maxSpell = 240, nil, nil, nil
+        local minExpire, minUnit, minSpell, maxSpell = 300, nil, nil, nil
         for i = 1, PALLYPOWER_MAXCLASSES do
-            local classMinExpire, classNeedsBuff, classMinUnitPenalty, classMinUnit, classMinSpell, classMaxSpell = 240, true, 240, nil, nil, nil
+            local classMinExpire, classNeedsBuff, classMinUnitPenalty, classMinUnit, classMinSpell, classMaxSpell = 300, true, 300, nil, nil, nil
             for j = 1, PALLYPOWER_MAXPERCLASS do
                 if (classes[i] and classes[i][j]) then
                     local unit = classes[i][j]
@@ -2843,7 +2871,7 @@ function PallyPower:AutoBuff(button, mousebutton)
                 maxSpell = classMaxSpell
             end
         end
-        if (minExpire < 240) then
+        if (minExpire < 300) then
             local button = self.autoButton
             button:SetAttribute("unit", minUnit.unitid)
             button:SetAttribute("spell", maxSpell)
