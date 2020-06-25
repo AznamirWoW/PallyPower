@@ -31,5 +31,6 @@ externals:
 		https://repos.curseforge.com/wow/libsharedmedia-3-0/trunk
 	Libs/AceGUI-3.0-SharedMediaWidgets:
 		https://repos.curseforge.com/wow/ace-gui-3-0-shared-media-widgets/trunk
-	Libs/LibClassicDurations:
-		https://repos.curseforge.com/wow/libclassicdurations/
+
+required-dependencies:
+	323800-LibClassicDurations
