@@ -23,8 +23,10 @@ PallyPower.options = {
 							name = L["SHOWGLOBAL"],
 							desc = L["SHOWGLOBAL_DESC"],
 							type = "toggle",
-							width = 1.1,
-							get = function(info) return PallyPower.opt.enabled end,
+							width = 1.0,
+							get = function(info)
+								return PallyPower.opt.enabled
+							end,
 							set = function(info, val)
 								PallyPower.opt.enabled = val
 								if PallyPower.opt.enabled then
@@ -32,46 +34,58 @@ PallyPower.options = {
 								else
 									PallyPower:OnDisable()
 								end
-							end,
+							end
 						},
 						showparty = {
 							order = 2,
 							name = L["SHOWPARTY"],
 							desc = L["SHOWPARTY_DESC"],
 							type = "toggle",
-							width = 1.1,
-							disabled = function(info) return PallyPower.opt.enabled == false end,
-							get = function(info) return PallyPower.opt.ShowInParty end,
+							width = 1.4,
+							disabled = function(info)
+								return PallyPower.opt.enabled == false
+							end,
+							get = function(info)
+								return PallyPower.opt.ShowInParty
+							end,
 							set = function(info, val)
 								PallyPower.opt.ShowInParty = val
 								PallyPower:UpdateRoster()
-							end,
+							end
 						},
 						showsingle = {
 							order = 3,
 							name = L["SHOWSOLO"],
 							desc = L["SHOWSOLO_DESC"],
 							type = "toggle",
-							width = 1.1,
-							disabled = function(info) return PallyPower.opt.enabled == false end,
-							get = function(info) return PallyPower.opt.ShowWhenSolo end,
+							width = 1.0,
+							disabled = function(info)
+								return PallyPower.opt.enabled == false
+							end,
+							get = function(info)
+								return PallyPower.opt.ShowWhenSolo
+							end,
 							set = function(info, val)
 								PallyPower.opt.ShowWhenSolo = val
 								PallyPower:UpdateRoster()
-							end,
+							end
 						},
 						showtooltips = {
 							order = 4,
 							name = L["SHOWTIPS"],
 							desc = L["SHOWTIPS_DESC"],
 							type = "toggle",
-							width = 1.1,
-							disabled = function(info) return PallyPower.opt.enabled == false end,
-							get = function(info) return PallyPower.opt.ShowTooltips end,
+							width = 1.0,
+							disabled = function(info)
+								return PallyPower.opt.enabled == false
+							end,
+							get = function(info)
+								return PallyPower.opt.ShowTooltips
+							end,
 							set = function(info, val)
 								PallyPower.opt.ShowTooltips = val
 								PallyPower:UpdateRoster()
-							end,
+							end
 						},
 						reportchannel = {
 							order = 5,
@@ -79,53 +93,79 @@ PallyPower.options = {
 							name = L["REPORTCHANNEL"],
 							desc = L["REPORTCHANNEL_DESC"],
 							width = 1.0,
-							values = function() return PallyPower:ReportChannels() end,
-							get = function(info) return PallyPower.opt.ReportChannel end,
+							values = function()
+								return PallyPower:ReportChannels()
+							end,
+							get = function(info)
+								return PallyPower.opt.ReportChannel
+							end,
 							set = function(info, val)
 								PallyPower.opt.ReportChannel = val
-							end,
-						},
-					},
+							end
+						}
+					}
 				},
 				settings_buffs = {
 					order = 2,
 					name = L["SETTINGSBUFF"],
 					type = "group",
 					inline = true,
-					disabled = function(info) return PallyPower.opt.enabled == false end,
+					disabled = function(info)
+						return PallyPower.opt.enabled == false
+					end,
 					args = {
 						smart_buff = {
 							order = 1,
 							type = "toggle",
 							name = L["SMARTBUFF"],
 							desc = L["SMARTBUFF_DESC"],
-							width = 1.2,
-							get = function(info) return PallyPower.opt.SmartBuffs end,
+							width = 1.0,
+							get = function(info)
+								return PallyPower.opt.SmartBuffs
+							end,
 							set = function(info, val)
 								PallyPower.opt.SmartBuffs = val
 								PallyPower:UpdateRoster()
-							end,
+							end
 						},
 						showpets_buff = {
 							order = 2,
 							type = "toggle",
 							name = L["SHOWPETS"],
 							desc = L["SHOWPETS_DESC"],
-							width = 1.2,
-							get = function(info) return PallyPower.opt.ShowPets end,
+							width = 1.0,
+							get = function(info)
+								return PallyPower.opt.ShowPets
+							end,
 							set = function(info, val)
 								PallyPower.opt.ShowPets = val
 								PallyPower:UpdateRoster()
-							end,
+							end
 						},
-					},
+						salvation_incombat = {
+							order = 3,
+							type = "toggle",
+							name = L["SALVCOMBAT"],
+							desc = L["SALVCOMBAT_DESC"],
+							width = 1.0,
+							get = function(info)
+								return PallyPower.opt.SalvInCombat
+							end,
+							set = function(info, val)
+								PallyPower.opt.SalvInCombat = val
+								PallyPower:UpdateRoster()
+							end
+						}
+					}
 				},
 				settings_frames = {
 					order = 3,
 					name = L["PP_LOOKS"],
 					type = "group",
 					inline = true,
-					disabled = function(info) return PallyPower.opt.enabled == false end,
+					disabled = function(info)
+						return PallyPower.opt.enabled == false
+					end,
 					args = {
 						buffscale = {
 							order = 1,
@@ -136,17 +176,19 @@ PallyPower.options = {
 							min = 0.4,
 							max = 1.5,
 							step = 0.05,
-							get = function(info) return PallyPower.opt.buffscale end,
+							get = function(info)
+								return PallyPower.opt.buffscale
+							end,
 							set = function(info, val)
 								PallyPower.opt.buffscale = val
 								PallyPower:UpdateLayout()
-							end,
+							end
 						},
 						padding1 = {
 							order = 2,
 							name = "",
 							type = "description",
-							width = .2,
+							width = .2
 						},
 						layout = {
 							order = 3,
@@ -154,8 +196,10 @@ PallyPower.options = {
 							width = 1.4,
 							name = L["LAYOUT"],
 							desc = L["LAYOUT_DESC"],
-							get = function(info) return PallyPower.opt.layout end,
-							set = function(info,val)
+							get = function(info)
+								return PallyPower.opt.layout
+							end,
+							set = function(info, val)
 								PallyPower.opt.layout = val
 								PallyPower:UpdateLayout()
 							end,
@@ -167,8 +211,8 @@ PallyPower.options = {
 								["Layout 5"] = L["HorRightDown"],
 								["Layout 6"] = L["HorRightUp"],
 								["Layout 7"] = L["HorLeftDown"],
-								["Layout 8"] = L["HorLeftUp"],
-							},
+								["Layout 8"] = L["HorLeftUp"]
+							}
 						},
 						skin = {
 							order = 4,
@@ -178,17 +222,19 @@ PallyPower.options = {
 							width = 1.5,
 							dialogControl = "LSM30_Background",
 							values = AceGUIWidgetLSMlists.background,
-							get = function(info) return PallyPower.opt.skin end,
-							set = function(info,val)
+							get = function(info)
+								return PallyPower.opt.skin
+							end,
+							set = function(info, val)
 								PallyPower.opt.skin = val
 								PallyPower:ApplySkin()
-							end,
+							end
 						},
 						padding2 = {
 							order = 5,
 							name = "",
 							type = "description",
-							width = .2,
+							width = .2
 						},
 						edges = {
 							order = 6,
@@ -198,71 +244,83 @@ PallyPower.options = {
 							width = 1.4,
 							dialogControl = "LSM30_Border",
 							values = AceGUIWidgetLSMlists.border,
-							get = function(info) return PallyPower.opt.border end,
-							set = function(info,val)
+							get = function(info)
+								return PallyPower.opt.border
+							end,
+							set = function(info, val)
 								PallyPower.opt.border = val
 								PallyPower:ApplySkin()
-							end,
+							end
 						},
 						reset = {
 							order = 7,
 							name = L["RESET"],
 							desc = L["RESET_DESC"],
 							type = "execute",
-							func = function() PallyPower:Reset() end,
-						},
-					},
+							func = function()
+								PallyPower:Reset()
+							end
+						}
+					}
 				},
 				settings_color = {
 					order = 4,
 					name = L["PP_COLOR"],
 					type = "group",
 					inline = true,
-					disabled = function(info) return PallyPower.opt.enabled == false end,
+					disabled = function(info)
+						return PallyPower.opt.enabled == false
+					end,
 					args = {
 						color_good = {
 							order = 1,
 							name = L["Fully Buffed"],
 							type = "color",
-							get = function() return PallyPower.opt.cBuffGood.r, PallyPower.opt.cBuffGood.g, PallyPower.opt.cBuffGood.b, PallyPower.opt.cBuffGood.t end,
-							set = function (info, r, g, b, t)
+							get = function()
+								return PallyPower.opt.cBuffGood.r, PallyPower.opt.cBuffGood.g, PallyPower.opt.cBuffGood.b, PallyPower.opt.cBuffGood.t
+							end,
+							set = function(info, r, g, b, t)
 								PallyPower.opt.cBuffGood.r = r
 								PallyPower.opt.cBuffGood.g = g
 								PallyPower.opt.cBuffGood.b = b
 								PallyPower.opt.cBuffGood.t = t
 							end,
-							hasAlpha = true,
+							hasAlpha = true
 						},
 						color_partial = {
 							order = 2,
 							name = L["Partially Buffed"],
 							type = "color",
 							width = 1.1,
-							get = function() return PallyPower.opt.cBuffNeedSome.r, PallyPower.opt.cBuffNeedSome.g, PallyPower.opt.cBuffNeedSome.b, PallyPower.opt.cBuffNeedSome.t end,
-							set = function (info, r, g, b, t)
+							get = function()
+								return PallyPower.opt.cBuffNeedSome.r, PallyPower.opt.cBuffNeedSome.g, PallyPower.opt.cBuffNeedSome.b, PallyPower.opt.cBuffNeedSome.t
+							end,
+							set = function(info, r, g, b, t)
 								PallyPower.opt.cBuffNeedSome.r = r
 								PallyPower.opt.cBuffNeedSome.g = g
 								PallyPower.opt.cBuffNeedSome.b = b
 								PallyPower.opt.cBuffNeedSome.t = t
 							end,
-							hasAlpha = true,
+							hasAlpha = true
 						},
 						color_missing = {
 							order = 3,
 							name = L["None Buffed"],
 							type = "color",
-							get = function() return PallyPower.opt.cBuffNeedAll.r, PallyPower.opt.cBuffNeedAll.g, PallyPower.opt.cBuffNeedAll.b, PallyPower.opt.cBuffNeedAll.t end,
-							set = function (info, r, g, b, t)
+							get = function()
+								return PallyPower.opt.cBuffNeedAll.r, PallyPower.opt.cBuffNeedAll.g, PallyPower.opt.cBuffNeedAll.b, PallyPower.opt.cBuffNeedAll.t
+							end,
+							set = function(info, r, g, b, t)
 								PallyPower.opt.cBuffNeedAll.r = r
 								PallyPower.opt.cBuffNeedAll.g = g
 								PallyPower.opt.cBuffNeedAll.b = b
 								PallyPower.opt.cBuffNeedAll.t = t
 							end,
-							hasAlpha = true,
-						},
-					},
-				},
-			},
+							hasAlpha = true
+						}
+					}
+				}
+			}
 		},
 		buttons = {
 			order = 2,
@@ -270,7 +328,9 @@ PallyPower.options = {
 			desc = L["BUTTONS_DESC"],
 			type = "group",
 			cmdHidden = true,
-			disabled = function(info) return PallyPower.opt.enabled == false end,
+			disabled = function(info)
+				return PallyPower.opt.enabled == false
+			end,
 			args = {
 				aura_button = {
 					order = 1,
@@ -281,7 +341,7 @@ PallyPower.options = {
 						aura_desc = {
 							order = 0,
 							type = "description",
-							name = L["AURA_DESC"],
+							name = L["AURA_DESC"]
 						},
 						aura_enable = {
 							order = 1,
@@ -289,19 +349,23 @@ PallyPower.options = {
 							name = L["AURABTN"],
 							desc = L["AURABTN_DESC"],
 							width = 1.1,
-							get = function(info) return PallyPower.opt.auras end,
+							get = function(info)
+								return PallyPower.opt.auras
+							end,
 							set = function(info, val)
 								PallyPower.opt.auras = val
 								PallyPower:RFAssign(PallyPower.opt.auras)
 								PallyPower:UpdateRoster()
-							end,
+							end
 						},
 						aura = {
 							order = 2,
 							type = "select",
 							name = L["AURATRACKER"],
 							desc = L["AURATRACKER_DESC"],
-							get = function(info) return PallyPower_AuraAssignments[PallyPower.player] end,
+							get = function(info)
+								return PallyPower_AuraAssignments[PallyPower.player]
+							end,
 							set = function(info, val)
 								PallyPower_AuraAssignments[PallyPower.player] = val
 							end,
@@ -313,10 +377,10 @@ PallyPower.options = {
 								[4] = PallyPower.Auras[4], -- Shadow Resistance Aura
 								[5] = PallyPower.Auras[5], -- Frost Resistance Aura
 								[6] = PallyPower.Auras[6], -- Fire Resistance Aura
-								[7] = PallyPower.Auras[7], -- Sanctity Aura
-							},
-						},
-					},
+								[7] = PallyPower.Auras[7] -- Sanctity Aura
+							}
+						}
+					}
 				},
 				seal_button = {
 					order = 2,
@@ -327,7 +391,7 @@ PallyPower.options = {
 						seal_desc = {
 							order = 0,
 							type = "description",
-							name = L["SEAL_DESC"],
+							name = L["SEAL_DESC"]
 						},
 						seal_enable = {
 							order = 1,
@@ -335,11 +399,13 @@ PallyPower.options = {
 							name = L["SEALBTN"],
 							desc = L["SEALBTN_DESC"],
 							width = 1.1,
-							get = function(info) return PallyPower.opt.rfbuff end,
+							get = function(info)
+								return PallyPower.opt.rfbuff
+							end,
 							set = function(info, val)
 								PallyPower.opt.rfbuff = val
 								PallyPower:UpdateRoster()
-							end,
+							end
 						},
 						rfury = {
 							order = 2,
@@ -347,11 +413,13 @@ PallyPower.options = {
 							name = L["RFM"],
 							desc = L["RFM_DESC"],
 							width = 1.1,
-							get = function(info) return PallyPower.opt.rf end,
+							get = function(info)
+								return PallyPower.opt.rf
+							end,
 							set = function(info, val)
 								PallyPower.opt.rf = val
 								PallyPower:RFAssign(PallyPower.opt.rf)
-							end,
+							end
 						},
 						seal = {
 							order = 3,
@@ -359,7 +427,9 @@ PallyPower.options = {
 							name = L["SEALTRACKER"],
 							desc = L["SEALTRACKER_DESC"],
 							width = .9,
-							get = function(info) return PallyPower.opt.seal end,
+							get = function(info)
+								return PallyPower.opt.seal
+							end,
 							set = function(info, val)
 								PallyPower.opt.seal = val
 								PallyPower:SealAssign(PallyPower.opt.seal)
@@ -371,10 +441,10 @@ PallyPower.options = {
 								[3] = PallyPower.Seals[3], -- Seal of Wisdom
 								[4] = PallyPower.Seals[4], -- Seal of Righteousness
 								[5] = PallyPower.Seals[5], -- Seal of the Crusader
-								[6] = PallyPower.Seals[6], -- Seal of Command
-							},
-						},
-					},
+								[6] = PallyPower.Seals[6] -- Seal of Command
+							}
+						}
+					}
 				},
 				auto_button = {
 					order = 3,
@@ -385,7 +455,7 @@ PallyPower.options = {
 						auto_desc = {
 							order = 0,
 							type = "description",
-							name = L["AUTO_DESC"],
+							name = L["AUTO_DESC"]
 						},
 						auto_enable = {
 							order = 1,
@@ -393,24 +463,28 @@ PallyPower.options = {
 							name = L["AUTOBTN"],
 							desc = L["AUTOBTN_DESC"],
 							width = 1.1,
-							get = function(info) return PallyPower.opt.autobuff.autobutton end,
+							get = function(info)
+								return PallyPower.opt.autobuff.autobutton
+							end,
 							set = function(info, val)
 								PallyPower.opt.autobuff.autobutton = val
 								PallyPower:UpdateRoster()
-							end,
+							end
 						},
 						auto_wait = {
 							order = 2,
 							type = "toggle",
 							name = L["WAIT"],
 							desc = L["WAIT_DESC"],
-							get = function(info) return PallyPower.opt.autobuff.waitforpeople end,
+							get = function(info)
+								return PallyPower.opt.autobuff.waitforpeople
+							end,
 							set = function(info, val)
 								PallyPower.opt.autobuff.waitforpeople = val
 								PallyPower:UpdateRoster()
-							end,
-						},
-					},
+							end
+						}
+					}
 				},
 				cp_button = {
 					order = 4,
@@ -421,7 +495,7 @@ PallyPower.options = {
 						cp_desc = {
 							order = 0,
 							type = "description",
-							name = L["CPBTNS_DESC"],
+							name = L["CPBTNS_DESC"]
 						},
 						class_enable = {
 							order = 1,
@@ -429,31 +503,37 @@ PallyPower.options = {
 							name = L["CLASSBTN"],
 							desc = L["CLASSBTN_DESC"],
 							width = 1.1,
-							get = function(info) return PallyPower.opt.display.showClassButtons end,
+							get = function(info)
+								return PallyPower.opt.display.showClassButtons
+							end,
 							set = function(info, val)
 								PallyPower.opt.display.showClassButtons = val
 								if (PallyPower.opt.display.showPlayerButtons and not PallyPower.opt.display.showClassButtons) then
 									PallyPower.opt.display.showPlayerButtons = false
 								end
 								PallyPower:UpdateRoster()
-							end,
+							end
 						},
 						player_enable = {
 							order = 2,
 							type = "toggle",
 							name = L["PLAYERBTNS"],
 							desc = L["PLAYERBTNS_DESC"],
-							disabled = function(info) return PallyPower.opt.display.showClassButtons == false end,
-							get = function(info) return PallyPower.opt.display.showPlayerButtons end,
+							disabled = function(info)
+								return PallyPower.opt.display.showClassButtons == false
+							end,
+							get = function(info)
+								return PallyPower.opt.display.showPlayerButtons
+							end,
 							set = function(info, val)
 								PallyPower.opt.display.showPlayerButtons = val
 								if not PallyPower.opt.display.showClassButtons then
 									PallyPower.opt.display.showPlayerButtons = false
 								end
 								PallyPower:UpdateRoster()
-							end,
-						},
-					},
+							end
+						}
+					}
 				},
 				drag_button = {
 					order = 5,
@@ -464,7 +544,7 @@ PallyPower.options = {
 						misc_desc = {
 							order = 0,
 							type = "description",
-							name = L["DRAG_DESC"],
+							name = L["DRAG_DESC"]
 						},
 						drag_enable = {
 							order = 1,
@@ -472,15 +552,17 @@ PallyPower.options = {
 							name = L["DRAGHANDLE_ENABLED"],
 							desc = L["DRAGHANDLE_ENABLED_DESC"],
 							width = 1.1,
-							get = function(info) return PallyPower.opt.display.enableDragHandle end,
+							get = function(info)
+								return PallyPower.opt.display.enableDragHandle
+							end,
 							set = function(info, val)
 								PallyPower.opt.display.enableDragHandle = val
 								PallyPower:UpdateRoster()
-							end,
-						},
-					},
-				},
-			},
+							end
+						}
+					}
+				}
+			}
 		},
 		raids = {
 			order = 3,
@@ -488,7 +570,9 @@ PallyPower.options = {
 			desc = L["RAID_DESC"],
 			type = "group",
 			cmdHidden = true,
-			disabled = function(info) return (not PallyPower.opt.enabled) end,
+			disabled = function(info)
+				return (not PallyPower.opt.enabled)
+			end,
 			args = {
 				mainroles = {
 					order = 1,
@@ -499,7 +583,7 @@ PallyPower.options = {
 						mainroles_desc = {
 							order = 0,
 							type = "description",
-							name = L["MAINROLES_DESC"],
+							name = L["MAINROLES_DESC"]
 						},
 						maintank_buff = {
 							order = 1,
@@ -507,11 +591,13 @@ PallyPower.options = {
 							name = L["MAINTANK"],
 							desc = L["MAINTANK_DESC"],
 							width = "full",
-							get = function(info) return PallyPower.opt.mainTank end,
+							get = function(info)
+								return PallyPower.opt.mainTank
+							end,
 							set = function(info, val)
 								PallyPower.opt.mainTank = val
 								PallyPower:UpdateRoster()
-							end,
+							end
 						},
 						maintank_GBWarrior = {
 							order = 2,
@@ -519,8 +605,12 @@ PallyPower.options = {
 							name = L["MAINTANKGBUFFW"],
 							desc = L["MAINTANKGBUFFW_DESC"],
 							width = 1.2,
-							disabled = function(info) return (not (PallyPower.opt.mainTank)) end,
-							get = function(info) return PallyPower.opt.mainTankGSpellsW end,
+							disabled = function(info)
+								return (not (PallyPower.opt.mainTank))
+							end,
+							get = function(info)
+								return PallyPower.opt.mainTankGSpellsW
+							end,
 							set = function(info, val)
 								PallyPower.opt.mainTankGSpellsW = val
 								PallyPower:UpdateRoster()
@@ -532,8 +622,8 @@ PallyPower.options = {
 								[3] = PallyPower.GSpells[3], -- Greater Blessing of Kings
 								[4] = PallyPower.GSpells[4], -- Greater Blessing of Salvation
 								[5] = PallyPower.GSpells[5], -- Greater Blessing of Light
-								[6] = PallyPower.GSpells[6], -- Greater Blessing of Sanctuary
-							},
+								[6] = PallyPower.GSpells[6] -- Greater Blessing of Sanctuary
+							}
 						},
 						maintank_NBWarrior = {
 							order = 3,
@@ -541,8 +631,12 @@ PallyPower.options = {
 							name = L["MAINTANKNBUFFW"],
 							desc = L["MAINTANKNBUFFW_DESC"],
 							width = 0.9,
-							disabled = function(info) return (not (PallyPower.opt.mainTank)) end,
-							get = function(info) return PallyPower.opt.mainTankSpellsW end,
+							disabled = function(info)
+								return (not (PallyPower.opt.mainTank))
+							end,
+							get = function(info)
+								return PallyPower.opt.mainTankSpellsW
+							end,
 							set = function(info, val)
 								PallyPower.opt.mainTankSpellsW = val
 								PallyPower:UpdateRoster()
@@ -555,8 +649,8 @@ PallyPower.options = {
 								[4] = PallyPower.Spells[4], -- Blessing of Salvation
 								[5] = PallyPower.Spells[5], -- Blessing of Light
 								[6] = PallyPower.Spells[6], -- Blessing of Sanctuary
-								[7] = PallyPower.Spells[7], -- Blessing of Sacrifice
-							},
+								[7] = PallyPower.Spells[7] -- Blessing of Sacrifice
+							}
 						},
 						maintank_GBDruidPPaladin = {
 							order = 4,
@@ -564,8 +658,12 @@ PallyPower.options = {
 							name = L["MAINTANKGBUFFDP"],
 							desc = L["MAINTANKGBUFFDP_DESC"],
 							width = 1.2,
-							disabled = function(info) return (not (PallyPower.opt.mainTank)) end,
-							get = function(info) return PallyPower.opt.mainTankGSpellsDP end,
+							disabled = function(info)
+								return (not (PallyPower.opt.mainTank))
+							end,
+							get = function(info)
+								return PallyPower.opt.mainTankGSpellsDP
+							end,
 							set = function(info, val)
 								PallyPower.opt.mainTankGSpellsDP = val
 								PallyPower:UpdateRoster()
@@ -577,8 +675,8 @@ PallyPower.options = {
 								[3] = PallyPower.GSpells[3], -- Greater Blessing of Kings
 								[4] = PallyPower.GSpells[4], -- Greater Blessing of Salvation
 								[5] = PallyPower.GSpells[5], -- Greater Blessing of Light
-								[6] = PallyPower.GSpells[6], -- Greater Blessing of Sanctuary
-							},
+								[6] = PallyPower.GSpells[6] -- Greater Blessing of Sanctuary
+							}
 						},
 						maintank_NBDruidPPaladin = {
 							order = 5,
@@ -586,8 +684,12 @@ PallyPower.options = {
 							name = L["MAINTANKNBUFFDP"],
 							desc = L["MAINTANKNBUFFDP_DESC"],
 							width = 0.9,
-							disabled = function(info) return (not (PallyPower.opt.mainTank)) end,
-							get = function(info) return PallyPower.opt.mainTankSpellsDP end,
+							disabled = function(info)
+								return (not (PallyPower.opt.mainTank))
+							end,
+							get = function(info)
+								return PallyPower.opt.mainTankSpellsDP
+							end,
 							set = function(info, val)
 								PallyPower.opt.mainTankSpellsDP = val
 								PallyPower:UpdateRoster()
@@ -600,8 +702,8 @@ PallyPower.options = {
 								[4] = PallyPower.Spells[4], -- Blessing of Salvation
 								[5] = PallyPower.Spells[5], -- Blessing of Light
 								[6] = PallyPower.Spells[6], -- Blessing of Sanctuary
-								[7] = PallyPower.Spells[7], -- Blessing of Sacrifice
-							},
+								[7] = PallyPower.Spells[7] -- Blessing of Sacrifice
+							}
 						},
 						mainassist_buff = {
 							order = 6,
@@ -609,11 +711,13 @@ PallyPower.options = {
 							name = L["MAINASSISTANT"],
 							desc = L["MAINASSISTANT_DESC"],
 							width = "full",
-							get = function(info) return PallyPower.opt.mainAssist end,
+							get = function(info)
+								return PallyPower.opt.mainAssist
+							end,
 							set = function(info, val)
 								PallyPower.opt.mainAssist = val
 								PallyPower:UpdateRoster()
-							end,
+							end
 						},
 						mainassist_GBWarrior = {
 							order = 7,
@@ -621,8 +725,12 @@ PallyPower.options = {
 							name = L["MAINASSISTANTGBUFFW"],
 							desc = L["MAINASSISTANTGBUFFW_DESC"],
 							width = 1.2,
-							disabled = function(info) return (not (PallyPower.opt.mainAssist)) end,
-							get = function(info) return PallyPower.opt.mainAssistGSpellsW end,
+							disabled = function(info)
+								return (not (PallyPower.opt.mainAssist))
+							end,
+							get = function(info)
+								return PallyPower.opt.mainAssistGSpellsW
+							end,
 							set = function(info, val)
 								PallyPower.opt.mainAssistGSpellsW = val
 								PallyPower:UpdateRoster()
@@ -634,8 +742,8 @@ PallyPower.options = {
 								[3] = PallyPower.GSpells[3], -- Greater Blessing of Kings
 								[4] = PallyPower.GSpells[4], -- Greater Blessing of Salvation
 								[5] = PallyPower.GSpells[5], -- Greater Blessing of Light
-								[6] = PallyPower.GSpells[6], -- Greater Blessing of Sanctuary
-							},
+								[6] = PallyPower.GSpells[6] -- Greater Blessing of Sanctuary
+							}
 						},
 						mainassist_NBWarrior = {
 							order = 8,
@@ -643,8 +751,12 @@ PallyPower.options = {
 							name = L["MAINASSISTANTNBUFFW"],
 							desc = L["MAINASSISTANTNBUFFW_DESC"],
 							width = 0.9,
-							disabled = function(info) return (not (PallyPower.opt.mainAssist)) end,
-							get = function(info) return PallyPower.opt.mainAssistSpellsW end,
+							disabled = function(info)
+								return (not (PallyPower.opt.mainAssist))
+							end,
+							get = function(info)
+								return PallyPower.opt.mainAssistSpellsW
+							end,
 							set = function(info, val)
 								PallyPower.opt.mainAssistSpellsW = val
 								PallyPower:UpdateRoster()
@@ -657,8 +769,8 @@ PallyPower.options = {
 								[4] = PallyPower.Spells[4], -- Blessing of Salvation
 								[5] = PallyPower.Spells[5], -- Blessing of Light
 								[6] = PallyPower.Spells[6], -- Blessing of Sanctuary
-								[7] = PallyPower.Spells[7], -- Blessing of Sacrifice
-							},
+								[7] = PallyPower.Spells[7] -- Blessing of Sacrifice
+							}
 						},
 						mainassist_GBDruidPaladin = {
 							order = 9,
@@ -666,8 +778,12 @@ PallyPower.options = {
 							name = L["MAINASSISTANTGBUFFDP"],
 							desc = L["MAINASSISTANTGBUFFDP_DESC"],
 							width = 1.2,
-							disabled = function(info) return (not (PallyPower.opt.mainAssist)) end,
-							get = function(info) return PallyPower.opt.mainAssistGSpellsDP end,
+							disabled = function(info)
+								return (not (PallyPower.opt.mainAssist))
+							end,
+							get = function(info)
+								return PallyPower.opt.mainAssistGSpellsDP
+							end,
 							set = function(info, val)
 								PallyPower.opt.mainAssistGSpellsDP = val
 								PallyPower:UpdateRoster()
@@ -679,8 +795,8 @@ PallyPower.options = {
 								[3] = PallyPower.GSpells[3], -- Greater Blessing of Kings
 								[4] = PallyPower.GSpells[4], -- Greater Blessing of Salvation
 								[5] = PallyPower.GSpells[5], -- Greater Blessing of Light
-								[6] = PallyPower.GSpells[6], -- Greater Blessing of Sanctuary
-							},
+								[6] = PallyPower.GSpells[6] -- Greater Blessing of Sanctuary
+							}
 						},
 						mainassist_NBDruidPaladin = {
 							order = 10,
@@ -688,8 +804,12 @@ PallyPower.options = {
 							name = L["MAINASSISTANTNBUFFDP"],
 							desc = L["MAINASSISTANTNBUFFDP_DESC"],
 							width = 0.9,
-							disabled = function(info) return (not (PallyPower.opt.mainAssist)) end,
-							get = function(info) return PallyPower.opt.mainAssistSpellsDP end,
+							disabled = function(info)
+								return (not (PallyPower.opt.mainAssist))
+							end,
+							get = function(info)
+								return PallyPower.opt.mainAssistSpellsDP
+							end,
 							set = function(info, val)
 								PallyPower.opt.mainAssistSpellsDP = val
 								PallyPower:UpdateRoster()
@@ -702,12 +822,12 @@ PallyPower.options = {
 								[4] = PallyPower.Spells[4], -- Blessing of Salvation
 								[5] = PallyPower.Spells[5], -- Blessing of Light
 								[6] = PallyPower.Spells[6], -- Blessing of Sanctuary
-								[7] = PallyPower.Spells[7], -- Blessing of Sacrifice
-							},
-						},
-					},
-				},
-			},
+								[7] = PallyPower.Spells[7] -- Blessing of Sacrifice
+							}
+						}
+					}
+				}
+			}
 		},
 		blessings = {
 			order = 4,
@@ -718,7 +838,7 @@ PallyPower.options = {
 				if not (UnitAffectingCombat("player")) then
 					PallyPowerBlessings_Toggle()
 				end
-			end,
+			end
 		},
 		options = {
 			order = 5,
@@ -729,7 +849,7 @@ PallyPower.options = {
 				if not (UnitAffectingCombat("player")) then
 					PallyPower:OpenConfigWindow()
 				end
-			end,
-		},
-	},
+			end
+		}
+	}
 }

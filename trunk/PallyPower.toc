@@ -4,10 +4,10 @@
 ## Version: @project-version@
 ## Notes: Raid/Party Paladin buffs.
 ## DefaultState: enabled
-## Dependencies:
+## Dependencies: LibClassicDurations
 ## OptionalDeps: Ace3
 ## X-Category: Paladin
-## X-Embeds: Ace3, LibClassicDurations
+## X-Embeds: Ace3
 ## SavedVariables: PallyPowerDB, PallyPower_Assignments, PallyPower_NormalAssignments, PallyPower_AuraAssignments, PallyPower_SavedPresets, PallyPower_ChanNames
 
 #@no-lib-strip@
