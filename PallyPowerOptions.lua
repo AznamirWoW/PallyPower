@@ -532,6 +532,22 @@ PallyPower.options = {
 								end
 								PallyPower:UpdateRoster()
 							end
+						},
+						buff_Duration = {
+							order = 3,
+							type = "toggle",
+							name = L["BUFFDURATION"],
+							desc = L["BUFFDURATION_DESC"],
+							disabled = function(info)
+								return PallyPower.opt.display.showClassButtons == false
+							end,
+							get = function(info)
+								return PallyPower.opt.display.buffDuration
+							end,
+							set = function(info, val)
+								PallyPower.opt.display.buffDuration = val
+								PallyPower:UpdateRoster()
+							end
 						}
 					}
 				},
