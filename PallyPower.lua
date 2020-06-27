@@ -948,52 +948,73 @@ end
 
 function PallyPower:CanBuffBlessing(spellId, gspellId, unitId)
     local normSpell, greatSpell = nil, nil
-    if unitId then
+    if unitId and spellId ~= 0 and gspellId ~= 0 then
         local normalBuffs = {
-            [0] = {{1, ""}},
-            [1] = {{60, 25290}, {54, 19854}, {44, 19853}, {34, 19852}, {24, 19850}, {14, 19742}},
-            [2] = {{60, 25291}, {52, 19838}, {42, 19837}, {32, 19836}, {22, 19835}, {12, 19834}, {4, 19740}},
+            [1] = {{54, 25290}, {44, 19854}, {34, 19853}, {24, 19852}, {14, 19850}, {4, 19742}},
+            [2] = {{52, 25291}, {42, 19838}, {32, 19837}, {22, 19836}, {12, 19835}, {4, 19834}, {0, 19740}},
             [3] = {{10, 20217}},
-            [4] = {{26, 1038}},
-            [5] = {{60, 19979}, {50, 19978}, {40, 19977}},
-            [6] = {{30, 20911}},
-            [7] = {{46, 6940}}
+            [4] = {{16, 1038}},
+            [5] = {{50, 19979}, {40, 19978}, {30, 19977}},
+            [6] = {{50, 20914}, {40, 20913}, {30, 20912}, {20, 20911}},
+            [7] = {{44, 20729}, {36, 6940}}
         }
         if spellId then
             for k, v in pairs(normalBuffs[spellId]) do
-                if UnitLevel(unitId) >= v[1] then
-                    local spellName, spellID
-                    spellName = GetSpellInfo(v[2])
-                    if spellName ~= nil then
-                        _, spellID = GetSpellBookItemInfo(spellName)
+                local spellName, spellRank, spellID
+                spellName = GetSpellInfo(v[2])
+                spellRank = GetSpellSubtext(v[2])
+
+                if spellName and spellRank then
+                    if spellId == 1 or spellId == 2 or spellId == 5 then
+                        normSpell = spellName .. "(" .. spellRank .. ")"
+                    else
+                        normSpell = spellName
                     end
-                    if spellID and spellID == v[2] then
-                        normSpell = GetSpellInfo(v[2]) .. "(" .. GetSpellSubtext(v[2]) .. ")"
+                    _, spellID = GetSpellBookItemInfo(normSpell)
+                end
+
+                if spellID ~= nil then
+
+                    if UnitLevel(unitId) >= v[1] then
+                        normSpell = normSpell
                         break
+                    else
+                        normSpell = nil
                     end
                 end
             end
         end
         local greaterBuffs = {
-            [0] = {{1, ""}},
-            [1] = {{60, 25918}, {54, 25894}},
-            [2] = {{60, 25916}, {52, 25782}},
+            [1] = {{54, 25918}, {44, 25894}},
+            [2] = {{52, 25916}, {42, 25782}},
             [3] = {{60, 25898}},
             [4] = {{60, 25895}},
             [5] = {{60, 25890}},
             [6] = {{60, 25899}},
-            [7] = {{46, 6940}}
+            [7] = {{44, 20729}, {36, 6940}}
         }
         if gspellId then
             for k, v in pairs(greaterBuffs[spellId]) do
-                if UnitLevel(unitId) >= v[1] then
-                    local spellName, spellID
-                    if spellName ~= nil then
-                        _, spellID = GetSpellBookItemInfo(GetSpellInfo(v[2]))
+                local spellName, spellRank, spellID
+                spellName = GetSpellInfo(v[2])
+                spellRank = GetSpellSubtext(v[2])
+
+                if spellName and spellRank then
+                    if spellId == 3 or spellId == 4 then
+                        greatSpell = spellName
+                    else
+                        greatSpell = spellName .. "(" .. spellRank .. ")"
                     end
-                    if spellID and spellID == v[2] then
-                        greatSpell = GetSpellInfo(v[2]) .. "(" .. GetSpellSubtext(v[2]) .. ")"
+                    _, spellID = GetSpellBookItemInfo(greatSpell)
+                end
+
+                if spellID ~= nil then
+
+                    if UnitLevel(unitId) >= v[1] then
+                        greatSpell = greatSpell
                         break
+                    else
+                        greatSpell = nil
                     end
                 end
             end
@@ -2382,31 +2403,24 @@ function PallyPower:UpdatePButton(button, baseName, classID, playerID, mousebutt
                     -- Normal Blessing [disabled] / Greater Blessing [disabled]
                     button:SetAttribute("spell1", nil)
                     button:SetAttribute("spell2", nil)
-
                 elseif unit.hasbuff and (unit.hasbuff < 300 and unit.hasbuff > 240) then
                     -- If a player has a Normal Blessing or if a Greater Blessings duration falls below 5 min:
                     -- Normal Blessing [disabled] / Greater Blessing [enabled]
-                    -- If alternate blessing assignment: disable greater blessing
-                    if spellID ~= gspellID then
-                        gSpell = nil
-                    end
-                    if IsInRaid() and gspellID == 4 and (class == 1 or class == 4 or class == 5) and not self.opt.SalvInCombat then
-                        button:SetAttribute("spell1", nil)
-                    else
+                    if IsInRaid() and gspellID == 4 and (class == 1 or class == 4 or class == 5) and self.opt.SalvInCombat then
                         button:SetAttribute("spell1", gSpell)
                     end
+                    if sfind(gSpell, "Greater") then
+                        button:SetAttribute("spell1", gSpell)
+                    else
+                        button:SetAttribute("spell1", nil)
+                    end
                     button:SetAttribute("spell2", nil)
-
                 elseif unit.hasbuff and unit.hasbuff < 240 then
                     -- If either buff duration falls below 4 min:
                     -- Normal Blessing [enabled] / Greater Blessing [enabled]
-                    -- If alternate blessing assignment: use normal blessing
-                    if spellID ~= gspellID then
-                        gSpell = nSpell
-                    end
                     if IsInRaid() and spellID == 4 and gspellID == 4 and (class == 1 or class == 4 or class == 5) and not self.opt.SalvInCombat then
                         button:SetAttribute("spell1", nil)
-                        button:SetAttribute("spell2", nSpell)
+                        button:SetAttribute("spell2", nil)
                     elseif IsInRaid() and spellID ~= 4 and gspellID == 4 and (class == 1 or class == 4 or class == 5) and not self.opt.SalvInCombat then
                         button:SetAttribute("spell1", nil)
                         button:SetAttribute("spell2", nSpell)
@@ -2587,7 +2601,6 @@ function PallyPower:GetUnitAndSpellSmart(classID, mousebutton)
     local i, unit, isPet, spell, gspell, spellID, gspellID
     -- Greater Blessings
     if (mousebutton == "LeftButton") then
-        -- Normal Blessings
         local nSpell, gSpell, unitID
         for i, unit in pairs(class) do
             unitID = unit.unitid
@@ -2599,8 +2612,20 @@ function PallyPower:GetUnitAndSpellSmart(classID, mousebutton)
             local buffExpire, buffDuration, buffName = self:IsBuffActive(spell, gspell, unitID)
 
             -- If normal blessing - set duration to zero and buff it - but only if an alternate blessing isn't assigned
-            if (buffName and buffName == spell and gSpell ~= nSpell and not isPet) or not self.opt.display.buffDuration then
+            if (buffName and buffName == spell and spell ~= gspell and not isPet) and not self.opt.display.buffDuration then
                 buffExpire = 0
+            end
+
+            if not self.opt.display.buffDuration then
+                if buffExpire > 300 then
+                    if not buffExpire or buffExpire < (900 - (1.4 * (#classes[classID]))) then
+                        buffExpire = 0
+                    end
+                else
+                    if not buffExpire or buffExpire < (300 - (1.4 * (#classes[classID]))) then
+                        buffExpire = 0
+                    end
+                end
             end
 
             if IsInRaid() then
@@ -2618,10 +2643,11 @@ function PallyPower:GetUnitAndSpellSmart(classID, mousebutton)
             end
 
             -- Refresh any greater blessing under a 4 min duration - unless the Buff Duration option is off
-            if ((not buffExpire or buffExpire < 300) and ((IsSpellInRange(gspell, unitID) == 1 and (not UnitIsAFK(unitID))) or not self.opt.autobuff.waitforpeople) and (not UnitIsDeadOrGhost(unitID))) then
+            if ((not buffExpire or buffExpire < 240) and ((IsSpellInRange(gspell, unitID) == 1 and (not UnitIsAFK(unitID))) or not self.opt.autobuff.waitforpeople) and (not UnitIsDeadOrGhost(unitID))) then
                 return unitID, nSpell, gSpell
             end
         end
+    -- Normal Blessings
     elseif (mousebutton == "RightButton") then
         local nSpell, gSpell, unitID
         for i, unit in pairs(class) do
@@ -2635,14 +2661,20 @@ function PallyPower:GetUnitAndSpellSmart(classID, mousebutton)
             local buffExpire, buffDuration, buffName = self:IsBuffActive(spell, gspell, unitID)
 
             -- Flag valid Greater Blessings
-            if buffName and buffName == spell then
+            if buffName and buffName == gspell then
                 greaterBlessing = true
             end
 
             -- There is no Greater Blessing of Sacrifice so we need to treat the assinged Greater Blessing as if it were or if an alternate blessing is assigned - set duration to zero and buff it
-            if ((buffName and buffName == gspell) and (spell == "Blessing of Sacrifice" or (spell ~= "Blessing of Sacrifice" and spellID ~= gspellID))) or not self.opt.display.buffDuration then
+            if (buffName and buffName == gspell) and (spell == "Blessing of Sacrifice" or (spell ~= "Blessing of Sacrifice" and spellID ~= gspellID)) then
                 greaterBlessing = false
                 buffExpire = 0
+            end
+
+            if not self.opt.display.buffDuration then
+                if not buffExpire or buffExpire < (300 - (1.4 * (#classes[classID]))) then
+                    buffExpire = 0
+                end
             end
 
             if IsInRaid() then
