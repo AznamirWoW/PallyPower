@@ -353,7 +353,9 @@ function PallyPowerGridButton_OnClick(btn, mouseBtn)
         return false
     end
     if (mouseBtn == "RightButton") then
-        PallyPower_Assignments[pname][class] = 0
+        if PallyPower_Assignments and PallyPower_Assignments[pname] and PallyPower_Assignments[pname][class] then
+            PallyPower_Assignments[pname][class] = 0
+        end
         PallyPower:SendMessage("ASSIGN " .. pname .. " " .. class .. " 0")
         PallyPower:UpdateRoster()
     else
@@ -960,8 +962,12 @@ function PallyPower:CanBuffBlessing(spellId, gspellId, unitId)
         if spellId then
             for k, v in pairs(normalBuffs[spellId]) do
                 if UnitLevel(unitId) >= v[1] then
-                    local _, spellID = GetSpellBookItemInfo(GetSpellInfo(v[2]))
-                    if spellID == v[2] then
+                    local spellName, spellID
+                    spellName = GetSpellInfo(v[2])
+                    if spellName ~= nil then
+                        _, spellID = GetSpellBookItemInfo(spellName)
+                    end
+                    if spellID and spellID == v[2] then
                         normSpell = GetSpellInfo(v[2]) .. "(" .. GetSpellSubtext(v[2]) .. ")"
                         break
                     end
@@ -981,8 +987,11 @@ function PallyPower:CanBuffBlessing(spellId, gspellId, unitId)
         if gspellId then
             for k, v in pairs(greaterBuffs[spellId]) do
                 if UnitLevel(unitId) >= v[1] then
-                    local _, spellID = GetSpellBookItemInfo(GetSpellInfo(v[2]))
-                    if spellID == v[2] then
+                    local spellName, spellID
+                    if spellName ~= nil then
+                        _, spellID = GetSpellBookItemInfo(GetSpellInfo(v[2]))
+                    end
+                    if spellID and spellID == v[2] then
                         greatSpell = GetSpellInfo(v[2]) .. "(" .. GetSpellSubtext(v[2]) .. ")"
                         break
                     end
