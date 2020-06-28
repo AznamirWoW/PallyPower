@@ -963,18 +963,15 @@ function PallyPower:CanBuffBlessing(spellId, gspellId, unitId)
                 local spellName, spellRank, spellID
                 spellName = GetSpellInfo(v[2])
                 spellRank = GetSpellSubtext(v[2])
-
                 if spellName and spellRank then
-                    if spellId == 1 or spellId == 2 or spellId == 5 then
-                        normSpell = spellName .. "(" .. spellRank .. ")"
-                    else
+                    if spellId == 3 or spellId == 4 then
                         normSpell = spellName
+                    else
+                        normSpell = spellName .. "(" .. spellRank .. ")"
                     end
                     _, spellID = GetSpellBookItemInfo(normSpell)
                 end
-
                 if spellID ~= nil then
-
                     if UnitLevel(unitId) >= v[1] then
                         normSpell = normSpell
                         break
@@ -998,18 +995,15 @@ function PallyPower:CanBuffBlessing(spellId, gspellId, unitId)
                 local spellName, spellRank, spellID
                 spellName = GetSpellInfo(v[2])
                 spellRank = GetSpellSubtext(v[2])
-
                 if spellName and spellRank then
-                    if spellId == 3 or spellId == 4 then
-                        greatSpell = spellName
-                    else
+                    if spellId == 1 or spellId == 2 or spellId == 7 then
                         greatSpell = spellName .. "(" .. spellRank .. ")"
+                    else
+                        greatSpell = spellName
                     end
                     _, spellID = GetSpellBookItemInfo(greatSpell)
                 end
-
                 if spellID ~= nil then
-
                     if UnitLevel(unitId) >= v[1] then
                         greatSpell = greatSpell
                         break
@@ -1459,7 +1453,9 @@ function PallyPower:ParseMessage(sender, msg)
     end
     if sfind(msg, "^ASELF") then
         PallyPower_AuraAssignments[sender] = 0
-        AllPallys[sender].AuraInfo = {}
+        if not AllPallys[sender].AuraInfo then
+            AllPallys[sender].AuraInfo = {}
+        end
         _, _, numbers, assign = sfind(msg, "ASELF ([0-9a-fn]*)@([0-9n]*)")
         for i = 1, PALLYPOWER_MAXAURAS do
             rank = ssub(numbers, (i - 1) * 2 + 1, (i - 1) * 2 + 1)
@@ -2004,7 +2000,7 @@ function PallyPower:UpdateLayout()
                 local spellID, gspellID = self:GetSpellID(classIndex, unit.name)
                 local nSpell, gSpell = PallyPower:CanBuffBlessing(spellID, gspellID, unit.unitid)
 
-                -- Greater Blessings (Left Mouse Button [1]) - disable salv (enabled with preclick)
+                -- Greater Blessings (Left Mouse Button [1]) - disable Greater Blessing of Salvation globally. Enabled in PButtonPreClick().
                 pButton:SetAttribute("type1", "spell")
                 pButton:SetAttribute("unit1", unit.unitid)
                 if IsInRaid() and gspellID == 4 and (classIndex == 1 or classIndex == 4 or classIndex == 5) and not self.opt.SalvInCombat then
@@ -2089,7 +2085,6 @@ function PallyPower:SetPButton(baseName)
 end
 
 function PallyPower:UpdateButtonOnPostClick(button, mousebutton)
-    --self:Debug("Update Class Button OnClick()")
     local classID = button:GetAttribute("classID")
     local _, _, cbNum = sfind(button:GetName(), "PallyPowerC(.+)")
     PallyPower:UpdateButton(button, "PallyPowerC" .. cbNum, classID)
@@ -2267,7 +2262,6 @@ function PallyPower:GetSealExpiration()
 end
 
 function PallyPower:UpdatePButtonOnPostClick(button, mousebutton)
-    --self:Debug("Update Player Button OnClick()")
     local classID = button:GetAttribute("classID")
     local playerID = button:GetAttribute("playerID")
     local _, _, cbNum, pbNum = sfind(button:GetName(), "PallyPowerC(.+)P(.+)")
@@ -2284,33 +2278,31 @@ function PallyPower:PButtonPreClick(button, mousebutton)
     if InCombatLockdown() then
         return
     end
-
     local classID = button:GetAttribute("classID")
     local playerID = button:GetAttribute("playerID")
     local unit = classes[classID][playerID]
     local spellID, gspellID = PallyPower:GetSpellID(classID, unit.name)
-    local nSpell, gSpell = PallyPower:CanBuffBlessing(spellID, gspellID, unit.unitid)
 
-    if IsInRaid() and (spellID == 4 or gspellID == 4) and (classID == 1 or classID == 4 or classID == 5) then
-        -- Skip tanks if Salv is assigned
-        if not self.opt.SalvInCombat then
-            for k, v in pairs(classmaintanks) do
-                if v == true and k == unit.unitid then
-                    if (spellID == 4 and gspellID == 4) then
-                        nSpell = nil
-                        gSpell = nil
-                    elseif (spellID ~= 4 and gspellID == 4) then
-                        gSpell = nil
-                    end
+    -- Disable tanks if a Normal Blessing of Salvation or Greater Blessing of Salvation unless in a raid and SalvInCombat isn't allowed.
+    -- The excessive checks are neccessary to help battle edge cases where race conditions can occur when the player isn't in combat
+    -- but the tank is in combat. This helps keep Normal Blessing of Salvation assigned to non-tanks when entering combat and only assigns
+    -- Greater Blessing of Salvation when absolutly needed - out of combat. This ONLY applies to Warriors, Druids and Paladins and Blessing
+    -- of Salvation. All other buffs remain unaffected. These unassignments and reassignments do not affect already buffed Blessings so the
+    -- Buff Duration option should be unaffected by this logic and will continue to apply its logic in the UpdatePButton() function.
+    if IsInRaid() and (spellID == 4 or gspellID == 4) and (classID == 1 or classID == 4 or classID == 5) and not self.opt.SalvInCombat then
+        local nSpell, gSpell = PallyPower:CanBuffBlessing(spellID, gspellID, unit.unitid)
+        for k, v in pairs(classmaintanks) do
+            if v == true and k == unit.unitid then
+                -- Do not allow Salvation on tanks - Greater / Normal [disabled]
+                if (spellID == 4 and gspellID == 4) then
+                    button:SetAttribute("spell1", nil)
+                    button:SetAttribute("spell2", nil)
+                -- Skip Alternate Blessing that is NOT Salvation? - Greater [diabled]
+                elseif (spellID ~= 4 and gspellID == 4) then
+                    button:SetAttribute("spell1", nil)
                 end
             end
         end
-        -- Greater Blessings
-        button:SetAttribute("unit1", unit.unitid)
-        button:SetAttribute("spell1", gSpell)
-        -- Normal Blessings
-        button:SetAttribute("unit2", unit.unitid)
-        button:SetAttribute("spell2", nSpell)
     end
 end
 
@@ -2318,15 +2310,15 @@ function PallyPower:PButtonPostClick(button, mousebutton)
     if InCombatLockdown() then
         return
     end
-
     local classID = button:GetAttribute("classID")
     local playerID = button:GetAttribute("playerID")
     local unit = classes[classID][playerID]
     local spellID, gspellID = PallyPower:GetSpellID(classID, unit.name)
 
-    if IsInRaid() and (spellID == 4 or gspellID == 4) and (classID == 1 or classID == 4 or classID == 5) then
+    -- Upon finishing button exection, remove Greater Blessing of Salvation from
+    -- Warriors, Druids and Paladins in case we enter combat from this point.
+    if IsInRaid() and (gspellID == 4) and (classID == 1 or classID == 4 or classID == 5) then
         if not self.opt.SalvInCombat then
-            button:SetAttribute("unit1", nil)
             button:SetAttribute("spell1", nil)
         end
     end
@@ -2396,42 +2388,82 @@ function PallyPower:UpdatePButton(button, baseName, classID, playerID, mousebutt
                 end
             end
         end
+
+        -- The following logic strips Blessing of Salvation from Warriors, Druids and Paladins
+        -- while in a RAID and is assigned to non-tanks in the PButtonPreClick() function
         if (not InCombatLockdown()) then
+            -- Buff based on Duration left (anti-spam)
             if self.opt.display.buffDuration then
+                -- If a player has a Blessing duration longer then 5 min:
                 if unit.hasbuff and unit.hasbuff > 300 then
-                    -- If a player has a Blessing duration longer then 5 min:
-                    -- Normal Blessing [disabled] / Greater Blessing [disabled]
+                    -- Greater Blessing [disabled]
                     button:SetAttribute("spell1", nil)
+                    -- Normal Blessing [disabled]
                     button:SetAttribute("spell2", nil)
+                -- If a Blessing duration falls between 5 min and 4 min:
                 elseif unit.hasbuff and (unit.hasbuff < 300 and unit.hasbuff > 240) then
-                    -- If a player has a Normal Blessing or if a Greater Blessings duration falls below 5 min:
-                    -- Normal Blessing [disabled] / Greater Blessing [enabled]
-                    if IsInRaid() and gspellID == 4 and (class == 1 or class == 4 or class == 5) and self.opt.SalvInCombat then
+                    -- Greater Blessing of Salvation [disabled] unless in a raid and SalvInCombat isn't allowed
+                    if IsInRaid() and gspellID == 4 and (class == 1 or class == 4 or class == 5) and not self.opt.SalvInCombat then
+                        button:SetAttribute("spell1", nil)
+                    else
                         button:SetAttribute("spell1", gSpell)
                     end
-                    if sfind(gSpell, "Greater") then
+                    -- Make sure it's a Greater and not a Normal in place of a Greater
+                    if gSpell and sfind(gSpell, "Greater") then
                         button:SetAttribute("spell1", gSpell)
                     else
+                        -- Different duration from a Greater Blessing so disable until the < 4 min mark
                         button:SetAttribute("spell1", nil)
                     end
+                    -- Normal Blessing [disabled]
                     button:SetAttribute("spell2", nil)
+                -- If a Blessing duration falls below 4 min:
                 elseif unit.hasbuff and unit.hasbuff < 240 then
-                    -- If either buff duration falls below 4 min:
-                    -- Normal Blessing [enabled] / Greater Blessing [enabled]
+                    -- Normal Blessing of Salvation [disabled] and Greater Blessing Salvation [disabled] unless in a raid and SalvInCombat isn't allowed
                     if IsInRaid() and spellID == 4 and gspellID == 4 and (class == 1 or class == 4 or class == 5) and not self.opt.SalvInCombat then
+                        -- Greater Blessing [disabled]
                         button:SetAttribute("spell1", nil)
+                        -- Normal Blessing [disabled]
                         button:SetAttribute("spell2", nil)
+                    -- Alternate Blessing not Salvation?
                     elseif IsInRaid() and spellID ~= 4 and gspellID == 4 and (class == 1 or class == 4 or class == 5) and not self.opt.SalvInCombat then
+                        -- Greater Blessing [disabled]
                         button:SetAttribute("spell1", nil)
+                        -- Normal Blessing [enabled]
                         button:SetAttribute("spell2", nSpell)
                     else
+                        -- Greater Blessing [enabled]
                         button:SetAttribute("spell1", gSpell)
+                        -- Normal Blessing [enabled]
                         button:SetAttribute("spell2", nSpell)
                     end
                 end
+            -- Buff Duration disabled - ignore buff duration and allow spamming but honor SalvInCombat option for Blessing of Salvation
             else
-                button:SetAttribute("spell1", gSpell)
-                button:SetAttribute("spell2", nSpell)
+                -- Normal Blessing of Salvation [disabled] and Greater Blessing Salvation [disabled] unless in a raid and SalvInCombat isn't allowed
+                if IsInRaid() and spellID == 4 and gspellID == 4 and (class == 1 or class == 4 or class == 5) and not self.opt.SalvInCombat then
+                    -- Greater Blessing [disabled]
+                    button:SetAttribute("spell1", nil)
+                    -- Normal Blessing [disabled]
+                    button:SetAttribute("spell2", nil)
+                -- Alternate Blessing not Salvation?
+                elseif IsInRaid() and spellID ~= 4 and gspellID == 4 and (class == 1 or class == 4 or class == 5) and not self.opt.SalvInCombat then
+                    -- Greater Blessing [disabled]
+                    button:SetAttribute("spell1", nil)
+                    -- Normal Blessing [enabled]
+                    button:SetAttribute("spell2", nSpell)
+                -- If a player is buffed a Greater Blessing
+                elseif unit.hasbuff and unit.hasbuff > 300 then
+                    -- Greater Blessing [enabled]
+                    button:SetAttribute("spell1", gSpell)
+                    -- Normal Blessing [disabled]
+                    button:SetAttribute("spell2", nil)
+                else
+                    -- Greater Blessing [enabled]
+                    button:SetAttribute("spell1", gSpell)
+                    -- Normal Blessing [enabled]
+                    button:SetAttribute("spell2", nSpell)
+                end
             end
         end
 
@@ -2599,6 +2631,7 @@ end
 function PallyPower:GetUnitAndSpellSmart(classID, mousebutton)
     local class = classes[classID]
     local i, unit, isPet, spell, gspell, spellID, gspellID
+
     -- Greater Blessings
     if (mousebutton == "LeftButton") then
         local nSpell, gSpell, unitID
@@ -2611,25 +2644,31 @@ function PallyPower:GetUnitAndSpellSmart(classID, mousebutton)
             gspell = self.GSpells[gspellID]
             local buffExpire, buffDuration, buffName = self:IsBuffActive(spell, gspell, unitID)
 
-            -- If normal blessing - set duration to zero and buff it - but only if an alternate blessing isn't assigned
-            if (buffName and buffName == spell and spell ~= gspell and not isPet) and not self.opt.display.buffDuration then
-                buffExpire = 0
-            end
+            -- Buff Duration option disabled - allow spamming buffs
+            if not self.opt.display.buffDuration and not isPet then
+                if buffExpire and buffExpire > 300 then
+                    if buffExpire < (900 - 1.2) then
+                        buffExpire = 0
+                    end
 
-            if not self.opt.display.buffDuration then
-                if buffExpire > 300 then
-                    if not buffExpire or buffExpire < (900 - (1.4 * (#classes[classID]))) then
+                elseif buffExpire and buffExpire < 300 then
+                    if (buffName and buffName == spell and nSpell ~= gSpell) then
                         buffExpire = 0
                     end
                 else
-                    if not buffExpire or buffExpire < (300 - (1.4 * (#classes[classID]))) then
-                        buffExpire = 0
-                    end
+                    buffExpire = 0
+                end
+            else
+                -- If normal blessing - set duration to zero and buff it - but only if an alternate blessing isn't assigned
+                if (buffName and buffName == spell and nSpell ~= gSpell and not isPet) then
+                    buffExpire = 0
                 end
             end
 
             if IsInRaid() then
-                -- Skip tanks if Salv is assigned (this allows autobuff to work)
+                -- Skip tanks if Salv is assigned. This allows autobuff to work since some tanks
+                -- have addons and/or scripts to auto cancel Salvation. Prevents getting stuck
+                -- buffing a tank when auto buff rotates among players in the class group.
                 for k, v in pairs(classmaintanks) do
                     if v == true and k == unitID then
                         if (gspellID == 4) then
@@ -2637,6 +2676,8 @@ function PallyPower:GetUnitAndSpellSmart(classID, mousebutton)
                         end
                     end
                 end
+
+                -- We don't buff pets with Greater Blessings
                 if isPet then
                     buffExpire = 9999
                 end
@@ -2647,6 +2688,7 @@ function PallyPower:GetUnitAndSpellSmart(classID, mousebutton)
                 return unitID, nSpell, gSpell
             end
         end
+
     -- Normal Blessings
     elseif (mousebutton == "RightButton") then
         local nSpell, gSpell, unitID
@@ -2661,8 +2703,9 @@ function PallyPower:GetUnitAndSpellSmart(classID, mousebutton)
             local buffExpire, buffDuration, buffName = self:IsBuffActive(spell, gspell, unitID)
 
             -- Flag valid Greater Blessings
-            if buffName and buffName == gspell then
+            if buffName and buffName == gSpell then
                 greaterBlessing = true
+                buffExpire = 9999
             end
 
             -- There is no Greater Blessing of Sacrifice so we need to treat the assinged Greater Blessing as if it were or if an alternate blessing is assigned - set duration to zero and buff it
@@ -2671,14 +2714,29 @@ function PallyPower:GetUnitAndSpellSmart(classID, mousebutton)
                 buffExpire = 0
             end
 
+            -- Buff Duration option disabled - allow spamming buffs
+            -- This logic counts the number of players in a class and subtracts the ratio from the
+            -- buffs overall duration resulting in a "round robin" approach for spamming buffs so
+            -- auto buff doesn't get stuck on one person. Skips those with a Greater Blessing.
             if not self.opt.display.buffDuration then
-                if not buffExpire or buffExpire < (300 - (1.4 * (#classes[classID]))) then
+                local buff = #classes[classID]
+                for i = 1, #classes[classID] do
+                    if classes[classID][i].hasbuff and classes[classID][i].hasbuff > 300 then
+                        buff = buff - 1
+                    end
+                end
+                if not buffExpire or buffExpire < (300 - (1.2 * buff)) then
                     buffExpire = 0
                 end
             end
 
             if IsInRaid() then
-                -- Skip tanks if Salv is assigned (this allows autobuff to work)
+                -- Skip tanks if Salv is assigned. This allows autobuff to work since some tanks
+                -- have addons and/or scripts to auto cancel Salvation. Tanks shouldn't have a
+                -- Normal Blessing of Salvation but sometimes there are way more Paladins in a
+                -- Raid than there are buffs to assign so an Alternate Blessing might not be in
+                -- use to wipe Salvation from a tank. Prevents getting stuck buffing a tank when
+                -- auto buff rotates among players in the class group.
                 for k, v in pairs(classmaintanks) do
                     if v == true and k == unitID then
                         if (spellID == 4) then
@@ -2738,6 +2796,7 @@ function PallyPower:ButtonPreClick(button, mousebutton)
     -- Normal Blessings: right click (find first nearby player without buff and do a 5 minute buff)
     button:SetAttribute("unit2", unitid)
     button:SetAttribute("spell2", spell)
+    PallyPower:ButtonsUpdate()
 end
 
 function PallyPower:ButtonPostClick(button, mousebutton)
@@ -2803,7 +2862,6 @@ function PallyPower:DragStop()
 end
 
 function PallyPower:AutoBuff(button, mousebutton)
-    --self:Debug("AutoBuff(): mousebutton["..mousebutton.."]")
     if InCombatLockdown() then
         return
     end
@@ -2813,8 +2871,9 @@ function PallyPower:AutoBuff(button, mousebutton)
     else
         greater = nil
     end
+
+    -- Greater Blessings
     if greater then
-        --self:Debug("AutoBuff(): Greater Blessing")
         local groupCount = {}
         if (IsInRaid() == true) then
             for _, unit in ipairs(roster) do
@@ -2853,7 +2912,9 @@ function PallyPower:AutoBuff(button, mousebutton)
                         end
 
                         if IsInRaid() then
-                            -- Skip tanks if Salv is assigned (this allows autobuff to work)
+                            -- Skip tanks if Salv is assigned. This allows autobuff to work since some tanks
+                            -- have addons and/or scripts to auto cancel Salvation. Prevents getting stuck
+                            -- buffing a tank when auto buff rotates among players in the class group.
                             for k, v in pairs(classmaintanks) do
                                 if v == true and k == unit.unitid then
                                     if (gspellID == 4) then
@@ -2862,6 +2923,8 @@ function PallyPower:AutoBuff(button, mousebutton)
                                     end
                                 end
                             end
+
+                            -- We don't buff pets with Greater Blessings
                             if isPet then
                                 buffExpire = 9999
                                 penalty = 9999
@@ -2879,7 +2942,7 @@ function PallyPower:AutoBuff(button, mousebutton)
                             classMaxSpell = gSpell
                             classMinExpire = (buffExpire or 0)
                         end
-                    elseif (IsSpellInRange(gspell, unit.unitid) ~= 1 and not UnitIsAFK(unit.unitid)) then --and (IsInRaid() == false or groupCount[select(3, GetRaidRosterInfo(select(3, unit.unitid:find("(%d+)"))))] > 3)) then
+                    elseif (IsSpellInRange(gspell, unit.unitid) ~= 1 and not UnitIsAFK(unit.unitid)) and (IsInRaid() == false or groupCount[select(3, GetRaidRosterInfo(select(3, unit.unitid:find("(%d+)"))))] > 3) then
                         classNeedsBuff = false
                     end
                 end
@@ -2906,7 +2969,8 @@ function PallyPower:AutoBuff(button, mousebutton)
             )
         end
     else
-        --self:Debug("AutoBuff(): Normal Blessing")
+
+        -- Normal Blessings
         local minExpire, minUnit, minSpell = 240, nil, nil
         for _, unit in ipairs(roster) do
             local spellID, gspellID = self:GetSpellID(self:GetClassID(unit.class), unit.name)
@@ -2937,7 +3001,12 @@ function PallyPower:AutoBuff(button, mousebutton)
                 end
 
                 if IsInRaid() then
-                    -- Skip tanks if Salv is assigned (this allows autobuff to work)
+                    -- Skip tanks if Salv is assigned. This allows autobuff to work since some tanks
+                    -- have addons and/or scripts to auto cancel Salvation. Tanks shouldn't have a
+                    -- Normal Blessing of Salvation but sometimes there are way more Paladins in a
+                    -- Raid than there are buffs to assign so an Alternate Blessing might not be in
+                    -- use to wipe Salvation from a tank. Prevents getting stuck buffing a tank when
+                    -- auto buff rotates among players in the class group.
                     for k, v in pairs(classmaintanks) do
                         if v == true and k == unit.unitid then
                             if (spellID == 4) then
