@@ -413,6 +413,9 @@ PallyPower.options = {
 							name = L["RFM"],
 							desc = L["RFM_DESC"],
 							width = 1.1,
+							disabled = function(info)
+								return PallyPower.opt.rfbuff == false
+							end,
 							get = function(info)
 								return PallyPower.opt.rf
 							end,
