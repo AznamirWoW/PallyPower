@@ -1600,7 +1600,7 @@
                 </Anchors>
                 <Scripts>
                     <OnClick>
-                        if PallyPower.opt.ReportChannel >0 then
+                        if PallyPower.opt.ReportChannel > 0 then
                             PallyPower:Report("CHANNEL", PallyPower.opt.ReportChannel)
                         else
                             PallyPower:Report()
