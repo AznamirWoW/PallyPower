@@ -2670,8 +2670,14 @@ function PallyPower:GetUnitAndSpellSmart(classid, mousebutton)
                 buffExpire = 9999
             end
             -- Refresh any greater blessing under a 10 min duration
-            if ((not buffExpire or buffExpire < 600) and ((IsSpellInRange(gspell, unitID) == 1 and (not UnitIsAFK(unitID))) or not self.opt.autobuff.waitforpeople) and (not UnitIsDeadOrGhost(unitID))) then
-                return unitID, nSpell, gSpell
+            if InCombatLockdown() then
+                if ((not buffExpire or buffExpire < 600) and IsSpellInRange(gspell, unitID) == 1) then
+                    return unitID, nSpell, gSpell
+                end
+            else
+                if ((not buffExpire or buffExpire < 600) and ((IsSpellInRange(gspell, unitID) == 1 and (not UnitIsAFK(unitID))) or not self.opt.autobuff.waitforpeople) and (not UnitIsDeadOrGhost(unitID))) then
+                    return unitID, nSpell, gSpell
+                end
             end
         end
     -- Normal Blessings
