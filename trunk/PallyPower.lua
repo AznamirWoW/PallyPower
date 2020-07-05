@@ -19,8 +19,6 @@ PallyPower.player = UnitName("player")
 PallyPower_Assignments = {}
 PallyPower_NormalAssignments = {}
 PallyPower_AuraAssignments = {}
-LCD_Data = {}
-LCD_GUIDAccess = {}
 AllPallys = {}
 SyncList = {}
 PP_DebugEnabled = false
@@ -919,71 +917,48 @@ function PallyPower:CanBuff(name, test, alternate)
 end
 
 function PallyPower:CanBuffBlessing(spellId, gspellId, unitId)
-    local normSpell, greatSpell = nil, nil
     if unitId and spellId ~= 0 and gspellId ~= 0 then
-        local normalBuffs = {
-            [1] = {{50, 25290}, {44, 19854}, {34, 19853}, {24, 19852}, {14, 19850}, {4, 19742}},
-            [2] = {{50, 25291}, {42, 19838}, {32, 19837}, {22, 19836}, {12, 19835}, {4, 19834}, {0, 19740}},
-            [3] = {{10, 20217}},
-            [4] = {{16, 1038}},
-            [5] = {{50, 19979}, {40, 19978}, {30, 19977}},
-            [6] = {{50, 20914}, {40, 20913}, {30, 20912}, {20, 20911}},
-            [7] = {{44, 20729}, {36, 6940}}
-        }
-        if spellId then
-            for k, v in pairs(normalBuffs[spellId]) do
-                local _, spellName, spellRank, spellID
-                spellName = GetSpellInfo(v[2])
-                spellRank = GetSpellSubtext(v[2])
-                if spellName and spellRank then
-                    if spellId == 3 or spellId == 4 then
-                        normSpell = spellName
-                    else
-                        normSpell = spellName .. "(" .. spellRank .. ")"
-                    end
-                    _, spellID = GetSpellBookItemInfo(normSpell)
-                end
-                if spellID ~= nil then
+        local normSpell, greatSpell
+        if UnitLevel(unitId) < 60 then
+            for k, v in pairs(self.NormalBuffs[spellId]) do
+                if IsSpellKnown(v[2]) then
                     if UnitLevel(unitId) >= v[1] then
-                        normSpell = normSpell
+                        local spellName = GetSpellInfo(v[2])
+                        local spellRank = GetSpellSubtext(v[2])
+                        if spellName and spellRank then
+                            if spellId == 3 or spellId == 4 then
+                                normSpell = spellName
+                            else
+                                normSpell = spellName .. "(" .. spellRank .. ")"
+                            end
+                        end
                         break
                     else
                         normSpell = nil
                     end
                 end
             end
-        end
-        local greaterBuffs = {
-            [1] = {{50, 25918}, {44, 25894}},
-            [2] = {{50, 25916}, {42, 25782}},
-            [3] = {{50, 25898}},
-            [4] = {{50, 25895}},
-            [5] = {{50, 25890}},
-            [6] = {{50, 25899}},
-            [7] = {{44, 20729}, {36, 6940}}
-        }
-        if gspellId then
-            for k, v in pairs(greaterBuffs[gspellId]) do
-                local _, gspellName, gspellRank, gspellID
-                gspellName = GetSpellInfo(v[2])
-                gspellRank = GetSpellSubtext(v[2])
-                if gspellName and gspellRank then
-                    if gspellId == 1 or gspellId == 2 or gspellId == 7 then
-                        greatSpell = gspellName .. "(" .. gspellRank .. ")"
-                    else
-                        greatSpell = gspellName
-                    end
-                    _, gspellID = GetSpellBookItemInfo(greatSpell)
-                end
-                if gspellID ~= nil then
+            for k, v in pairs(self.GreaterBuffs[gspellId]) do
+                if IsSpellKnown(v[2]) then
                     if UnitLevel(unitId) >= v[1] then
-                        greatSpell = greatSpell
+                        local gspellName = GetSpellInfo(v[2])
+                        local gspellRank = GetSpellSubtext(v[2])
+                        if gspellName and gspellRank then
+                            if gspellId == 1 or gspellId == 2 or gspellId == 7 then
+                                greatSpell = gspellName .. "(" .. gspellRank .. ")"
+                            else
+                                greatSpell = gspellName
+                            end
+                        end
                         break
                     else
                         greatSpell = nil
                     end
                 end
             end
+        else
+            normSpell = PallyPower.Spells[spellId]
+            greatSpell = PallyPower.GSpells[gspellId]
         end
         return normSpell, greatSpell
     end
@@ -1254,7 +1229,7 @@ function PallyPower:PLAYER_ENTERING_WORLD()
     self:UpdateRoster()
     self:ReportChannels()
     if UnitName("player") == "Dyaxler" or UnitName("player") == "Minidyax" then
-        PP_DebugEnabled = true
+        --PP_DebugEnabled = true
     end
 end
 
@@ -1998,10 +1973,19 @@ function PallyPower:UpdateLayout()
                     pButton:SetAttribute("ctrl-unit1", unit.unitid)
                 end
 
-                -- Normal Blessings (Right Mouse Button [2])
+                -- Normal Blessings (Right Mouse Button [2]) - disable Normal Blessing of Salvation globally. Enabled in PButtonPreClick().
                 pButton:SetAttribute("type2", "spell")
                 pButton:SetAttribute("unit2", unit.unitid)
-                pButton:SetAttribute("spell2", nSpell)
+                if IsInRaid() and spellID == 4 and (classIndex == 1 or classIndex == 4 or classIndex == 5) and not self.opt.SalvInCombat then
+                    pButton:SetAttribute("spell2", nil)
+                else
+                    pButton:SetAttribute("spell2", nSpell)
+                end
+
+                -- Reset Alternate Blessings
+                pButton:SetAttribute("ctrl-type2", "macro")
+                pButton:SetAttribute("ctrl-macrotext2", "/run PallyPower_NormalAssignments['" .. self.player .. "'][" .. classIndex .. "]['" .. unit.name .. "'] = nil")
+
             end
             for pbNum = classlist[classIndex] + 1, PALLYPOWER_MAXPERCLASS do
                 local pButton = pButtons[pbNum]
@@ -2118,8 +2102,8 @@ function PallyPower:UpdateButton(button, baseName, classID)
             spell = self.Spells[spellID]
             spell2 = self.GSpells[spellID]
             gspell = self.GSpells[gspellID]
-            local _, _, buffName = self:IsBuffActive(spell, spell2, unit.unitid)
             if raidtank == "MAINTANK" then
+                local _, _, buffName = self:IsBuffActive(spell, spell2, unit.unitid)
                 if (buffName == "Greater Blessing of Salvation" or buffName == "Blessing of Salvation") then
                     nneed = nneed + 1
                     nhave = nhave - 1
@@ -2188,22 +2172,20 @@ function PallyPower:GetBuffExpiration(classID)
             local spellID, gspellID = self:GetSpellID(classID, unit.name)
             local spell = self.Spells[spellID]
             local gspell = self.GSpells[gspellID]
-            local buffName, _, _, _, buffDuration, buffExpire = LCD.UnitAuraWrapper(unit.unitid, j)
+            local buffName, _, _, _, buffDuration, buffExpire = LCD.UnitAuraWrapper(unit.unitid, j, "HELPFUL")
             while buffExpire do
                 buffExpire = buffExpire - GetTime()
                 if (buffName == gspell) then
                     classExpire = min(classExpire, buffExpire)
                     classDuration = min(classDuration, buffDuration)
                     --self:Debug("[GetBuffExpiration] buffName: "..buffName.." | classExpire: "..classExpire.." | classDuration: "..classDuration)
-                    break
                 elseif (buffName == spell) then
                     specialExpire = min(specialExpire, buffExpire)
                     specialDuration = min(specialDuration, buffDuration)
                     --self:Debug("[GetBuffExpiration] buffName: "..buffName.." | specialExpire: "..classExpire.." | specialDuration: "..classDuration)
-                    break
                 end
                 j = j + 1
-                buffName, _, _, _, buffDuration, buffExpire = LCD.UnitAuraWrapper(unit.unitid, j)
+                buffName, _, _, _, buffDuration, buffExpire = LCD.UnitAuraWrapper(unit.unitid, j, "HELPFUL")
             end
         end
     end
@@ -2268,15 +2250,16 @@ function PallyPower:PButtonPreClick(button, mousebutton)
         for k, v in pairs(classmaintanks) do
             if v == true and k == unit.unitid then
                 if (spellID == 4) then
-                    -- Do not allow Salvation on tanks - Normal Blessing [disabled]
+                    -- Do not allow Salvation on tanks - Blessings [disabled]
+                    gSpell = nil
                     nSpell = nil
                     break
                 end
             end
         end
-        -- Greater Blessing [enabled]
+        -- Greater Blessing of Salvation [enabled]
         button:SetAttribute("spell1", gSpell)
-        -- Normal Blessing [enabed for non-tanks]
+        -- Normal Blessing of Salvation [enabed for non-tanks]
         button:SetAttribute("spell2", nSpell)
     end
 end
@@ -2302,14 +2285,15 @@ function PallyPower:PButtonPostClick(button, mousebutton)
                 end
             end
         end
-        -- Greater Blessing [diabled]
+        -- Greater Blessing of Salvation [diabled]
         button:SetAttribute("spell1", nil)
-        -- Normal Blessing [enabed for non-tanks]
+        -- Normal Blessing of Salvation [enabed for non-tanks]
         button:SetAttribute("spell2", nSpell)
     end
 end
 
 function PallyPower:UpdatePButton(button, baseName, classID, playerID, mousebutton)
+    --self:Debug("UpdatePButton()")
     local button = _G[baseName]
     local buffIcon = _G[baseName .. "BuffIcon"]
     local tankIcon = _G[baseName .. "TankIcon"]
@@ -2350,13 +2334,13 @@ function PallyPower:UpdatePButton(button, baseName, classID, playerID, mousebutt
         spell = self.Spells[spellID]
         spell2 = self.GSpells[spellID]
         gspell = self.GSpells[gspellID]
-        local _, _, buffName = self:IsBuffActive(spell, spell2, unit.unitid)
         if IsInRaid() then
             local n = select(3, unit.unitid:find("(%d+)"))
             if n then
                 raidtank = select(10, GetRaidRosterInfo(n))
             end
             if raidtank == "MAINTANK" then
+                local _, _, buffName = self:IsBuffActive(spell, spell2, unit.unitid)
                 tankIcon:Show()
                 if buffName == "Greater Blessing of Salvation" or buffName == "Blessing of Salvation" then
                     nhave = 0
@@ -2377,91 +2361,28 @@ function PallyPower:UpdatePButton(button, baseName, classID, playerID, mousebutt
         end
 
         -- The following logic keeps Blessing of Salvation from being assigned to Warriors, Druids and Paladins
-        -- while in a RAID and SalvInCombat isn't enabled and handles the Buff Duration option.
-        local nSpell, gSpell = self:CanBuffBlessing(spellID, gspellID, unit.unitid)
+        -- while in a RAID and SalvInCombat isn't enabled.
         if (not InCombatLockdown()) then
-            -- Buff Duration enabled - buff based on duration remaining (anit-spam)
-            if self.opt.display.buffDuration then
-                -- Buff Duration disabled - ignore buff duration and allow spamming
-                -- If a player has a Blessing duration longer then 10 min: disable both
-                if unit.hasbuff and unit.hasbuff > 600 then
-                    -- If a Blessing duration falls between 10 min and 4 min: Greater Blessing [enabled]
-                    -- Greater Blessing [disabled]
-                    button:SetAttribute("spell1", nil)
-
-                    -- Normal Blessing [disabled]
-                    button:SetAttribute("spell2", nil)
-                elseif unit.hasbuff and (unit.hasbuff < 600 and unit.hasbuff > 240) then
-                    -- If a Blessing duration falls below 4 min: enable both
-                    -- Greater Blessing of Salvation [disabled] while in a raid and SalvInCombat isn't allowed
-                    if IsInRaid() and gspellID == 4 and (class == 1 or class == 4 or class == 5) and not self.opt.SalvInCombat then
-                        -- This assignment is handled by the PButtonPreClick() function
-                        button:SetAttribute("spell1", nil)
-                    else
-                        button:SetAttribute("spell1", gSpell)
-                    end
-
-                    -- Normal Blessing [disabled]
-                    button:SetAttribute("spell2", nil)
-                elseif unit.hasbuff and unit.hasbuff < 240 then
-                    -- Normal Blessing of Salvation [disabled] and Greater Blessing Salvation [disabled] in a raid and SalvInCombat isn't allowed
-                    if IsInRaid() and spellID == 4 and gspellID == 4 and (class == 1 or class == 4 or class == 5) and not self.opt.SalvInCombat then
-                        -- Alternate Blessing Assignment [enabled] and Greater Blessing of Salvation [disabled] in a raid and SalvInCombat isn't allowed
-                        -- Greater Blessing [disabled]
-                        -- This assignment is enabled by the PButtonPreClick() function for everyone on a per-click basis
-                        button:SetAttribute("spell1", nil)
-
-                        -- Normal Blessing [disabled]
-                        -- This assignment is enabled by the PButtonPreClick() function for non-tanks on a per-click basis
-                        button:SetAttribute("spell2", nil)
-                    elseif IsInRaid() and spellID ~= 4 and gspellID == 4 and (class == 1 or class == 4 or class == 5) and not self.opt.SalvInCombat then
-                        -- Greater Blessing [disabled]
-                        -- This assignment is enabled by the PButtonPreClick() function for non-tanks on a per-click basis
-                        button:SetAttribute("spell1", nil)
-
-                        -- Normal Blessing [enabled]
-                        button:SetAttribute("spell2", nSpell)
-                    else
-                        -- Greater Blessing [enabled]
-                        button:SetAttribute("spell1", gSpell)
-
-                        -- Normal Blessing [enabled]
-                        button:SetAttribute("spell2", nSpell)
-                    end
-                end
+            local nSpell, gSpell = self:CanBuffBlessing(spellID, gspellID, unit.unitid)
+            -- Normal Blessing of Salvation [enabled] and Greater Blessing of Salvation [disabled] in a raid and SalvInCombat isn't allowed
+            if IsInRaid() and spellID == 4 and gspellID == 4 and (class == 1 or class == 4 or class == 5) and not self.opt.SalvInCombat then
+                -- Greater Blessing of Salvation [disabled]
+                -- This assignment is enabled by the PButtonPreClick() function for non-tanks on a per-click basis while not in combat
+                button:SetAttribute("spell1", nil)
+                -- Normal Blessing of Salvation [enabled]
+                -- This assignment is enabled by the PButtonPreClick() function for non-tanks on a per-click basis while not in combat
+                button:SetAttribute("spell2", nil)
+            elseif IsInRaid() and spellID ~= 4 and gspellID == 4 and (class == 1 or class == 4 or class == 5) and not self.opt.SalvInCombat then
+                -- Greater Blessing of Salvation [disabled]
+                -- This assignment is enabled by the PButtonPreClick() function for non-tanks on a per-click basis while not in combat
+                button:SetAttribute("spell1", nil)
+                -- Alternate Blessing Assignment [enabled]
+                button:SetAttribute("spell2", nSpell)
             else
-                -- Normal Blessing of Salvation [enabled] and Greater Blessing of Salvation [disabled] in a raid and SalvInCombat isn't allowed
-                if IsInRaid() and spellID == 4 and gspellID == 4 and (class == 1 or class == 4 or class == 5) and not self.opt.SalvInCombat then
-                    -- Alternate Blessing Assignment [enabled] and Greater Blessing of Salvation [disabled] in a raid and SalvInCombat isn't allowed
-                    -- Greater Blessing [disabled]
-                    button:SetAttribute("spell1", nil)
-
-                    -- Normal Blessing [enabled]
-                    -- This assignment is enabled by the PButtonPreClick() function for non-tanks on a per-click basis
-                    button:SetAttribute("spell2", nil)
-                elseif IsInRaid() and spellID ~= 4 and gspellID == 4 and (class == 1 or class == 4 or class == 5) and not self.opt.SalvInCombat then
-                    -- Greater Blessing buff present: Normal Blessing [disabled]
-                    -- Blizzard serves an error saying a more powerful spell is present,
-                    -- this check simply avoids getting that error.
-                    -- Greater Blessing [disabled]
-                    button:SetAttribute("spell1", nil)
-
-                    -- Normal Blessing [enabled]
-                    button:SetAttribute("spell2", nSpell)
-                elseif unit.hasbuff and unit.hasbuff > 300 then
-                    -- Allow spamming either blessing
-                    -- Greater Blessing [enabled]
-                    button:SetAttribute("spell1", gSpell)
-
-                    -- Normal Blessing [disabled]
-                    button:SetAttribute("spell2", nil)
-                else
-                    -- Greater Blessing [enabled]
-                    button:SetAttribute("spell1", gSpell)
-
-                    -- Normal Blessing [enabled]
-                    button:SetAttribute("spell2", nSpell)
-                end
+                -- Greater Blessings [enabled]
+                button:SetAttribute("spell1", gSpell)
+                -- Normal Blessings [enabled]
+                button:SetAttribute("spell2", nSpell)
             end
         end
 
@@ -2512,6 +2433,7 @@ function PallyPower:UpdatePButton(button, baseName, classID, playerID, mousebutt
 end
 
 function PallyPower:ButtonsUpdate()
+    --self:Debug("ButtonsUpdate()")
     local minClassExpire, minClassDuration, minSpecialExpire, minSpecialDuration, sumnhave, sumnneed, sumnspecial = 9999, 9999, 9999, 9999, 0, 0, 0
     for cbNum = 1, PALLYPOWER_MAXCLASSES do -- scan classes and if populated then assign textures, etc
         local cButton = self.classButtons[cbNum]
@@ -2751,7 +2673,7 @@ end
 function PallyPower:IsBuffActive(spellName, gspellName, unitID)
     local j = 1
     while UnitBuff(unitID, j) do
-        local buffName, _, _, _, buffDuration, buffExpire = LCD.UnitAuraWrapper(unitID, j)
+        local buffName, _, _, _, buffDuration, buffExpire = LCD.UnitAuraWrapper(unitID, j, "HELPFUL")
         if (buffName == spellName) or (buffName == gspellName) then
             if buffExpire then
                 if buffExpire == 0 then
