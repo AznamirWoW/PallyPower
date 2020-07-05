@@ -1158,6 +1158,7 @@ function PallyPower:SendSelf(sender)
     if GetNumGroupMembers() > 0 then
         PP_Symbols = GetItemCount(21177)
         AllPallys[self.player].symbols = PP_Symbols
+        AllPallys[self.player].freeassign = self.opt.freeassign
         if sender and not leader then
             --self:Debug("[SendFreeAssign] - WHISPER: " .. sender)
             if self.opt.freeassign then
@@ -1173,15 +1174,6 @@ function PallyPower:SendSelf(sender)
                 self:SendMessage("FREEASSIGN NO | SYMCOUNT " .. PP_Symbols)
             end
         end
-        --[[
-        if sender and not leader then
-            --self:Debug("[SendSymCount] - WHISPER: " .. sender)
-            self:SendMessage("SYMCOUNT " .. PP_Symbols, "WHISPER", sender)
-        else
-            --self:Debug("[SendSymCount] - GROUP")
-            self:SendMessage("SYMCOUNT " .. PP_Symbols)
-        end
-        ]]
     end
 end
 
@@ -1403,10 +1395,10 @@ function PallyPower:ParseMessage(sender, msg)
             self:ClearAssignments(self.player)
         end
     end
-    if msg == "^FREEASSIGN YES |..-" and AllPallys[sender] then
+    if sfind(msg, "^FREEASSIGN YES") and AllPallys[sender] then
         AllPallys[sender].freeassign = true
     end
-    if msg == "^FREEASSIGN NO |..-" and AllPallys[sender] then
+    if sfind(msg, "^FREEASSIGN NO") and AllPallys[sender] then
         AllPallys[sender].freeassign = false
     end
     if sfind(msg, "^ASELF") then
