@@ -20,14 +20,14 @@ PallyPower.options = {
 			args = {
 				settings_show = {
 					order = 1,
-					name = L["PP_SHOW"],
+					name = L["PP_MAIN"],
 					type = "group",
 					inline = true,
 					args = {
 						globally = {
 							order = 1,
-							name = L["SHOWGLOBAL"],
-							desc = L["SHOWGLOBAL_DESC"],
+							name = L["ENABLEPP"],
+							desc = L["ENABLEPP_DESC"],
 							type = "toggle",
 							width = 1.0,
 							get = function(info)
@@ -44,8 +44,8 @@ PallyPower.options = {
 						},
 						showparty = {
 							order = 2,
-							name = L["SHOWPARTY"],
-							desc = L["SHOWPARTY_DESC"],
+							name = L["USEPARTY"],
+							desc = L["USEPARTY_DESC"],
 							type = "toggle",
 							width = 1.0,
 							disabled = function(info)
@@ -65,9 +65,6 @@ PallyPower.options = {
 							desc = L["SHOWMINIMAPICON_DESC"],
 							type = "toggle",
 							width = 1.0,
-							disabled = function(info)
-								return PallyPower.opt.enabled == false
-							end,
 							get = function(info)
 								return PallyPower.opt.minimap.show
 							end,
@@ -78,12 +75,12 @@ PallyPower.options = {
 						},
 						showsingle = {
 							order = 4,
-							name = L["SHOWSOLO"],
-							desc = L["SHOWSOLO_DESC"],
+							name = L["USESOLO"],
+							desc = L["USESOLO_DESC"],
 							type = "toggle",
 							width = 1.0,
 							disabled = function(info)
-								return PallyPower.opt.enabled == false
+								return PallyPower.opt.enabled == false or not PP_IsPally
 							end,
 							get = function(info)
 								return PallyPower.opt.ShowWhenSolo
