@@ -82,11 +82,11 @@
         </Layers>
         <Scripts>
             <PreClick>
-                PallyPower:ButtonPreClick(self, button)
+                PallyPower:ButtonPreClick(self, button, down)
             </PreClick>
             <PostClick>
-                PallyPower:ButtonPostClick(self, button)
-                PallyPower:UpdateButtonOnPostClick(self, button)
+                PallyPower:ButtonPostClick(self, button, down)
+                PallyPower:UpdateButtonOnPostClick(self, button, down)
             </PostClick>
             <OnMouseWheel>
                 if InCombatLockdown() then return false end
@@ -416,14 +416,14 @@
         </Layers>
         <Scripts>
             <PreClick>
-                PallyPower:PButtonPreClick(self, button)
+                PallyPower:PButtonPreClick(self, button, down)
             </PreClick>
             <PostClick>
-                PallyPower:PButtonPostClick(self, button)
-                PallyPower:UpdatePButtonOnPostClick(self, button)
+                PallyPower:PButtonPostClick(self, button, down)
+                PallyPower:UpdatePButtonOnPostClick(self, button, down)
             </PostClick>
             <OnMouseWheel>
-                local pname = getglobal(self:GetName() .. "Name"):GetText()
+                local pname = (PallyPower:GetUnit(self:GetAttribute("classID"), self:GetAttribute("playerID"))).name
                 PallyPower:PerformPlayerCycle(self, delta, pname, self:GetAttribute("classID"))
                 PallyPower:ButtonsUpdate()
             </OnMouseWheel>
@@ -558,7 +558,7 @@
         </Layers>
         <Scripts>
             <OnLoad>
-                    self:RegisterForClicks("LeftButtonUp","RightButtonUp")
+                self:RegisterForClicks("LeftButtonUp","RightButtonUp")
             </OnLoad>
         </Scripts>
     </Button>
