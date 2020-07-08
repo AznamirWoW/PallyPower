@@ -120,6 +120,12 @@ function PallyPower:OnInitialize()
     )
     self.MinimapIcon:Register("PallyPower", self.LDB, self.opt.minimap)
     LCD:Register("PallyPower")
+    C_Timer.NewTimer(
+        2.0,
+        function()
+            PallyPowerMinimapIcon_Toggle()
+        end
+    )
 end
 
 function PallyPower:OnEnable()
@@ -138,6 +144,7 @@ function PallyPower:OnEnable()
 		self.ButtonsUpdate(self)
     end
     self:BindKeys()
+    PallyPowerMinimapIcon_Toggle()
 end
 
 function PallyPower:OnDisable()
@@ -152,6 +159,7 @@ function PallyPower:OnDisable()
     self.autoButton:Hide()
     PallyPowerAnchor:Hide()
     self:UnbindKeys()
+    PallyPowerMinimapIcon_Toggle()
 end
 
 function PallyPower:OnProfileChanged()
@@ -356,7 +364,7 @@ function PallyPowerPlayerButton_OnClick(btn, mouseBtn)
     local _, _, class, pnum = sfind(btn:GetName(), "PallyPowerBlessingsFrameClassGroup(.+)PlayerButton(.+)")
     class = tonumber(class)
     pnum = tonumber(pnum)
-    pname = classes[class][pnum].name    
+    pname = classes[class][pnum].name
     PallyPowerGrid_NormalBlessingMenu(btn, mouseBtn, pname, class)
 end
 
@@ -376,9 +384,9 @@ function PallyPowerGridButton_OnClick(btn, mouseBtn)
         return false
     end
     local _, _, pnum, class = sfind(btn:GetName(), "PallyPowerBlessingsFramePlayer(.+)Class(.+)")
-    pnum = tonumber(pnum)
     class = tonumber(class)
-    local pname = classes[5][pnum].name
+    pnum = tonumber(pnum)
+    local pname = getglobal("PallyPowerBlessingsFramePlayer" .. pnum .. "Name"):GetText()
     if not PallyPower:CanControl(pname) then
         return false
     end
@@ -398,9 +406,9 @@ function PallyPowerGridButton_OnMouseWheel(btn, arg1)
         return false
     end
     local _, _, pnum, class = sfind(btn:GetName(), "PallyPowerBlessingsFramePlayer(.+)Class(.+)")
-    pnum = tonumber(pnum)
     class = tonumber(class)
-    local pname = classes[5][pnum].name
+    pnum = tonumber(pnum)
+    local pname = getglobal("PallyPowerBlessingsFramePlayer" .. pnum .. "Name"):GetText()
     if not PallyPower:CanControl(pname) then
         return false
     end
@@ -1323,7 +1331,7 @@ function PallyPower:CHAT_MSG_SYSTEM(event, text)
             C_Timer.After(
                 2.0,
                 function()
-                    self:SendSelf()
+                    self:SendSelf(self.player)
                 end
             )
             self.zone = GetRealZoneText()
@@ -1338,6 +1346,9 @@ function PallyPower:CHAT_MSG_SYSTEM(event, text)
             PallyPower_NormalAssignments = {}
             for pname in pairs(PallyPower_Assignments) do
                 local match = false
+                if pname == self.player then
+                    match = true
+                end
                 for i = 1, GetNumGuildMembers() do
                     local name = Ambiguate(GetGuildRosterInfo(i), "short")
                     if pname == name then
@@ -2016,8 +2027,12 @@ function PallyPower:UpdateLayout()
             end
             cButton:SetAttribute("Display", 1)
             cButton:SetAttribute("classID", classIndex)
-            cButton:SetAttribute("type1", "spell")
-            cButton:SetAttribute("type2", "spell")
+            cButton:SetAttribute("type1", "macro")
+            cButton:SetAttribute("type2", "macro")
+            if (cButton:GetAttribute("macrotext1") == nil) then
+                PallyPower:ButtonPreClick(cButton, "LeftButton")
+                PallyPower:ButtonPostClick(cButton, "LeftButton")
+            end
             local pButtons = self.playerButtons[cbNum]
             for pbNum = 1, math.min(classlist[classIndex], PALLYPOWER_MAXPERCLASS) do
                 local pButton = pButtons[pbNum]
@@ -2135,6 +2150,7 @@ function PallyPower:UpdateButtonOnPostClick(button, mousebutton)
         1.0,
         function()
             self:UpdateButton(button, "PallyPowerC" .. cbNum, classID)
+            self:ButtonsUpdate()
         end
     )
 end
@@ -2207,11 +2223,6 @@ function PallyPower:UpdateButton(button, baseName, classID)
     classIcon:SetVertexColor(1, 1, 1)
     local _, gspellID = self:GetSpellID(classID)
     buffIcon:SetTexture(self.BlessingIcons[gspellID])
-    if InCombatLockdown() then
-        buffIcon:SetVertexColor(0.4, 0.4, 0.4)
-    else
-        buffIcon:SetVertexColor(1, 1, 1)
-    end
     local classExpire, classDuration, specialExpire, specialDuration = self:GetBuffExpiration(classID)
     time:SetText(self:FormatTime(classExpire))
     time:SetTextColor(self:GetSeverityColor(classExpire and classDuration and (classExpire / classDuration) or 0))
@@ -2331,6 +2342,7 @@ function PallyPower:UpdatePButtonOnPostClick(button, mousebutton)
         1.0,
         function()
             self:UpdatePButton(button, "PallyPowerC" .. cbNum .. "P" .. pbNum, classID, playerID, mousebutton)
+            self:ButtonsUpdate()
         end
     )
 end
@@ -2743,7 +2755,7 @@ function PallyPower:GetUnitAndSpellSmart(classid, mousebutton)
         end
 
         -- Refresh any greater blessing under a 10 min duration
-        if (classNeedsBuff and classMinExpire + classMinUnitPenalty < minExpire and minExpire > 0) then
+        if (classMinUnit and classMinUnit.name and classNeedsBuff and classMinExpire + classMinUnitPenalty < minExpire and minExpire > 0) then
             self.AutoBuffedList[classMinUnit.name] = now
             self.PreviousAutoBuffedUnit = classMinUnit
             return classMinUnit.unitid, classMinSpell, classMaxSpell
@@ -2861,20 +2873,18 @@ function PallyPower:ButtonPreClick(button, mousebutton)
     local unitName = nil
     local playerid = nil
     local classid = button:GetAttribute("classID")
-    print("classID: "..classid)
-    print("mousebutton: "..mousebutton)
     local unitid, spell, gspell = self:GetUnitAndSpellSmart(classid, mousebutton)
 
-    if not unitid or not classid then
-        -- playerID: Clear
-        button:SetAttribute("playerID", nil)
-        -- Greater Blessing: Clear
-        button:SetAttribute("type1", nil)
-        button:SetAttribute("macrotext1", nil)
-        -- Normal Blessing: Clear
-        button:SetAttribute("type2", nil)
-        button:SetAttribute("macrotext2", nil)
-    else
+    -- playerID: Clear
+    button:SetAttribute("playerID", nil)
+    -- Greater Blessing: Clear
+    button:SetAttribute("type1", nil)
+    button:SetAttribute("macrotext1", nil)
+    -- Normal Blessing: Clear
+    button:SetAttribute("type2", nil)
+    button:SetAttribute("macrotext2", nil)
+
+    if unitid and classid then
         for i = 1, PALLYPOWER_MAXPERCLASS do
             if classes[classid][i].unitid == unitid then
                 button:SetAttribute("playerID", i)
@@ -2933,7 +2943,7 @@ function PallyPower:ButtonPostClick(button, mousebutton)
         -- Normal Blessings: Clear
         button:SetAttribute("type2", nil)
         button:SetAttribute("macrotext2", nil)
-    else
+    elseif unitid and classid and playerid then
         if classid == 9 then
             local unitPrefix = "party"
             local offSet = 9
