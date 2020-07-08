@@ -1,19 +1,62 @@
-When you first enable PallyPower and login everything will be blank. You’ll have to set your preferred Auras, and Seals.
+Discord Link: https://discord.gg/M4G92wG
+ 
 
-Hover over the top button and spin your MOUSE WHEEL to cycle through your available Auras. A red colored button indicates that the chosen Aura isn’t active. Green obviously means that it is.
+Pally Power Classic is based on version 3.0 from the Wrath of the Lich King days. This add-on provides an interactive and easy to use interface that allows you to set your own blessings (Righteous Fury, Aura, Seal and Blessings) and automatically checks for missing buffs with an easy to read indicator. While in a Party or RAID Pally Power can be used to assign blessings to other Paladins. Fellow Paladins will also have to run Pally Power for this to occur and the Paladin doing the assignments will have to be the Party Leader, Raid Leader or Raid Assistant. Fellow Paladins can select the "Free Assignment" setting to allow other non-leaders to change your Blessing assignment. In combat, none of the assignments can be changed due to the in-combat lock-out. Button controls are as follows from Top to Bottom:
 
-The second button is your Seals (center icon) and you can cycle through your available Seals the same way as the Auras. If you move your mouse to the left side of the button and hold SHIFT + MOUSE WHEEL to turn on/off Righteous Fury.
+Aura Button:
 
-The third button is your Auto-Buff. Once all your Blessings are assigned this button will indicate the number of party/raid members who need to be buffed. This ONLY works out of combat. In combat you’ll have to look through the various pop outs under each class and look for players who aren’t buffed which will be clearly indicated. The timer on the Auto-Buff button represents the player with the lowest time remaining on their buff and clicking the button, again OUT of combat, will buff the player with the least amount of time remaining. LEFT CLICK buffs players with a GREATER blessing (15 min). RIGHT CLICK buffs players with a NORMAL blessing (5 min).
+* Mouse-Wheel (Up/Down) to cycle though Auras.
+* Left-Click to cast.
 
-In most cases after a fresh install a class icon with your name in a pop out will not be present until the Blessing assignments are setup for the first time. You should see either a Red dot or a Green dot embedded along the left side of the PallyPower bar. You can hover over this dot and a tooltip will appear explaining its purpose. RIGHT CLICK will bring up the Blessing assignments.
+Seal Button | Left Side (Righteous Fury):
 
-The first column represents all the Paladins in your party/raid (every Paladin will have to also run PallyPower in order to make this happen). If you’re using PallyPower solo you’ll only see your name appear in this column with all your available Blessings, number of talent points for things like Improved Might and Wisdom, how many Symbol of Kings you have in your inventory etc. It’s self-explanatory. The next column are the assignments for which Aura each Paladin will be using followed by all the individual classes. You can either LEFT CLICK or MOUSE WHEEL though all the available Blessings or you can hold SHIFT + MOUSE WHEEL to assign the same Blessing to all classes.
+* SHIFT + Mouse-Wheel (Up/Down) Turns Righteous Fury on/off.
+* Left-Click to cast.
 
-Clear, Refresh – self-explanatory. The Auto-Assignment button is still a work in progress. I still get errors from time to time. I might have to spend some time to rethink the logic behind its function. It sort of works. Use at your own risk. Worst case, you’ll have to re-set all your assignments, but it won’t break PallyPower.
+Seal Button | Middle (Seals):
 
-The Free-Assignment button allows you to give another Paladin the option to setup your assignments for you. Party/Raid leaders who are Paladins will automatically have this power and Raid Assists will also have the ability to setup assignments for an entire raid.
+* Mouse-Wheel (Up/Down) to cycle through Seals.
+* Right-Click to cast.
 
-Optional Scenario: Warriors are typically Tanks but there are usually a fair number of DPS warriors as well. If you’re assigned to give Warriors Greater Blessing of Salvation you can override this by putting a NORMAL Blessing of Light on the Tanks. Simply hover over the Warrior class icon in your PallyPower bar and look for the tanks name. With your mouse cursor over the Tanks name MOUSE WHEEL to change their Blessing to something other than Salvation. Only the Paladin that is assigned to Salvation can make a manual change this way NOT the Class/Party/Raid Leaders. So, leaders remind your Paladins to make this change so the tanks don’t have to keep checking for Salvation to click off.
+Drag Dot:
+Hover over will produce a tooltip on its usage and status colors. (Tooltips can be disabled in the PallyPower Options Panel)
 
-Current Issues/Known Quirks: The Blessing timers will disappear/reset to zero after Hunters Feign Death. The Blessing timers will clear if your client crashes or you RELOAD your UI. In both of the above cases the button coloring (Green or Red) will indicate if the player has an active Blessing.
+* Left-Click to Lock (Red) / Unlock (Green) – will auto lock after 30 seconds.
+* Right-Click opens Blessing assignment config.
+* Shift-Right-Click opens the PallyPower Options Panel.
+
+Auto Buff Button: (Auto Buff duration limit cannot be disabled by Options --> Buttons: "Buff Duration")
+This button is useful when a class already has a Greater Blessing ticking away and a player within that class had died, missed the initial Greater Blessing, just joined the Party/Raid, or has an alternate blessing assigned to an individual player other than the class assignment. For example, my guild will assign Greater Blessing of Salvation to Warriors but assign a Normal Blessing of Light to tanks. The Auto Buff button will refresh those Normal Blessing assignments on the tanks without recasting Greater Blessing of Salvation and wasting Symbol of Kings. Left and Right-Click will not work while in combat. Use the player’s Pop Out button (see below) to rebuff Blessings while in combat. There is an expanded version of the Auto-Buff feature in PallyPower Options --> Raid Panel to further automate buffs in Raid Groups.
+
+* Left-Click will buff/refresh Greater Blessings starting with a class that isn't buffed followed by the least time remaining. Greater Blessings with a duration of 10 min or more cannot be reapplied while using the "Auto Buff and/or Auto Buff Class" buttons.
+* Right-Click will buff/refresh Normal Blessings starting with a class that isn't buffed followed by the least time remaining. Normal Blessings with a duration of 4 min or more cannot be reapplied while using the "Auto Buff and/or Auto Buff Class" buttons.
+
+Class Buttons: (Class Button duration limit can be disabled by Options --> Buttons: "Buff Duration")
+
+* Left-Click will cast a Greater Blessing on that class. PAY ATTENTION TO THE TIMERS because Left clicking each class button more than once will just waste Symbol of Kings. Greater Blessings with a duration of 10 min or more cannot be reapplied while using the "Auto Buff and/or Auto Buff Class" buttons.
+* Right-Click works much the same way the Auto Buff button works except that it's limited to buffing the players in the clicked class. Right-Click will not work in combat. Use the player’s Pop Out button (see below) to rebuff Normal Blessings while in combat. Normal Blessings with a duration of 4 min or more cannot be reapplied while using the "Auto Buff and/or Auto Buff Class" buttons.
+
+Class Buttons --> Pop Out (*Player Names*): (Player Button duration limit can be disabled by Options --> Buttons: "Buff Duration")
+
+* Left-Click will buff the clicked player with a Greater Blessing along with all players of that class. This is how Greater Blessings work by design so don't click each player with a Greater Blessing. You'll just waste Symbol of Kings. Once a class is buffed with a Greater Blessing, further attempts are prevented until the buff drops below 10 min unless you click on a player that doesn't have a Greater Blessing. Personally, I just hit them with a Normal Blessing and move on.
+* Right-Click will buff the clicked player with a Normal Blessing. These are the only buttons that can be used to rebuff Normal Blessings while in combat.
+* CTRL-Left-Click will toggle the MAINTANK role (raid groups only) and an icon will appear indicating role status. Same function as opening the Raid tab and assigning the Main Tank there.
+
+Normal/Greater Blessing of Salvation (Raid groups only):
+For Warriors, Druids and Paladin's; if a player is assigned the MAINTANK role in that class group, Greater Blessing of Salvation is disabled while in combat. Otherwise, normal buffing operations are enabled. Additionally, you cannot apply a Normal Blessing of Salvation to a player that is assigned the MAINTANK role in or out of combat. If for some reason you need the ability to freely buff Blessing of Salvation on any class or player then you'll need to enable the option in PallyPower Options --> Settings and check "Salv In Combat". Also, the color of the Tank/Players button will be RED if they have the Blessing of Salvation buff active. Most tanks auto cancel Blessing of Salvation with addons. Once the buff is removed, the button turns GREEN. If they have an "Alternate" assignment then the button will be BLUE if they have the Greater Blessing and the Alternate Blessing needs to be applied. So GREEN means good, you're done. I'll reiterate this again... this only applies to Tanks or Players assigned the MAINTANK Raid Role. Other Warriors, Druids and Paladin's are unaffected by this behavior when buffing Normal Blessing of Salvation. You can buff Normal Blessing of Salvation freely on non-tanking players in or out of combat using the appropriate buff buttons based on combat status. I.E. while in combat use the Pop Out Player buttons not the Auto Buff Buttons.
+
+Macro Examples:
+
+These macros will simulate mouse clicks against the buttons in PallyPower. When the macro is executed it will cast what ever spell appears in the button. NOTE: You can only update the buttons while NOT in combat. The macros will update when the assignments are updated... thus... only out of combat. Thanks Blizzard!
+
+Cast the assigned Paladin Seal
+/click PallyPowerRF RightButton Down
+
+Cast Greater Blessing on Warriors
+/click PallyPowerC1 LeftButton Down
+ 
+Cast Greater Blessing on Rogues
+/click PallyPowerC2 LeftButton Down
+ 
+Cast Greater Blessing on Priests etc...
+/click PallyPowerC3 LeftButton Down

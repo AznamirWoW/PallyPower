@@ -9,12 +9,6 @@ PALLYPOWER_NORMALBLESSINGDURATION = 5 * 60
 PALLYPOWER_GREATERBLESSINGDURATION = 15 * 60
 PALLYPOWER_MAXAURAS = 7
 
-PallyPower.CONFIG_DRAGHANDLE = L["DRAGHANDLE"]
-PallyPower.CONFIG_RESIZEGRIP = L["RESIZEGRIP"]
-PALLYPOWER_NAME = L["PP_NAME"]
-BINDING_NAME_AUTOKEY1 = L["AUTOKEY1"]
-BINDING_NAME_AUTOKEY2 = L["AUTOKEY2"]
-
 PALLYPOWER_DEFAULT_VALUES = {
 	profile = {
 		aura = 1,
@@ -56,6 +50,10 @@ PALLYPOWER_DEFAULT_VALUES = {
 		mainAssistSpellsDP = 5,
 		mainAssistGSpellsW = 4,
 		mainAssistSpellsW = 5,
+		minimap = {
+            ["minimapPos"] = 206,
+            ["show"] = true,
+		},
 		ReportChannel = 0,
 		rfbuff = true,
 		SalvInCombat = false,
@@ -144,7 +142,7 @@ PallyPower.AuraIcons = {
 }
 
 -- XML Aliases
-PALLYPOWER_NAME = L["PP_NAME"] .. " (" .. string.trim(GetAddOnMetadata("PallyPower", "Version")) .. ")"
+PALLYPOWER_NAME = "  " .. L["PP_NAME"] .. " (" .. string.trim(GetAddOnMetadata("PallyPower", "Version")) .. ")"
 PALLYPOWER_CLEAR = L["PP_CLEAR"]
 PALLYPOWER_CLEAR_DESC = L["PP_CLEAR_DESC"]
 PALLYPOWER_REFRESH = L["PP_REFRESH"]
@@ -161,6 +159,12 @@ PALLYPOWER_ASSIGNMENTS3 = L["PP_RAS3"]
 PALLYPOWER_ASSIGNMENTS4 = L["PP_RAS4"]
 PALLYPOWER_OPTIONS = L["OPTIONS"]
 PALLYPOWER_OPTIONS_DESC = L["OPTIONS_DESC"]
+
+PallyPower.CONFIG_DRAGHANDLE = L["DRAGHANDLE"]
+PallyPower.CONFIG_RESIZEGRIP = L["RESIZEGRIP"]
+
+BINDING_NAME_AUTOKEY1 = L["AUTOKEY1"]
+BINDING_NAME_AUTOKEY2 = L["AUTOKEY2"]
 
 -- get translations directly
 PallyPower.Spells = {
