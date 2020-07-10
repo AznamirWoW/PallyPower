@@ -419,10 +419,10 @@
                 PallyPower:PButtonPreClick(self, button, down)
             </PreClick>
             <PostClick>
-                PallyPower:PButtonPostClick(self, button, down)
                 PallyPower:UpdatePButtonOnPostClick(self, button, down)
             </PostClick>
             <OnMouseWheel>
+                if InCombatLockdown() then return false end
                 local pname = (PallyPower:GetUnit(self:GetAttribute("classID"), self:GetAttribute("playerID"))).name
                 PallyPower:PerformPlayerCycle(self, delta, pname, self:GetAttribute("classID"))
                 PallyPower:ButtonsUpdate()
