@@ -2876,7 +2876,7 @@ function PallyPower:ButtonPreClick(button, mousebutton)
     button:SetAttribute("macrotext2", nil)
     local targetNames = ""
     local classid = button:GetAttribute("classID")
-    local nSpell, gSpell, unitName
+    local nSpell, gSpell, unitName, unitID
     if IsInRaid() and not IsInGroup(LE_PARTY_CATEGORY_INSTANCE) and mousebutton == "LeftButton" then
         local numPlayers = 0
         for i = 1, PALLYPOWER_MAXPERCLASS do
@@ -2898,6 +2898,7 @@ function PallyPower:ButtonPreClick(button, mousebutton)
                     if unitName ~= nil and unitName ~= sfind(targetNames, unitName) then
                         targetNames = targetNames .. "[@" .. unitName .. ",nodead]"
                         numPlayers = numPlayers + 1
+                        unitID = classes[classid][i].unitid
                     end
                 end
             else
@@ -2922,6 +2923,7 @@ function PallyPower:ButtonPreClick(button, mousebutton)
             else
                 unitName = GetUnitName(unitid, true)
             end
+            unitID = unitid
         end
         if mousebutton == "LeftButton" then
             nSpell = false
@@ -2936,7 +2938,7 @@ function PallyPower:ButtonPreClick(button, mousebutton)
         for k, v in pairs(classmaintanks) do
             -- If the buff recipient unit(s) is in combat and there is a tank present in
             -- the Class Group then disable Greater Blessing of Salvation for this unit(s).
-            if UnitAffectingCombat(unitid) and gspellID == 4 and (k == classid and v == true) then
+            if UnitAffectingCombat(unitID) and gspellID == 4 and (k == classid and v == true) then
                 gSpell = false
             end
             if k == unitid and v == true then
