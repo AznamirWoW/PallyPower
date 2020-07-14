@@ -1,6 +1,6 @@
 PallyPower = LibStub("AceAddon-3.0"):NewAddon("PallyPower", "AceConsole-3.0", "AceEvent-3.0", "AceBucket-3.0", "AceTimer-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("PallyPower")
-local LCD = LibStub("LibClassicDurations")
+local LCD = LibStub("LibClassicDurations", true)
 local LSM3 = LibStub("LibSharedMedia-3.0")
 local AceGUI = LibStub("AceGUI-3.0")
 
@@ -13,7 +13,7 @@ local ssub = string.sub
 local sformat = string.format
 
 local WisdomPallys, MightPallys, KingsPallys, SalvPallys, LightPallys, SancPallys = {}, {}, {}, {}, {}, {}
-classlist, classes = {}, {}
+local classlist, classes = {}, {}
 
 PallyPower.player = UnitName("player")
 PallyPower_Assignments = {}
@@ -26,12 +26,12 @@ PP_Symbols = 0
 PP_IsPally = false
 
 local initalized = false
-party_units = {}
-raid_units = {}
+local party_units = {}
+local raid_units = {}
 local leaders = {}
 local roster = {}
 local raidmaintanks = {}
-classmaintanks = {}
+local classmaintanks = {}
 local raidmainassists = {}
 local lastMsg = ""
 local prevBuffDuration = nil
@@ -131,6 +131,7 @@ end
 function PallyPower:OnEnable()
     self.opt.enable = true
     self:ScanSpells()
+    self:ScanCooldowns()
     self:RegisterEvent("CHAT_MSG_ADDON")
     self:RegisterEvent("CHAT_MSG_SYSTEM")
     self:RegisterEvent("ZONE_CHANGED")
@@ -243,6 +244,8 @@ end
 function PallyPowerBlessings_Refresh()
     PallyPower:Debug("PallyPowerBlessings_Refresh")
     PallyPower:ScanSpells()
+    PallyPower:ScanCooldowns()
+    PallyPower:ScanInventory()
     if GetNumGroupMembers() > 0 then
         PallyPower:SendSelf()
         PallyPower:SendMessage("REQ")
@@ -262,10 +265,12 @@ function PallyPowerBlessings_Toggle(msg)
         local c = _G["PallyPowerBlessingsFrame"]
         c:ClearAllPoints()
         c:SetPoint("CENTER", "UIParent", "CENTER", 0, 0)
+        PallyPowerBlessingsFrame:Show()
         PallyPower:ScanSpells()
+        PallyPower:ScanCooldowns()
+        PallyPower:ScanInventory()
         PallyPower:SendSelf()
         PallyPower:SendMessage("REQ")
-        PallyPowerBlessingsFrame:Show()
         PlaySound(SOUNDKIT.IG_SPELLBOOK_OPEN)
         table.insert(UISpecialFrames, "PallyPowerBlessingsFrame")
     end
@@ -365,7 +370,19 @@ function PallyPowerPlayerButton_OnClick(btn, mouseBtn)
     class = tonumber(class)
     pnum = tonumber(pnum)
     pname = classes[class][pnum].name
-    PallyPowerGrid_NormalBlessingMenu(btn, mouseBtn, pname, class)
+    if not PallyPower:CanControl(pname) then
+        return false
+    end
+    if (mouseBtn == "RightButton") then
+        for pally in pairs(AllPallys) do
+            if PallyPower_NormalAssignments[pally] and PallyPower_NormalAssignments[pally][class] and PallyPower_NormalAssignments[pally][class][pname] then
+                PallyPower_NormalAssignments[pally][class][pname] = nil
+            end
+            PallyPower:SendMessage("NASSIGN " .. pally .. " " .. class .. " " .. pname .. " 0")
+        end
+    else
+        PallyPower:PerformPlayerCycle(btn, 1, pname, class)
+    end
 end
 
 function PallyPowerPlayerButton_OnMouseWheel(btn, arg1)
@@ -376,7 +393,7 @@ function PallyPowerPlayerButton_OnMouseWheel(btn, arg1)
     class = tonumber(class)
     pnum = tonumber(pnum)
     pname = classes[class][pnum].name
-    PallyPower:PerformPlayerCycle(self, arg1, pname, class)
+    PallyPower:PerformPlayerCycle(btn, arg1, pname, class)
 end
 
 function PallyPowerGridButton_OnClick(btn, mouseBtn)
@@ -444,11 +461,6 @@ function PallyPowerBlessingsGrid_Update(self, elapsed)
         local name, skills
         for i = 1, PALLYPOWER_MAXCLASSES do
             local fname = "PallyPowerBlessingsFrameClassGroup" .. i
-            if movingPlayerFrame and MouseIsOver(getglobal(fname .. "ClassButton")) then
-                getglobal(fname .. "ClassButtonHighlight"):Show()
-            else
-                getglobal(fname .. "ClassButtonHighlight"):Hide()
-            end
             getglobal(fname .. "ClassButtonIcon"):SetTexture(PallyPower.ClassIcons[i])
             for j = 1, PALLYPOWER_MAXPERCLASS do
                 local pbnt = fname .. "PlayerButton" .. j
@@ -459,7 +471,7 @@ function PallyPowerBlessingsGrid_Update(self, elapsed)
                         getglobal(pbnt .. "Text"):SetText(shortname)
                     end
                     local normal, greater = PallyPower:GetSpellID(i, unit.name)
-                    if normal ~= greater and movingPlayerFrame ~= getglobal(pbnt) then
+                    if normal ~= greater ~= getglobal(pbnt) then
                         if normal ~= greater then
                             getglobal(pbnt .. "Icon"):SetTexture(PallyPower.NormalBlessingIcons[normal])
                         else
@@ -534,6 +546,28 @@ function PallyPowerBlessingsGrid_Update(self, elapsed)
             else
                 getglobal(fname .. "Aura1Icon"):SetTexture(nil)
             end
+            if not AllPallys[name].CooldownInfo then
+                AllPallys[name].CooldownInfo = {}
+            end
+            local CooldownInfo = AllPallys[name].CooldownInfo
+            for id = 1, 2 do
+                if CooldownInfo[id] then
+                    getglobal(fname .. "CIcon" .. id):Show()
+                    getglobal(fname .. "CSkill" .. id):Show()
+                    if CooldownInfo[id].start ~= 0 and CooldownInfo[id].duration ~= 0 then
+                        CooldownInfo[id].text = PallyPower:FormatTime(CooldownInfo[id].start + CooldownInfo[id].duration - GetTime())
+                    else
+                        CooldownInfo[id].text = "|cff00ff00Ready|r"
+                    end
+                    if CooldownInfo[id].text then
+                        txt = CooldownInfo[id].text
+                    end
+                    getglobal(fname .. "CSkill" .. id):SetText(txt)
+                else
+                    getglobal(fname .. "CIcon" .. id):Hide()
+                    getglobal(fname .. "CSkill" .. id):Hide()
+                end
+            end
             for id = 1, PALLYPOWER_MAXCLASSES do
                 if BuffInfo and BuffInfo[id] then
                     getglobal(fname .. "Class" .. id .. "Icon"):SetTexture(PallyPower.BlessingIcons[BuffInfo[id]])
@@ -545,7 +579,7 @@ function PallyPowerBlessingsGrid_Update(self, elapsed)
             i = i + 1
             numPallys = numPallys + 1
         end
-        PallyPowerBlessingsFrame:SetHeight(14 + 24 + 56 + (numPallys * 80) + 22 + 13 * numMaxClass)
+        PallyPowerBlessingsFrame:SetHeight(14 + 24 + 56 + (numPallys * 100) + 22 + 13 * numMaxClass)
         getglobal("PallyPowerBlessingsFramePlayer1"):SetPoint("TOPLEFT", 8, -80 - 13 * numMaxClass)
         for i = 1, PALLYPOWER_MAXCLASSES do
             getglobal("PallyPowerBlessingsFrameClassGroup" .. i .. "Line"):SetHeight(56 + 13 * numMaxClass)
@@ -747,6 +781,7 @@ end
 
 function PallyPower:PerformCycle(name, class, skipzero)
     local shift = (IsShiftKeyDown() and PallyPowerBlessingsFrame:IsMouseOver())
+    local control = (IsControlKeyDown() and PallyPowerBlessingsFrame:IsMouseOver())
     local cur
     if shift then
         class = 5
@@ -762,7 +797,7 @@ function PallyPower:PerformCycle(name, class, skipzero)
     PallyPower_Assignments[name][class] = 0
     local testB
     for testB = cur + 1, 7 do
-        if self:CanBuff(name, testB) and (self:NeedsBuff(class, testB) or shift) then
+        if self:CanBuff(name, testB) and (self:NeedsBuff(class, testB) or shift or control) then
             cur = testB
             do
                 break
@@ -891,6 +926,7 @@ function PallyPower:PerformCycleBackwards(name, class, skipzero)
 end
 
 function PallyPower:PerformPlayerCycle(self, delta, pname, class)
+    local control = (IsControlKeyDown() and PallyPowerBlessingsFrame:IsMouseOver())
     local blessing = 0
     if not PP_IsPally then
         return
@@ -906,7 +942,7 @@ function PallyPower:PerformPlayerCycle(self, delta, pname, class)
         count = 8
     end
     local test = (blessing - delta) % count
-    while not (PallyPower:CanBuff(PallyPower.player, test, true) and PallyPower:NeedsBuff(class, test, pname, true)) and test > 0 do
+    while not (PallyPower:CanBuff(PallyPower.player, test, true) and PallyPower:NeedsBuff(class, test, pname, true) or control) and test > 0 do
         test = (test - delta) % count
         if test == blessing then
             test = 0
@@ -1128,6 +1164,16 @@ function PallyPower:ScanSpells()
                 AllPallys[self.player].AuraInfo[i].rank = tonumber(select(3, sfind(spellRank, "(%d+)")))
             end
         end
+        if not AllPallys[self.player].CooldownInfo then
+            AllPallys[self.player].CooldownInfo = {}
+        end
+        local CooldownInfo = AllPallys[self.player].CooldownInfo
+        if IsSpellKnown(10310) then
+            CooldownInfo[1] = {}
+        end
+        if IsSpellKnown(19752) then
+            CooldownInfo[2] = {}
+        end
         PP_IsPally = true
         if not AllPallys[self.player].subgroup then
             AllPallys[self.player].subgroup = 1
@@ -1136,6 +1182,22 @@ function PallyPower:ScanSpells()
         PP_IsPally = false
     end
     initalized = true
+end
+
+function PallyPower:ScanCooldowns()
+    if not initalized or not PP_IsPally then
+        return
+    end
+    local CooldownInfo = AllPallys[self.player].CooldownInfo
+    for k, v in pairs(self.Cooldowns) do
+        if not CooldownInfo[k] then
+            break
+        end
+        if GetSpellCooldown(v) then
+            CooldownInfo[k].start = GetSpellCooldown(v)
+            CooldownInfo[k].duration = select(2, GetSpellCooldown(v))
+        end
+    end
 end
 
 function PallyPower:ScanInventory()
@@ -1230,19 +1292,40 @@ function PallyPower:SendSelf(sender)
         PP_Symbols = GetItemCount(21177)
         AllPallys[self.player].symbols = PP_Symbols
         AllPallys[self.player].freeassign = self.opt.freeassign
+        local CooldownInfo, Cooldowns
+        if #AllPallys[self.player].CooldownInfo > 0 then
+            local s = ""
+            CooldownInfo = AllPallys[self.player].CooldownInfo
+            for i = 1, #AllPallys[self.player].CooldownInfo do
+                if not CooldownInfo[i].start then
+                    s = s .. ":n"
+                else
+                    s = s .. ":" .. CooldownInfo[i].start
+                end
+                if not CooldownInfo[i].duration then
+                    s = s .. ":n"
+                else
+                    s = s .. ":" .. CooldownInfo[i].duration
+                end
+            end
+            Cooldowns = s
+        else
+            Cooldowns = ":n:n:n:n"
+        end
+
         if sender and not leader then
             --self:Debug("[SendFreeAssign] - WHISPER: " .. sender)
             if self.opt.freeassign then
-                self:SendMessage("FREEASSIGN YES | SYMCOUNT " .. PP_Symbols, "WHISPER", sender)
+                self:SendMessage("FREEASSIGN YES | SYMCOUNT " .. PP_Symbols .. " | COOLDOWNS" .. Cooldowns, "WHISPER", sender)
             else
-                self:SendMessage("FREEASSIGN NO | SYMCOUNT " .. PP_Symbols, "WHISPER", sender)
+                self:SendMessage("FREEASSIGN NO | SYMCOUNT " .. PP_Symbols .. " | COOLDOWNS" .. Cooldowns, "WHISPER", sender)
             end
         else
             --self:Debug("[SendFreeAssign] - GROUP")
             if self.opt.freeassign then
-                self:SendMessage("FREEASSIGN YES | SYMCOUNT " .. PP_Symbols)
+                self:SendMessage("FREEASSIGN YES | SYMCOUNT " .. PP_Symbols .. " | COOLDOWNS" .. Cooldowns)
             else
-                self:SendMessage("FREEASSIGN NO | SYMCOUNT " .. PP_Symbols)
+                self:SendMessage("FREEASSIGN NO | SYMCOUNT " .. PP_Symbols .. " | COOLDOWNS" .. Cooldowns)
             end
         end
     end
@@ -1282,6 +1365,7 @@ function PallyPower:SPELLS_CHANGED()
         return
     end
     PallyPower:ScanSpells()
+    PallyPower:ScanCooldowns()
     PallyPower:SendSelf()
     PallyPower:UpdateLayout()
 end
@@ -1293,6 +1377,7 @@ function PallyPower:PLAYER_ENTERING_WORLD()
     self:ReportChannels()
     if UnitName("player") == "Dyaxler" or UnitName("player") == "Minidyax" then
         --PP_DebugEnabled = true
+        --LCD:ToggleDebug()
     end
 end
 
@@ -1327,19 +1412,47 @@ function PallyPower:CHAT_MSG_SYSTEM(event, text)
     if text then
         --self:Debug("EVENT: CHAT_MSG_SYSTEM")
         if sfind(text, ERR_RAID_YOU_JOINED) or sfind(text, ERR_PARTY_CONVERTED_TO_RAID) then
-            PallyPower:ScanSpells()
+            AllPallys = {}
+            SyncList = {}
+            self:ScanSpells()
+            self:ScanCooldowns()
+            self:ScanInventory()
             C_Timer.After(
                 2.0,
                 function()
                     self:SendSelf(self.player)
+                    self:SendMessage("REQ")
+                    self:UpdateLayout()
+                    self:UpdateRoster()
                 end
             )
             self.zone = GetRealZoneText()
             PallyPower_NormalAssignments = {}
-        elseif sfind(text, ERR_RAID_YOU_LEFT) or sfind(text, ERR_LEFT_GROUP_YOU) or sfind(text, ERR_UNINVITE_YOU) or sfind(text, ERR_GROUP_DISBANDED) or sfind(text, ERR_RAID_CONVERTED_TO_PARTY) then
+        elseif sfind(text, ERR_RAID_CONVERTED_TO_PARTY) then
             AllPallys = {}
             SyncList = {}
-            PallyPower:ScanSpells()
+            self:ScanSpells()
+            self:ScanCooldowns()
+            self:ScanInventory()
+            C_Timer.After(
+                2.0,
+                function()
+                    self:SendSelf(self.player)
+                    self:SendMessage("REQ")
+                    self:UpdateLayout()
+                    self:UpdateRoster()
+                end
+            )
+            self.zone = GetRealZoneText()
+            if PallyPower_NormalAssignments[self.player] and PallyPower_NormalAssignments[self.player][5] and PallyPower_NormalAssignments[self.player][5][self.player] == (self.opt.mainTankSpellsW or self.opt.mainAssistSpellsW or self.opt.mainTankSpellsDP or self.opt.mainAssistSpellsDP) then
+                SetNormalBlessings(self.player, 5, self.player, 0)
+            end
+            PallyPower_NormalAssignments = {}
+        elseif sfind(text, ERR_RAID_YOU_LEFT) or sfind(text, ERR_LEFT_GROUP_YOU) or sfind(text, ERR_UNINVITE_YOU) or sfind(text, ERR_GROUP_DISBANDED) then
+            AllPallys = {}
+            SyncList = {}
+            self:ScanSpells()
+            self:ScanCooldowns()
             if PallyPower_NormalAssignments[self.player] and PallyPower_NormalAssignments[self.player][5] and PallyPower_NormalAssignments[self.player][5][self.player] == (self.opt.mainTankSpellsW or self.opt.mainAssistSpellsW or self.opt.mainTankSpellsDP or self.opt.mainAssistSpellsDP) then
                 SetNormalBlessings(self.player, 5, self.player, 0)
             end
@@ -1365,13 +1478,14 @@ function PallyPower:CHAT_MSG_SYSTEM(event, text)
 end
 
 function PallyPower:UNIT_AURA(event, unitTarget)
+    self:UpdateAuraButton(PallyPower_AuraAssignments[self.player])
     local ShowPets = self.opt.ShowPets
     local isPet = unitTarget:find("pet")
     local pclass = select(2, UnitClass(unitTarget))
     if ShowPets then
-        if isPet and pclass == "MAGE" then --Warlock Imp pet
+        if isPet and (pclass == "MAGE" or pclass == "PALADIN") then --Warlock Imp or Succubus pet
             self:UpdateRoster()
-        --self:Debug("EVENT: UNIT_AURA - [Warlock Imp Changed Phase]")
+            --self:Debug("EVENT: UNIT_AURA - [Warlock Imp Changed Phase]")
         end
     end
 end
@@ -1427,6 +1541,9 @@ function PallyPower:ParseMessage(sender, msg)
         if name ~= sender and not (leader or self.opt.freeassign) then
             return false
         end
+        if not PallyPower_Assignments[name] then
+            PallyPower_Assignments[name] = {}
+        end
         if assign then
             for i = 1, PALLYPOWER_MAXCLASSES do
                 tmp = ssub(assign, i, i)
@@ -1471,11 +1588,29 @@ function PallyPower:ParseMessage(sender, msg)
     end
     if sfind(msg, "SYMCOUNT") then
         local _, _, symcount = sfind(msg, "SYMCOUNT ([0-9]*)")
-        if sender and AllPallys[sender] then
+        if AllPallys[sender] then
             if symcount == nil or symcount == "0" then
                 AllPallys[sender].symbols = 0
             else
                 AllPallys[sender].symbols = symcount
+            end
+        end
+    end
+    if sfind(msg, "COOLDOWNS") then
+        local _, start1, duration1, start2, duration2 = strsplit(":", msg)
+        if AllPallys[sender] then
+            if not AllPallys[sender].CooldownInfo then
+                AllPallys[sender].CooldownInfo = {}
+            end
+            if not AllPallys[sender].CooldownInfo[1] and start1 ~= "n" then
+                AllPallys[sender].CooldownInfo[1] = {}
+                AllPallys[sender].CooldownInfo[1].start = tonumber(start1)
+                AllPallys[sender].CooldownInfo[1].duration = tonumber(duration1)
+            end
+            if not AllPallys[sender].CooldownInfo[2] and start2 ~= "n" then
+                AllPallys[sender].CooldownInfo[2] = {}
+                AllPallys[sender].CooldownInfo[2].start = tonumber(start2)
+                AllPallys[sender].CooldownInfo[2].duration = tonumber(duration2)
             end
         end
     end
@@ -1494,23 +1629,26 @@ function PallyPower:ParseMessage(sender, msg)
     end
     if sfind(msg, "^ASELF") then
         PallyPower_AuraAssignments[sender] = 0
-        AllPallys[sender].AuraInfo = nil
-        AllPallys[sender].AuraInfo = {}
-        local _, _, numbers, assign = sfind(msg, "ASELF ([0-9a-fn]*)@([0-9n]*)")
-        for i = 1, PALLYPOWER_MAXAURAS do
-            rank = ssub(numbers, (i - 1) * 2 + 1, (i - 1) * 2 + 1)
-            talent = ssub(numbers, (i - 1) * 2 + 2, (i - 1) * 2 + 2)
-            if rank ~= "n" then
-                AllPallys[sender].AuraInfo[i] = {}
-                AllPallys[sender].AuraInfo[i].rank = tonumber(rank, 16)
-                AllPallys[sender].AuraInfo[i].talent = tonumber(talent, 16)
+        if AllPallys[sender] then
+            if not AllPallys[sender].AuraInfo then
+                AllPallys[sender].AuraInfo = {}
             end
-        end
-        if assign then
-            if assign == "n" or assign == "" then
-                assign = 0
+            local _, _, numbers, assign = sfind(msg, "ASELF ([0-9a-fn]*)@([0-9n]*)")
+            for i = 1, PALLYPOWER_MAXAURAS do
+                rank = ssub(numbers, (i - 1) * 2 + 1, (i - 1) * 2 + 1)
+                talent = ssub(numbers, (i - 1) * 2 + 2, (i - 1) * 2 + 2)
+                if rank ~= "n" then
+                    AllPallys[sender].AuraInfo[i] = {}
+                    AllPallys[sender].AuraInfo[i].rank = tonumber(rank, 16)
+                    AllPallys[sender].AuraInfo[i].talent = tonumber(talent, 16)
+                end
             end
-            PallyPower_AuraAssignments[sender] = assign + 0
+            if assign then
+                if assign == "n" or assign == "" then
+                    assign = 0
+                end
+                PallyPower_AuraAssignments[sender] = assign + 0
+            end
         end
     end
     if sfind(msg, "^AASSIGN") then
@@ -1641,7 +1779,7 @@ function PallyPower:UpdateRoster()
             local ShowPets = self.opt.ShowPets
             local isPet = tmp.unitid:find("pet")
             local pclass = select(2, UnitClass(unitid))
-            if ShowPets or not isPet then
+            if ShowPets or (not isPet) then
                 if isPet and pclass == "MAGE" then --Warlock Imp pet
                     local i = 1
                     local name, icon = UnitBuff(unitid, i)
@@ -1659,111 +1797,114 @@ function PallyPower:UpdateRoster()
                         --self:Debug("isPet [notPhased]: "..tmp.name)
                         tmp.class = "PET"
                     end
-                elseif isPet then --All other pet's
-                    --self:Debug("isPet: "..tmp.name)
-                    tmp.class = "PET"
+                elseif isPet then -- All other pet's
+                    if (pclass == "PALADIN" and IsInRaid()) then
+                        -- Hide Succubus while in raids (they genreally always get sacraficed)
+                        tmp.class = ""
+                    else
+                        --self:Debug("isPet: "..tmp.name)
+                        tmp.class = "PET"
+                    end
                 else --Players
                     --self:Debug("isPlayer: "..tmp.name)
-                    tmp.class = select(2, UnitClass(unitid))
-                end
-            end
-            if IsInRaid() and (not isPet) then
-                local n = select(3, unitid:find("(%d+)"))
-                tmp.name, tmp.rank, tmp.subgroup = GetRaidRosterInfo(n)
-                tmp.zone = select(7, GetRaidRosterInfo(n))
-                raidtank = select(10, GetRaidRosterInfo(n))
-                class = self:GetClassID(pclass)
-                -- Warriors
-                if (class == 1) then
-                    if (raidmaintanks[tmp.name] == true) then
-                        if PallyPower_NormalAssignments[self.player] and PallyPower_NormalAssignments[self.player][class] and PallyPower_NormalAssignments[self.player][class][tmp.name] == self.opt.mainTankSpellsW then
-                            if PallyPower_Assignments[self.player] and PallyPower_Assignments[self.player][class] == self.opt.mainTankGSpellsW and (raidtank == "MAINTANK" and self.opt.mainTank) then
-                            else
-                                SetNormalBlessings(self.player, class, tmp.name, 0)
-                                raidmaintanks[tmp.name] = false
+                    tmp.class = pclass
+                    if pclass == "PALADIN" then
+                        if AllPallys[tmp.name] then
+                            AllPallys[tmp.name].subgroup = tmp.subgroup
+                        end
+                    end
+                    if IsInRaid() then
+                        local n = select(3, unitid:find("(%d+)"))
+                        tmp.name, tmp.rank, tmp.subgroup = GetRaidRosterInfo(n)
+                        tmp.zone = select(7, GetRaidRosterInfo(n))
+                        raidtank = select(10, GetRaidRosterInfo(n))
+                        class = self:GetClassID(pclass)
+                        -- Warriors
+                        if (class == 1) then
+                            if (raidmaintanks[tmp.name] == true) then
+                                if PallyPower_NormalAssignments[self.player] and PallyPower_NormalAssignments[self.player][class] and PallyPower_NormalAssignments[self.player][class][tmp.name] == self.opt.mainTankSpellsW then
+                                    if PallyPower_Assignments[self.player] and PallyPower_Assignments[self.player][class] == self.opt.mainTankGSpellsW and (raidtank == "MAINTANK" and self.opt.mainTank) then
+                                    else
+                                        SetNormalBlessings(self.player, class, tmp.name, 0)
+                                        raidmaintanks[tmp.name] = false
+                                    end
+                                end
+                            end
+                            if (raidmainassists[tmp.name] == true) then
+                                if PallyPower_NormalAssignments[self.player] and PallyPower_NormalAssignments[self.player][class] and PallyPower_NormalAssignments[self.player][class][tmp.name] == self.opt.mainAssistSpellsW then
+                                    if PallyPower_Assignments[self.player] and PallyPower_Assignments[self.player][class] == self.opt.mainAssistGSpellsW and (raidtank == "MAINASSIST" and self.opt.mainAssist) then
+                                    else
+                                        SetNormalBlessings(self.player, class, tmp.name, 0)
+                                        raidmainassists[tmp.name] = false
+                                    end
+                                end
+                            end
+                            if (raidtank == "MAINTANK" and self.opt.mainTank) then
+                                if (PallyPower_Assignments[self.player] and PallyPower_Assignments[self.player][class] == self.opt.mainTankGSpellsW and (raidmaintanks[tmp.name] == false or raidmaintanks[tmp.name] == nil)) or (PallyPower_NormalAssignments[self.player] and PallyPower_NormalAssignments[self.player][class] and PallyPower_NormalAssignments[self.player][class][tmp.name] ~= self.opt.mainTankSpellsW and raidmaintanks[tmp.name] == true) then
+                                    SetNormalBlessings(self.player, class, tmp.name, self.opt.mainTankSpellsW)
+                                    raidmaintanks[tmp.name] = true
+                                end
+                            end
+                            if (raidtank == "MAINASSIST" and self.opt.mainAssist) then
+                                if (PallyPower_Assignments[self.player] and PallyPower_Assignments[self.player][class] == self.opt.mainAssistGSpellsW and (raidmainassists[tmp.name] == false or raidmainassists[tmp.name] == nil)) or (PallyPower_NormalAssignments[self.player] and PallyPower_NormalAssignments[self.player][class] and PallyPower_NormalAssignments[self.player][class][tmp.name] ~= self.opt.mainAssistSpellsW and raidmainassists[tmp.name] == true) then
+                                    SetNormalBlessings(self.player, class, tmp.name, self.opt.mainAssistSpellsW)
+                                    raidmainassists[tmp.name] = true
+                                end
                             end
                         end
-                    end
-                    if (raidmainassists[tmp.name] == true) then
-                        if PallyPower_NormalAssignments[self.player] and PallyPower_NormalAssignments[self.player][class] and PallyPower_NormalAssignments[self.player][class][tmp.name] == self.opt.mainAssistSpellsW then
-                            if PallyPower_Assignments[self.player] and PallyPower_Assignments[self.player][class] == self.opt.mainAssistGSpellsW and (raidtank == "MAINASSIST" and self.opt.mainAssist) then
-                            else
-                                SetNormalBlessings(self.player, class, tmp.name, 0)
-                                raidmainassists[tmp.name] = false
+                        -- Druids and Paladins
+                        if (class == 4 or class == 5) then
+                            if (raidmaintanks[tmp.name] == true) then
+                                if PallyPower_NormalAssignments[self.player] and PallyPower_NormalAssignments[self.player][class] and PallyPower_NormalAssignments[self.player][class][tmp.name] == self.opt.mainTankSpellsDP then
+                                    if PallyPower_Assignments[self.player] and PallyPower_Assignments[self.player][class] == self.opt.mainTankGSpellsDP and (raidtank == "MAINTANK" and self.opt.mainTank) then
+                                    else
+                                        SetNormalBlessings(self.player, class, tmp.name, 0)
+                                        raidmaintanks[tmp.name] = false
+                                    end
+                                end
+                            end
+                            if (raidmainassists[tmp.name] == true) then
+                                if PallyPower_NormalAssignments[self.player] and PallyPower_NormalAssignments[self.player][class] and PallyPower_NormalAssignments[self.player][class][tmp.name] == self.opt.mainAssistSpellsDP then
+                                    if PallyPower_Assignments[self.player] and PallyPower_Assignments[self.player][class] == self.opt.mainAssistGSpellsDP and (raidtank == "MAINASSIST" and self.opt.mainAssist) then
+                                    else
+                                        SetNormalBlessings(self.player, class, tmp.name, 0)
+                                        raidmainassists[tmp.name] = false
+                                    end
+                                end
+                            end
+                            if (raidtank == "MAINTANK" and self.opt.mainTank) then
+                                if (PallyPower_Assignments[self.player] and PallyPower_Assignments[self.player][class] == self.opt.mainTankGSpellsDP and (raidmaintanks[tmp.name] == false or raidmaintanks[tmp.name] == nil)) or (PallyPower_NormalAssignments[self.player] and PallyPower_NormalAssignments[self.player][class] and PallyPower_NormalAssignments[self.player][class][tmp.name] ~= self.opt.mainTankSpellsDP and raidmaintanks[tmp.name] == true) then
+                                    if (self.player == tmp.name and self.opt.mainTankSpellsDP == 7) then
+                                        SetNormalBlessings(self.player, class, tmp.name, 0)
+                                    else
+                                        SetNormalBlessings(self.player, class, tmp.name, self.opt.mainTankSpellsDP)
+                                    end
+                                    raidmaintanks[tmp.name] = true
+                                end
+                            end
+                            if (raidtank == "MAINASSIST" and self.opt.mainAssist) then
+                                if (PallyPower_Assignments[self.player] and PallyPower_Assignments[self.player][class] == self.opt.mainAssistGSpellsDP and (raidmainassists[tmp.name] == false or raidmainassists[tmp.name] == nil)) or (PallyPower_NormalAssignments[self.player] and PallyPower_NormalAssignments[self.player][class] and PallyPower_NormalAssignments[self.player][class][tmp.name] ~= self.opt.mainAssistSpellsDP and raidmainassists[tmp.name] == true) then
+                                    if (self.player == tmp.name and self.opt.mainTankSpellsDP == 7) then
+                                        SetNormalBlessings(self.player, class, tmp.name, 0)
+                                    else
+                                        SetNormalBlessings(self.player, class, tmp.name, self.opt.mainAssistSpellsDP)
+                                    end
+                                    raidmainassists[tmp.name] = true
+                                end
                             end
                         end
-                    end
-                    if (raidtank == "MAINTANK" and self.opt.mainTank) then
-                        if (PallyPower_Assignments[self.player] and PallyPower_Assignments[self.player][class] == self.opt.mainTankGSpellsW and (raidmaintanks[tmp.name] == false or raidmaintanks[tmp.name] == nil)) or (PallyPower_NormalAssignments[self.player] and PallyPower_NormalAssignments[self.player][class] and PallyPower_NormalAssignments[self.player][class][tmp.name] ~= self.opt.mainTankSpellsW and raidmaintanks[tmp.name] == true) then
-                            SetNormalBlessings(self.player, class, tmp.name, self.opt.mainTankSpellsW)
-                            raidmaintanks[tmp.name] = true
+                        if classmaintanks[unitid] == true then
+                            classmaintanks[unitid] = nil
+                            classmaintanks[class] = nil
                         end
-                    end
-                    if (raidtank == "MAINASSIST" and self.opt.mainAssist) then
-                        if (PallyPower_Assignments[self.player] and PallyPower_Assignments[self.player][class] == self.opt.mainAssistGSpellsW and (raidmainassists[tmp.name] == false or raidmainassists[tmp.name] == nil)) or (PallyPower_NormalAssignments[self.player] and PallyPower_NormalAssignments[self.player][class] and PallyPower_NormalAssignments[self.player][class][tmp.name] ~= self.opt.mainAssistSpellsW and raidmainassists[tmp.name] == true) then
-                            SetNormalBlessings(self.player, class, tmp.name, self.opt.mainAssistSpellsW)
-                            raidmainassists[tmp.name] = true
+                        if (raidtank == "MAINTANK" and (class == 1 or class == 4 or class == 5)) then
+                            classmaintanks[unitid] = true
+                            classmaintanks[class] = true
                         end
+                    else
+                        tmp.rank = UnitIsGroupLeader(unitid) and 2 or 0
+                        tmp.subgroup = 1
                     end
-                end
-                -- Druids and Paladins
-                if (class == 4 or class == 5) then
-                    if (raidmaintanks[tmp.name] == true) then
-                        if PallyPower_NormalAssignments[self.player] and PallyPower_NormalAssignments[self.player][class] and PallyPower_NormalAssignments[self.player][class][tmp.name] == self.opt.mainTankSpellsDP then
-                            if PallyPower_Assignments[self.player] and PallyPower_Assignments[self.player][class] == self.opt.mainTankGSpellsDP and (raidtank == "MAINTANK" and self.opt.mainTank) then
-                            else
-                                SetNormalBlessings(self.player, class, tmp.name, 0)
-                                raidmaintanks[tmp.name] = false
-                            end
-                        end
-                    end
-                    if (raidmainassists[tmp.name] == true) then
-                        if PallyPower_NormalAssignments[self.player] and PallyPower_NormalAssignments[self.player][class] and PallyPower_NormalAssignments[self.player][class][tmp.name] == self.opt.mainAssistSpellsDP then
-                            if PallyPower_Assignments[self.player] and PallyPower_Assignments[self.player][class] == self.opt.mainAssistGSpellsDP and (raidtank == "MAINASSIST" and self.opt.mainAssist) then
-                            else
-                                SetNormalBlessings(self.player, class, tmp.name, 0)
-                                raidmainassists[tmp.name] = false
-                            end
-                        end
-                    end
-                    if (raidtank == "MAINTANK" and self.opt.mainTank) then
-                        if (PallyPower_Assignments[self.player] and PallyPower_Assignments[self.player][class] == self.opt.mainTankGSpellsDP and (raidmaintanks[tmp.name] == false or raidmaintanks[tmp.name] == nil)) or (PallyPower_NormalAssignments[self.player] and PallyPower_NormalAssignments[self.player][class] and PallyPower_NormalAssignments[self.player][class][tmp.name] ~= self.opt.mainTankSpellsDP and raidmaintanks[tmp.name] == true) then
-                            if (self.player == tmp.name and self.opt.mainTankSpellsDP == 7) then
-                                SetNormalBlessings(self.player, class, tmp.name, 0)
-                            else
-                                SetNormalBlessings(self.player, class, tmp.name, self.opt.mainTankSpellsDP)
-                            end
-                            raidmaintanks[tmp.name] = true
-                        end
-                    end
-                    if (raidtank == "MAINASSIST" and self.opt.mainAssist) then
-                        if (PallyPower_Assignments[self.player] and PallyPower_Assignments[self.player][class] == self.opt.mainAssistGSpellsDP and (raidmainassists[tmp.name] == false or raidmainassists[tmp.name] == nil)) or (PallyPower_NormalAssignments[self.player] and PallyPower_NormalAssignments[self.player][class] and PallyPower_NormalAssignments[self.player][class][tmp.name] ~= self.opt.mainAssistSpellsDP and raidmainassists[tmp.name] == true) then
-                            if (self.player == tmp.name and self.opt.mainTankSpellsDP == 7) then
-                                SetNormalBlessings(self.player, class, tmp.name, 0)
-                            else
-                                SetNormalBlessings(self.player, class, tmp.name, self.opt.mainAssistSpellsDP)
-                            end
-                            raidmainassists[tmp.name] = true
-                        end
-                    end
-                end
-
-                if classmaintanks[unitid] == true then
-                    classmaintanks[unitid] = nil
-                    classmaintanks[class] = nil
-                end
-
-                if (raidtank == "MAINTANK" and (class == 1 or class == 4 or class == 5)) then
-                    classmaintanks[unitid] = true
-                    classmaintanks[class] = true
-                end
-            else
-                tmp.rank = UnitIsGroupLeader(unitid) and 2 or 0
-                tmp.subgroup = 1
-            end
-            if pclass == "PALADIN" then
-                if AllPallys[tmp.name] then
-                    AllPallys[tmp.name].subgroup = tmp.subgroup
                 end
             end
             if tmp.name and (tmp.rank > 0) then
@@ -2048,7 +2189,6 @@ function PallyPower:UpdateLayout()
                 local unit = self:GetUnit(classIndex, pbNum)
                 local spellID, gspellID = self:GetSpellID(classIndex, unit.name)
                 local nSpell, gSpell = self:CanBuffBlessing(spellID, gspellID, unit.unitid)
-
                 -- Greater Blessings (Left Mouse Button [1]) - disable Greater Blessing of Salvation globally. Enabled in PButtonPreClick().
                 pButton:SetAttribute("type1", "spell")
                 pButton:SetAttribute("unit1", unit.unitid)
@@ -2057,14 +2197,12 @@ function PallyPower:UpdateLayout()
                 else
                     pButton:SetAttribute("spell1", gSpell)
                 end
-
                 -- Set Maintank role in a raid
                 if IsInRaid() then
                     pButton:SetAttribute("ctrl-type1", "maintank")
                     pButton:SetAttribute("ctrl-action1", "toggle")
                     pButton:SetAttribute("ctrl-unit1", unit.unitid)
                 end
-
                 -- Normal Blessings (Right Mouse Button [2]) - disable Normal Blessing of Salvation globally. Enabled in PButtonPreClick().
                 pButton:SetAttribute("type2", "spell")
                 pButton:SetAttribute("unit2", unit.unitid)
@@ -2073,7 +2211,6 @@ function PallyPower:UpdateLayout()
                 else
                     pButton:SetAttribute("spell2", nSpell)
                 end
-
                 -- Reset Alternate Blessings
                 if unit and unit.name and classIndex then
                     pButton:SetAttribute("ctrl-type2", "macro")
@@ -2264,7 +2401,6 @@ function PallyPower:GetBuffExpiration(classID)
             local spellID, gspellID = self:GetSpellID(classID, unit.name)
             local spell = self.Spells[spellID]
             local gspell = self.GSpells[gspellID]
-
             local buffName = UnitBuff(unit.unitid, j)
             while buffName do
                 if (buffName == gspell) then
@@ -2358,7 +2494,6 @@ function PallyPower:PButtonPreClick(button, mousebutton)
     local unit = classes[classID][playerID]
     local spellID, gspellID = self:GetSpellID(classID, unit.name)
     local nSpell, gSpell = self:CanBuffBlessing(spellID, gspellID, unit.unitid)
-
     -- Enable Greater Blessing of Salvation on everyone but do not allow Blessing of Salvation on tanks if SalvInCombat is disabled
     if IsInRaid() and (spellID == 4 or gspellID == 4) and not self.opt.SalvInCombat then
         for k, v in pairs(classmaintanks) do
@@ -2451,7 +2586,6 @@ function PallyPower:UpdatePButton(button, baseName, classID, playerID, mousebutt
                 end
             end
         end
-
         -- The following logic keeps Blessing of Salvation from being assigned to Warrior, Druid and Paladin tanks while in a RAID
         -- and SalvInCombat isn't enabled. Allows Normal Blessing of Salvation on everyone else and all other blessings.
         if not InCombatLockdown() then
@@ -2486,7 +2620,6 @@ function PallyPower:UpdatePButton(button, baseName, classID, playerID, mousebutt
                 button:SetAttribute("spell2", nSpell)
             end
         end
-
         if (nspecial == 1) then
             self:ApplyBackdrop(button, self.opt.cBuffNeedSpecial)
         elseif (nhave == 0) then
@@ -2689,17 +2822,14 @@ function PallyPower:GetUnitAndSpellSmart(classid, mousebutton, playerid)
                 local penalty = 0
                 local buffExpire, buffDuration, buffName = self:IsBuffActive(spell, gspell, unitID)
                 local nSpell, gSpell = self:CanBuffBlessing(spellID, gspellID, unitID)
-
                 if (self.AutoBuffedList[unit.name] and now - self.AutoBuffedList[unit.name] < 10) then
                     penalty = PALLYPOWER_GREATERBLESSINGDURATION
                 end
-
                 if (self.PreviousAutoBuffedUnit and (unit.hasbuff and unit.hasbuff > minExpire) and unit.name == self.PreviousAutoBuffedUnit.name and GetNumGroupMembers() > 0) then
                     penalty = PALLYPOWER_GREATERBLESSINGDURATION
                 else
                     penalty = 0
                 end
-
                 -- Buff Duration option disabled - allow spamming buffs
                 if not self.opt.display.buffDuration then
                     buffExpire = 0
@@ -2711,7 +2841,6 @@ function PallyPower:GetUnitAndSpellSmart(classid, mousebutton, playerid)
                         penalty = 0
                     end
                 end
-
                 if IsInRaid() then
                     for k, v in pairs(classmaintanks) do
                         if (gspellID == 4 and not self.opt.SalvInCombat) then
@@ -2725,20 +2854,17 @@ function PallyPower:GetUnitAndSpellSmart(classid, mousebutton, playerid)
                         end
                     end
                 end
-
                 -- We don't buff pets with Greater Blessings
                 if isPet then
                     buffExpire = 9999
                     penalty = 9999
                 end
-
                 -- Refresh any greater blessing under a 10 min duration
                 if ((not buffExpire or buffExpire < classMinExpire and buffExpire < PALLYPOWER_GREATERBLESSINGDURATION) and classMinExpire > 0) then
                     if (penalty < classMinUnitPenalty) then
                         classMinUnit = unit
                         classMinUnitPenalty = penalty
                     end
-
                     classMinSpell = nSpell
                     classMaxSpell = gSpell
                     classMinExpire = (buffExpire or 0)
@@ -2747,7 +2873,6 @@ function PallyPower:GetUnitAndSpellSmart(classid, mousebutton, playerid)
                 classNeedsBuff = false
             end
         end
-
         -- Refresh any greater blessing under a 10 min duration
         if (classMinUnit and classMinUnit.name and (classNeedsBuff or not self.opt.autobuff.waitforpeople) and classMinExpire + classMinUnitPenalty < minExpire and minExpire > 0) then
             self.AutoBuffedList[classMinUnit.name] = now
@@ -2773,30 +2898,25 @@ function PallyPower:GetUnitAndSpellSmart(classid, mousebutton, playerid)
                 local greaterBlessing = false
                 local buffExpire, buffDuration, buffName = self:IsBuffActive(spell, spell2, unitID)
                 local nSpell, gSpell = self:CanBuffBlessing(spellID, gspellID, unitID)
-
                 if (self.AutoBuffedList[unit.name] and now - self.AutoBuffedList[unit.name] < 10) then
                     penalty = PALLYPOWER_NORMALBLESSINGDURATION
                 end
-
                 if (self.PreviousAutoBuffedUnit and (unit.hasbuff and unit.hasbuff > minExpire) and unit.name == self.PreviousAutoBuffedUnit.name and GetNumGroupMembers() > 0) then
                     penalty = PALLYPOWER_NORMALBLESSINGDURATION
                 else
                     penalty = 0
                 end
-
                 -- Flag valid Greater Blessings
                 if buffName and buffName == gspell then
                     greaterBlessing = true
                     penalty = PALLYPOWER_NORMALBLESSINGDURATION
                 end
-
                 -- If we're using Blessing of Sacrifice or we have an Alternate Blessing assigned then always allow buffing over a Greater Blessing: Set duration to zero and buff it
                 if (buffName and buffName == gspell) and (spell == "Blessing of Sacrifice" or (spell ~= "Blessing of Sacrifice" and spellID ~= gspellID)) then
                     greaterBlessing = false
                     buffExpire = 0
                     penalty = 0
                 end
-
                 -- Buff Duration option disabled - allow spamming buffs
                 -- This logic counts the number of players in a class and subtracts the ratio from the
                 -- buffs overall duration resulting in a "round robin" approach for spamming buffs so
@@ -2814,7 +2934,6 @@ function PallyPower:GetUnitAndSpellSmart(classid, mousebutton, playerid)
                         penalty = 0
                     end
                 end
-
                 if IsInRaid() then
                     -- Skip tanks if Salv is assigned. This allows autobuff to work since some tanks
                     -- have addons and/or scripts to auto cancel Salvation. Tanks shouldn't have a
@@ -2831,7 +2950,6 @@ function PallyPower:GetUnitAndSpellSmart(classid, mousebutton, playerid)
                         end
                     end
                 end
-
                 -- Refresh any normal blessing under a 4 min duration
                 if ((not buffExpire or buffExpire + penalty < minExpire and buffExpire < PALLYPOWER_NORMALBLESSINGDURATION) and minExpire > 0 and not greaterBlessing) then
                     self.AutoBuffedList[unit.name] = now
@@ -3085,13 +3203,11 @@ function PallyPower:AutoBuff(button, mousebutton)
                         else
                             penalty = 0
                         end
-
                         -- If normal blessing - set duration to zero and buff it - but only if an alternate blessing isn't assigned
                         if buffName and buffName == spell and spellID == gspellID then
                             buffExpire = 0
                             penalty = 0
                         end
-
                         if IsInRaid() then
                             for k, v in pairs(classmaintanks) do
                                 if (gspellID == 4 and not self.opt.SalvInCombat) then
@@ -3110,14 +3226,12 @@ function PallyPower:AutoBuff(button, mousebutton)
                                     end
                                 end
                             end
-
                             -- We don't buff pets with Greater Blessings
                             if isPet then
                                 buffExpire = 9999
                                 penalty = 9999
                             end
                         end
-
                         -- Refresh any greater blessing under a 10 min duration
                         if ((not buffExpire or buffExpire < classMinExpire and buffExpire < PALLYPOWER_GREATERBLESSINGDURATION) and classMinExpire > 0) then
                             if (penalty < classMinUnitPenalty) then
@@ -3133,7 +3247,6 @@ function PallyPower:AutoBuff(button, mousebutton)
                     end
                 end
             end
-
             if ((classNeedsBuff or not self.opt.autobuff.waitforpeople) and classMinExpire + classMinUnitPenalty < minExpire and minExpire > 0) then
                 minExpire = classMinExpire + classMinUnitPenalty
                 minUnit = classMinUnit
@@ -3172,7 +3285,6 @@ function PallyPower:AutoBuff(button, mousebutton)
                 if (self.AutoBuffedList[unit.name] and now - self.AutoBuffedList[unit.name] < 10) then
                     penalty = PALLYPOWER_NORMALBLESSINGDURATION
                 end
-
                 if (self.PreviousAutoBuffedUnit and (unit.hasbuff and unit.hasbuff > minExpire) and unit.name == self.PreviousAutoBuffedUnit.name and GetNumGroupMembers() > 0) then
                     penalty = PALLYPOWER_NORMALBLESSINGDURATION
                 else
@@ -3182,13 +3294,11 @@ function PallyPower:AutoBuff(button, mousebutton)
                 if buffName and buffName == gspell then
                     penalty = PALLYPOWER_NORMALBLESSINGDURATION
                 end
-
                 -- If we're using Blessing of Sacrifice or we have an Alternate Blessing assigned then always allow buffing over a Greater Blessing: Set duration to zero and buff it
                 if (buffName and buffName == gspell) and (spell == "Blessing of Sacrifice" or (spell ~= "Blessing of Sacrifice" and spellID ~= gspellID)) then
                     buffExpire = 0
                     penalty = 0
                 end
-
                 if IsInRaid() then
                     -- Skip tanks if Salv is assigned. This allows autobuff to work since some tanks
                     -- have addons and/or scripts to auto cancel Salvation. Tanks shouldn't have a
@@ -3205,7 +3315,6 @@ function PallyPower:AutoBuff(button, mousebutton)
                         end
                     end
                 end
-
                 -- Refresh any blessing under a 4 min duration
                 if ((not buffExpire or buffExpire + penalty < minExpire and buffExpire < PALLYPOWER_NORMALBLESSINGDURATION) and minExpire > 0) then
                     minExpire = (buffExpire or 0) + penalty
@@ -3743,7 +3852,7 @@ function PallyPower:UpdateAuraButton(aura)
     local auraIcon = _G["PallyPowerAuraIcon"]
     if (aura and aura > 0) then
         for name in pairs(AllPallys) do
-            if (name ~= self.player) and (aura == PallyPower_AuraAssignments[name]) then
+            if (name ~= self.player) and (AllPallys[name].subgroup == AllPallys[self.player].subgroup) and (aura == PallyPower_AuraAssignments[name]) then
                 tinsert(pallys, name)
             end
         end
