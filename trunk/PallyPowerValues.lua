@@ -188,7 +188,7 @@ PallyPower.GSpells = {
 	[6] = GetSpellInfo(25899) --BS["Greater Blessing of Sanctuary"],
 }
 
--- down rank
+-- spell ranks
 PallyPower.NormalBuffs = {
 	[1] = {{50, 25290}, {44, 19854}, {34, 19853}, {24, 19852}, {14, 19850}, {4, 19742}},
 	[2] = {{50, 25291}, {42, 19838}, {32, 19837}, {22, 19836}, {12, 19835}, {4, 19834}, {0, 19740}},
@@ -246,6 +246,12 @@ PallyPower.Auras = {
 	[6] = GetSpellInfo(19891), --BS["Fire Resistance Aura"],
 	[7] = GetSpellInfo(20218) --BS["Sanctity Aura"],
 }
+
+PallyPower.Cooldowns = {
+	[1] = 10310, -- Improved Lay On Hands
+	[2] = 19752 -- Divine Intervention
+}
+
 -- Buff templates
 -- Table [1] is for a single Paladin but not all Paladins have Kings and if it's not there it defaults to the next prio so something gets assigned so on and so forth down the list of tables.
 
