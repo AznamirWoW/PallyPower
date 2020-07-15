@@ -248,8 +248,8 @@ PallyPower.Auras = {
 }
 
 PallyPower.Cooldowns = {
-	[1] = 10310, -- Improved Lay On Hands
-	[2] = 19752 -- Divine Intervention
+	[1] = {633, 2800, 10310}, -- Improved Lay On Hands
+	[2] = {19752} -- Divine Intervention
 }
 
 -- Buff templates

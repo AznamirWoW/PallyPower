@@ -120,7 +120,7 @@ function PallyPower:OnInitialize()
     )
     self.MinimapIcon:Register("PallyPower", self.LDB, self.opt.minimap)
     LCD:Register("PallyPower")
-    C_Timer.NewTimer(
+    C_Timer.After(
         2.0,
         function()
             PallyPowerMinimapIcon_Toggle()
@@ -556,6 +556,9 @@ function PallyPowerBlessingsGrid_Update(self, elapsed)
                     getglobal(fname .. "CSkill" .. id):Show()
                     if CooldownInfo[id].start ~= 0 and CooldownInfo[id].duration ~= 0 then
                         CooldownInfo[id].text = PallyPower:FormatTime(CooldownInfo[id].start + CooldownInfo[id].duration - GetTime())
+                        if CooldownInfo[id].start + CooldownInfo[id].duration - GetTime() < 1 then
+                            CooldownInfo[id].text = "|cff00ff00Ready|r"
+                        end
                     else
                         CooldownInfo[id].text = "|cff00ff00Ready|r"
                     end
@@ -1168,11 +1171,13 @@ function PallyPower:ScanSpells()
             AllPallys[self.player].CooldownInfo = {}
         end
         local CooldownInfo = AllPallys[self.player].CooldownInfo
-        if IsSpellKnown(10310) then
-            CooldownInfo[1] = {}
-        end
-        if IsSpellKnown(19752) then
-            CooldownInfo[2] = {}
+        for cd, spells in pairs(self.Cooldowns) do
+            for _, spell in pairs(spells) do
+                if IsSpellKnown(spell) then
+                    CooldownInfo[cd] = {}
+                    break
+                end
+            end
         end
         PP_IsPally = true
         if not AllPallys[self.player].subgroup then
@@ -1185,17 +1190,25 @@ function PallyPower:ScanSpells()
 end
 
 function PallyPower:ScanCooldowns()
+    --self:Debug("[ScanCooldowns]")
     if not initalized or not PP_IsPally then
         return
     end
     local CooldownInfo = AllPallys[self.player].CooldownInfo
-    for k, v in pairs(self.Cooldowns) do
-        if not CooldownInfo[k] then
-            break
-        end
-        if GetSpellCooldown(v) then
-            CooldownInfo[k].start = GetSpellCooldown(v)
-            CooldownInfo[k].duration = select(2, GetSpellCooldown(v))
+    for cd, spells in pairs(self.Cooldowns) do
+        for _, spell in pairs(spells) do
+            if not CooldownInfo[cd] then
+                return
+            end
+            if GetSpellCooldown(spell) then
+                CooldownInfo[cd].start = GetSpellCooldown(spell)
+                CooldownInfo[cd].duration = select(2, GetSpellCooldown(spell))
+                if CooldownInfo[cd].start == 0 and CooldownInfo[cd].duration == 0 then
+                    CooldownInfo[cd].remaining = 0
+                else
+                    CooldownInfo[cd].remaining = CooldownInfo[cd].start + CooldownInfo[cd].duration - GetTime()
+                end
+            end
         end
     end
 end
@@ -1296,19 +1309,23 @@ function PallyPower:SendSelf(sender)
         if #AllPallys[self.player].CooldownInfo > 0 then
             local s = ""
             CooldownInfo = AllPallys[self.player].CooldownInfo
-            for i = 1, #AllPallys[self.player].CooldownInfo do
-                if not CooldownInfo[i].start then
-                    s = s .. ":n"
+            for i = 1, 2 do
+                if CooldownInfo[i] then
+                    if not CooldownInfo[i].duration then
+                        s = s .. ":n"
+                    else
+                        s = s .. ":" .. CooldownInfo[i].duration
+                    end
+                    if not CooldownInfo[i].remaining then
+                        s = s .. ":n"
+                    else
+                        s = s .. ":" .. CooldownInfo[i].remaining
+                    end
                 else
-                    s = s .. ":" .. CooldownInfo[i].start
+                    s = s .. ":n:n"
                 end
-                if not CooldownInfo[i].duration then
-                    s = s .. ":n"
-                else
-                    s = s .. ":" .. CooldownInfo[i].duration
-                end
+                Cooldowns = s
             end
-            Cooldowns = s
         else
             Cooldowns = ":n:n:n:n"
         end
@@ -1359,7 +1376,7 @@ function PallyPower:SendMessage(msg, type, target)
 end
 
 function PallyPower:SPELLS_CHANGED()
-    --self:Debug("EVENT: SPELLS_CHANGED")
+    self:Debug("EVENT: SPELLS_CHANGED")
     if not initalized then
         PallyPower:ScanSpells()
         return
@@ -1478,7 +1495,6 @@ function PallyPower:CHAT_MSG_SYSTEM(event, text)
 end
 
 function PallyPower:UNIT_AURA(event, unitTarget)
-    self:UpdateAuraButton(PallyPower_AuraAssignments[self.player])
     local ShowPets = self.opt.ShowPets
     local isPet = unitTarget:find("pet")
     local pclass = select(2, UnitClass(unitTarget))
@@ -1597,20 +1613,24 @@ function PallyPower:ParseMessage(sender, msg)
         end
     end
     if sfind(msg, "COOLDOWNS") then
-        local _, start1, duration1, start2, duration2 = strsplit(":", msg)
+        local _, duration1, remaining1, duration2, remaining2 = strsplit(":", msg)
         if AllPallys[sender] then
             if not AllPallys[sender].CooldownInfo then
                 AllPallys[sender].CooldownInfo = {}
             end
-            if not AllPallys[sender].CooldownInfo[1] and start1 ~= "n" then
+            if not AllPallys[sender].CooldownInfo[1] and remaining1 ~= "n" then
                 AllPallys[sender].CooldownInfo[1] = {}
-                AllPallys[sender].CooldownInfo[1].start = tonumber(start1)
-                AllPallys[sender].CooldownInfo[1].duration = tonumber(duration1)
+                duration1 = tonumber(duration1)
+                remaining1 = tonumber(remaining1)
+                AllPallys[sender].CooldownInfo[1].start = GetTime() - (duration1 - remaining1)
+                AllPallys[sender].CooldownInfo[1].duration = duration1
             end
-            if not AllPallys[sender].CooldownInfo[2] and start2 ~= "n" then
+            if not AllPallys[sender].CooldownInfo[2] and remaining2 ~= "n" then
                 AllPallys[sender].CooldownInfo[2] = {}
-                AllPallys[sender].CooldownInfo[2].start = tonumber(start2)
-                AllPallys[sender].CooldownInfo[2].duration = tonumber(duration2)
+                duration2 = tonumber(duration2)
+                remaining2 = tonumber(remaining2)
+                AllPallys[sender].CooldownInfo[2].start = GetTime() - (duration2 - remaining2)
+                AllPallys[sender].CooldownInfo[2].duration = duration2
             end
         end
     end
@@ -1949,7 +1969,7 @@ function PallyPower:ScanClass(classID)
                 end
             end
             unit.inrange = IsSpellInRange(spell, unit.unitid) == 1
-            unit.visible = UnitIsVisible(unit.unitid)
+            unit.visible = UnitIsVisible(unit.unitid) and UnitIsConnected(unit.unitid)
             unit.dead = UnitIsDeadOrGhost(unit.unitid)
             unit.hasbuff = self:IsBuffActive(spell, spell2, unit.unitid)
             unit.specialbuff = spellID ~= gspellID
@@ -2153,7 +2173,9 @@ function PallyPower:UpdateLayout()
     end
     auraBtn:SetAttribute("type1", "spell")
     auraBtn:SetAttribute("unit1", "player")
-    self:UpdateAuraButton(PallyPower_AuraAssignments[self.player])
+    if self.opt.auras then
+        self:UpdateAuraButton(PallyPower_AuraAssignments[self.player])
+    end
     if PP_IsPally and self.opt.enabled and self.opt.auras and (AllPallys[self.player].AuraInfo[1] ~= nil) and ((GetNumGroupMembers() == 0 and self.opt.ShowWhenSolo) or (GetNumGroupMembers() > 0 and self.opt.ShowInParty)) then
         auraBtn:Show()
     else
@@ -2176,7 +2198,9 @@ function PallyPower:UpdateLayout()
             cButton:SetAttribute("type2", "macro")
             if (cButton:GetAttribute("macrotext1") == nil) then
                 PallyPower:ButtonPreClick(cButton, "LeftButton")
-                PallyPower:ButtonPostClick(cButton, "LeftButton")
+                if gspellID == 4 then
+                    PallyPower:ButtonPostClick(cButton, "LeftButton")
+                end
             end
             local pButtons = self.playerButtons[cbNum]
             for pbNum = 1, math.min(classlist[classIndex], PALLYPOWER_MAXPERCLASS) do
@@ -2931,7 +2955,7 @@ function PallyPower:GetUnitAndSpellSmart(classid, mousebutton, playerid)
                             buff = buff - 1
                         end
                     end
-                    if not buffExpire or buffExpire < (300 - (1.2 * buff)) then
+                    if not buffExpire or buffExpire < (300 - (1.5 * buff) + 1.5) then
                         buffExpire = 0
                         penalty = 0
                     end
@@ -2997,28 +3021,20 @@ function PallyPower:ButtonPreClick(button, mousebutton)
     local targetNames = ""
     local classid = button:GetAttribute("classID")
     local nSpell, gSpell, unitName, unitID
-    if IsInRaid() and not IsInGroup(LE_PARTY_CATEGORY_INSTANCE) and mousebutton == "LeftButton" then
+    if (IsInRaid() and not IsInGroup(LE_PARTY_CATEGORY_INSTANCE)) and (mousebutton == "LeftButton") and (classid ~= 9) then
         local numPlayers = 0
         for i = 1, PALLYPOWER_MAXPERCLASS do
             if numPlayers < 5 and classid and classes[classid] and classes[classid][i] then
                 local _, spell, gspell = self:GetUnitAndSpellSmart(classid, "LeftButton", classes[classid][i].unitid)
                 if gspell ~= nil or (gspell ~= nil and gspell ~= "") then
                     gSpell = gspell
-                    if classid == 9 then
-                        local unitPrefix = "party"
-                        local offSet = 9
-                        if (classes[classid][i].unitid:find("raid")) then
-                            unitPrefix = "raid"
-                            offSet = 8
-                        end
-                        unitName = GetUnitName(unitPrefix .. classes[classid][i].unitid:sub(offSet), true) .. "-pet"
-                    else
-                        unitName = GetUnitName(classes[classid][i].unitid, true)
-                    end
+                    unitName = GetUnitName(classes[classid][i].unitid, true)
                     if unitName ~= nil and unitName ~= sfind(targetNames, unitName) then
                         targetNames = targetNames .. "[@" .. unitName .. ",nodead]"
                         numPlayers = numPlayers + 1
-                        unitID = classes[classid][i].unitid
+                        if numPlayers == 1 then
+                            unitID = classes[classid][i].unitid
+                        end
                     end
                 end
             else
@@ -3082,7 +3098,7 @@ function PallyPower:ButtonPreClick(button, mousebutton)
         local gspellMacro = "/cast [@" .. unitName .. ",nodead] " .. gSpell
         button:SetAttribute("macrotext1", gspellMacro)
     end
-    -- Set Normal Blessing: right click (only work while not in combat)
+    -- Set Normal Blessing: right click (only works while not in combat)
     if nSpell and unitName then
         local spellMacro = "/cast [@" .. unitName .. ",nodead] " .. nSpell
         button:SetAttribute("macrotext2", spellMacro)
@@ -3118,7 +3134,7 @@ function PallyPower:ButtonPostClick(button, mousebutton)
             end
         end
     end
-    -- Clear Normal Blessing: right click (only work while not in combat)
+    -- Clear Normal Blessing: right click (only works while not in combat)
     if spell == false and classid then
         button:SetAttribute("macrotext2", nil)
     end
@@ -3484,7 +3500,7 @@ function PallyPower:AutoAssign()
         self:AutoAssignBlessings(shift)
         self:UpdateRoster()
         C_Timer.After(
-            0.5,
+            0.25,
             function()
                 for name in pairs(AllPallys) do
                     local s = ""
@@ -3499,7 +3515,7 @@ function PallyPower:AutoAssign()
                     self:SendMessage("PASSIGN " .. name .. "@" .. s)
                 end
                 C_Timer.After(
-                    0.5,
+                    0.25,
                     function()
                         self:AutoAssignAuras(precedence)
                         self:UpdateRoster()
@@ -3513,10 +3529,10 @@ end
 function PallyPower:CalcSkillRanks(name)
     local wisdom, might, kings, salv, light, sanct
     if AllPallys[name][1] ~= nil then
-        wisdom = tonumber(AllPallys[name][1].rank) + tonumber(AllPallys[name][1].talent) / 12
+        wisdom = tonumber(AllPallys[name][1].rank) + tonumber(AllPallys[name][1].talent) -- /12 removed division / Zid
     end
     if AllPallys[name][2] ~= nil then
-        might = tonumber(AllPallys[name][2].rank) + tonumber(AllPallys[name][2].talent) / 10
+        might = tonumber(AllPallys[name][2].rank) + tonumber(AllPallys[name][2].talent) -- /10 removed division / Zid
     end
     if AllPallys[name][3] ~= nil then
         kings = tonumber(AllPallys[name][3].rank)
@@ -3545,27 +3561,66 @@ function PallyPower:AutoAssignBlessings(shift)
     if pallycount > 6 then
         pallycount = 6
     end
-    for name in pairs(AllPallys) do
-        local wisdom, might, kings, salv, light, sanct = self:CalcSkillRanks(name)
-        if wisdom then
-            tinsert(WisdomPallys, {pallyname = name, skill = wisdom})
-        end
-        if might then
-            tinsert(MightPallys, {pallyname = name, skill = might})
-        end
-        if kings then
-            tinsert(KingsPallys, {pallyname = name, skill = kings})
-        end
+
+    -- Does leader have salvation? This is the hardest assignment to deal with so
+    -- we'd want someone with experience dealing with DPS classes that can also
+    -- Tank; and thus know how to assign alternate Normal Blessings to Tanks so
+    -- DPS'ers can have Greater Blessing of Salvation. Only leaders can use the
+    -- Auto Assign feature so it makes sense to insert this logic here and only
+    -- apply it to Raid groups specifically.
+    local leaderSalv = false
+    local wisdom, might, kings, salv, light, sanct = self:CalcSkillRanks(self.player)
+    if (IsInRaid() and not IsInGroup(LE_PARTY_CATEGORY_INSTANCE)) then
         if salv then
+            SalvPallys = {}
             tinsert(SalvPallys, {pallyname = name, skill = salv})
-        end
-        if light then
-            tinsert(LightPallys, {pallyname = name, skill = light})
-        end
-        if sanct then
-            tinsert(SancPallys, {pallyname = name, skill = sanct})
+            leaderSalv = true
         end
     end
+
+    for name in pairs(AllPallys) do
+        local wisdom, might, kings, salv, light, sanct = self:CalcSkillRanks(name)
+        if leaderSalv and name ~= self.player then
+            -- Leader has salv so lets build all the other tables
+            if wisdom then
+                tinsert(WisdomPallys, {pallyname = name, skill = wisdom})
+            end
+            if might then
+                tinsert(MightPallys, {pallyname = name, skill = might})
+            end
+            if kings then
+                tinsert(KingsPallys, {pallyname = name, skill = kings})
+            end
+            if light then
+                tinsert(LightPallys, {pallyname = name, skill = light})
+            end
+            if sanct then
+                tinsert(SancPallys, {pallyname = name, skill = sanct})
+            end
+        else
+            -- Leader does not have salv or we're in a BG or Party
+            -- Build all tables normally.
+            if wisdom then
+                tinsert(WisdomPallys, {pallyname = name, skill = wisdom})
+            end
+            if might then
+                tinsert(MightPallys, {pallyname = name, skill = might})
+            end
+            if kings then
+                tinsert(KingsPallys, {pallyname = name, skill = kings})
+            end
+            if salv then
+                tinsert(SalvPallys, {pallyname = name, skill = salv})
+            end
+            if light then
+                tinsert(LightPallys, {pallyname = name, skill = light})
+            end
+            if sanct then
+                tinsert(SancPallys, {pallyname = name, skill = sanct})
+            end
+        end
+    end
+
     -- get template for the number of available paladins in the raid
     if IsInGroup(LE_PARTY_CATEGORY_INSTANCE) and IsInInstance() or shift then
         pallytemplate = self.BattleGroundTemplates[pallycount]
@@ -3576,6 +3631,11 @@ function PallyPower:AutoAssignBlessings(shift)
             pallytemplate = self.Templates[pallycount]
         end
     end
+    -- re-rate buffs for each of the improvable/skillable buffs / Zid
+    self:AssignNewBuffRatings(WisdomPallys)
+    self:AssignNewBuffRatings(MightPallys)
+    self:AssignNewBuffRatings(KingsPallys)
+    self:AssignNewBuffRatings(SancPallys)
     -- assign based on the class templates
     self:SelectBuffsByClass(pallycount, 1, pallytemplate[1]) -- warrior
     self:SelectBuffsByClass(pallycount, 2, pallytemplate[2]) -- rogue
@@ -3586,6 +3646,30 @@ function PallyPower:AutoAssignBlessings(shift)
     self:SelectBuffsByClass(pallycount, 7, pallytemplate[7]) -- mage
     self:SelectBuffsByClass(pallycount, 8, pallytemplate[8]) -- lock
     self:SelectBuffsByClass(pallycount, 9, pallytemplate[9]) -- pets
+end
+
+function PallyPower:AssignNewBuffRatings(BuffPallys)
+    -- assign new buff ratings based on the given BuffPallys (WisdomPallys, MightPallys, etc..) / Zid
+    for _, pally in ipairs(BuffPallys) do
+        if (pally.skill > 1) then
+            -- reduce the rated difference from defaultbuffs
+            self:DownRateDefaultBuffs(pally.pallyname, pally.skill - 1)
+        end
+    end
+end
+
+function PallyPower:DownRateDefaultBuffs(name, rating)
+    -- SalyPallys and LightPallys skill-rating will be reduced for given pallys by given rating / Zid
+    for i, pally in ipairs(SalvPallys) do
+        if (pally.pallyname == name) then
+            SalvPallys[i].skill = SalvPallys[i].skill - rating
+        end
+    end
+    for i, pally in ipairs(LightPallys) do
+        if (pally.pallyname == name) then
+            LightPallys[i].skill = LightPallys[i].skill - rating
+        end
+    end
 end
 
 function PallyPower:SelectBuffsByClass(pallycount, class, prioritylist)
@@ -3644,26 +3728,24 @@ function PallyPower:BuffSelections(buff, class, pallys)
         end
     )
     for i, v in pairs(t) do
-        if self:PallyAvailable(v.pallyname, pallys) and v.skill > 0 then
+        if self:PallyAvailable(v.pallyname, pallys) then --removed check if v.skill / Zid
             Buffer = v.pallyname
             BufferSkill = v.skill
             break
         end
     end
     if Buffer ~= "" then
-        if (IsInRaid()) and (buff > 2) then
-            -----------------------------------------------------------------------------------------------------------------
-            if Buffer == self.player and (not IsInGroup(LE_PARTY_CATEGORY_INSTANCE)) then
-                SalvPallys = {}
-                tinsert(SalvPallys, {pallyname = Buffer, skill = BufferSkill})
-                for pclass = 1, PALLYPOWER_MAXCLASSES do
-                    PallyPower_Assignments[Buffer][pclass] = buff
-                end
-            else
-                for pclass = 1, PALLYPOWER_MAXCLASSES do
-                    PallyPower_Assignments[Buffer][pclass] = buff
-                end
+        if PallyPower_Assignments and not PallyPower_Assignments[Buffer] then
+            PallyPower_Assignments[Buffer] = {}
+        end
+        if (IsInRaid() and buff > 2) then
+            for pclass = 1, PALLYPOWER_MAXCLASSES do
+                PallyPower_Assignments[Buffer][pclass] = buff
             end
+        else
+            PallyPower_Assignments[Buffer][class] = buff
+        end
+        if IsInRaid() then
             -----------------------------------------------------------------------------------------------------------------
             -- Warriors
             -----------------------------------------------------------------------------------------------------------------
@@ -3702,11 +3784,6 @@ function PallyPower:BuffSelections(buff, class, pallys)
                     end
                 end
             end
-        elseif PallyPower_Assignments and not PallyPower_Assignments[Buffer] then
-            PallyPower_Assignments[Buffer] = {}
-            PallyPower_Assignments[Buffer][class] = buff
-        else
-            PallyPower_Assignments[Buffer][class] = buff
         end
     else
     end
