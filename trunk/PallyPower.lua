@@ -1808,103 +1808,105 @@ function PallyPower:UpdateRoster()
                 else --Players
                     --self:Debug("isPlayer: "..tmp.name)
                     tmp.class = pclass
-                    if pclass == "PALADIN" then
-                        if AllPallys[tmp.name] then
-                            AllPallys[tmp.name].subgroup = tmp.subgroup
+                end
+            end
+            if IsInRaid() and (not isPet) then
+                local n = select(3, unitid:find("(%d+)"))
+                tmp.name, tmp.rank, tmp.subgroup = GetRaidRosterInfo(n)
+                tmp.zone = select(7, GetRaidRosterInfo(n))
+                raidtank = select(10, GetRaidRosterInfo(n))
+                class = self:GetClassID(pclass)
+                -- Warriors
+                if (class == 1) then
+                    if (raidmaintanks[tmp.name] == true) then
+                        if PallyPower_NormalAssignments[self.player] and PallyPower_NormalAssignments[self.player][class] and PallyPower_NormalAssignments[self.player][class][tmp.name] == self.opt.mainTankSpellsW then
+                            if PallyPower_Assignments[self.player] and PallyPower_Assignments[self.player][class] == self.opt.mainTankGSpellsW and (raidtank == "MAINTANK" and self.opt.mainTank) then
+                            else
+                                SetNormalBlessings(self.player, class, tmp.name, 0)
+                                raidmaintanks[tmp.name] = false
+                            end
                         end
                     end
-                    if IsInRaid() then
-                        local n = select(3, unitid:find("(%d+)"))
-                        tmp.name, tmp.rank, tmp.subgroup = GetRaidRosterInfo(n)
-                        tmp.zone = select(7, GetRaidRosterInfo(n))
-                        raidtank = select(10, GetRaidRosterInfo(n))
-                        class = self:GetClassID(pclass)
-                        -- Warriors
-                        if (class == 1) then
-                            if (raidmaintanks[tmp.name] == true) then
-                                if PallyPower_NormalAssignments[self.player] and PallyPower_NormalAssignments[self.player][class] and PallyPower_NormalAssignments[self.player][class][tmp.name] == self.opt.mainTankSpellsW then
-                                    if PallyPower_Assignments[self.player] and PallyPower_Assignments[self.player][class] == self.opt.mainTankGSpellsW and (raidtank == "MAINTANK" and self.opt.mainTank) then
-                                    else
-                                        SetNormalBlessings(self.player, class, tmp.name, 0)
-                                        raidmaintanks[tmp.name] = false
-                                    end
-                                end
-                            end
-                            if (raidmainassists[tmp.name] == true) then
-                                if PallyPower_NormalAssignments[self.player] and PallyPower_NormalAssignments[self.player][class] and PallyPower_NormalAssignments[self.player][class][tmp.name] == self.opt.mainAssistSpellsW then
-                                    if PallyPower_Assignments[self.player] and PallyPower_Assignments[self.player][class] == self.opt.mainAssistGSpellsW and (raidtank == "MAINASSIST" and self.opt.mainAssist) then
-                                    else
-                                        SetNormalBlessings(self.player, class, tmp.name, 0)
-                                        raidmainassists[tmp.name] = false
-                                    end
-                                end
-                            end
-                            if (raidtank == "MAINTANK" and self.opt.mainTank) then
-                                if (PallyPower_Assignments[self.player] and PallyPower_Assignments[self.player][class] == self.opt.mainTankGSpellsW and (raidmaintanks[tmp.name] == false or raidmaintanks[tmp.name] == nil)) or (PallyPower_NormalAssignments[self.player] and PallyPower_NormalAssignments[self.player][class] and PallyPower_NormalAssignments[self.player][class][tmp.name] ~= self.opt.mainTankSpellsW and raidmaintanks[tmp.name] == true) then
-                                    SetNormalBlessings(self.player, class, tmp.name, self.opt.mainTankSpellsW)
-                                    raidmaintanks[tmp.name] = true
-                                end
-                            end
-                            if (raidtank == "MAINASSIST" and self.opt.mainAssist) then
-                                if (PallyPower_Assignments[self.player] and PallyPower_Assignments[self.player][class] == self.opt.mainAssistGSpellsW and (raidmainassists[tmp.name] == false or raidmainassists[tmp.name] == nil)) or (PallyPower_NormalAssignments[self.player] and PallyPower_NormalAssignments[self.player][class] and PallyPower_NormalAssignments[self.player][class][tmp.name] ~= self.opt.mainAssistSpellsW and raidmainassists[tmp.name] == true) then
-                                    SetNormalBlessings(self.player, class, tmp.name, self.opt.mainAssistSpellsW)
-                                    raidmainassists[tmp.name] = true
-                                end
+                    if (raidmainassists[tmp.name] == true) then
+                        if PallyPower_NormalAssignments[self.player] and PallyPower_NormalAssignments[self.player][class] and PallyPower_NormalAssignments[self.player][class][tmp.name] == self.opt.mainAssistSpellsW then
+                            if PallyPower_Assignments[self.player] and PallyPower_Assignments[self.player][class] == self.opt.mainAssistGSpellsW and (raidtank == "MAINASSIST" and self.opt.mainAssist) then
+                            else
+                                SetNormalBlessings(self.player, class, tmp.name, 0)
+                                raidmainassists[tmp.name] = false
                             end
                         end
-                        -- Druids and Paladins
-                        if (class == 4 or class == 5) then
-                            if (raidmaintanks[tmp.name] == true) then
-                                if PallyPower_NormalAssignments[self.player] and PallyPower_NormalAssignments[self.player][class] and PallyPower_NormalAssignments[self.player][class][tmp.name] == self.opt.mainTankSpellsDP then
-                                    if PallyPower_Assignments[self.player] and PallyPower_Assignments[self.player][class] == self.opt.mainTankGSpellsDP and (raidtank == "MAINTANK" and self.opt.mainTank) then
-                                    else
-                                        SetNormalBlessings(self.player, class, tmp.name, 0)
-                                        raidmaintanks[tmp.name] = false
-                                    end
-                                end
-                            end
-                            if (raidmainassists[tmp.name] == true) then
-                                if PallyPower_NormalAssignments[self.player] and PallyPower_NormalAssignments[self.player][class] and PallyPower_NormalAssignments[self.player][class][tmp.name] == self.opt.mainAssistSpellsDP then
-                                    if PallyPower_Assignments[self.player] and PallyPower_Assignments[self.player][class] == self.opt.mainAssistGSpellsDP and (raidtank == "MAINASSIST" and self.opt.mainAssist) then
-                                    else
-                                        SetNormalBlessings(self.player, class, tmp.name, 0)
-                                        raidmainassists[tmp.name] = false
-                                    end
-                                end
-                            end
-                            if (raidtank == "MAINTANK" and self.opt.mainTank) then
-                                if (PallyPower_Assignments[self.player] and PallyPower_Assignments[self.player][class] == self.opt.mainTankGSpellsDP and (raidmaintanks[tmp.name] == false or raidmaintanks[tmp.name] == nil)) or (PallyPower_NormalAssignments[self.player] and PallyPower_NormalAssignments[self.player][class] and PallyPower_NormalAssignments[self.player][class][tmp.name] ~= self.opt.mainTankSpellsDP and raidmaintanks[tmp.name] == true) then
-                                    if (self.player == tmp.name and self.opt.mainTankSpellsDP == 7) then
-                                        SetNormalBlessings(self.player, class, tmp.name, 0)
-                                    else
-                                        SetNormalBlessings(self.player, class, tmp.name, self.opt.mainTankSpellsDP)
-                                    end
-                                    raidmaintanks[tmp.name] = true
-                                end
-                            end
-                            if (raidtank == "MAINASSIST" and self.opt.mainAssist) then
-                                if (PallyPower_Assignments[self.player] and PallyPower_Assignments[self.player][class] == self.opt.mainAssistGSpellsDP and (raidmainassists[tmp.name] == false or raidmainassists[tmp.name] == nil)) or (PallyPower_NormalAssignments[self.player] and PallyPower_NormalAssignments[self.player][class] and PallyPower_NormalAssignments[self.player][class][tmp.name] ~= self.opt.mainAssistSpellsDP and raidmainassists[tmp.name] == true) then
-                                    if (self.player == tmp.name and self.opt.mainTankSpellsDP == 7) then
-                                        SetNormalBlessings(self.player, class, tmp.name, 0)
-                                    else
-                                        SetNormalBlessings(self.player, class, tmp.name, self.opt.mainAssistSpellsDP)
-                                    end
-                                    raidmainassists[tmp.name] = true
-                                end
-                            end
-                        end
-                        if classmaintanks[unitid] == true then
-                            classmaintanks[unitid] = nil
-                            classmaintanks[class] = nil
-                        end
-                        if (raidtank == "MAINTANK" and (class == 1 or class == 4 or class == 5)) then
-                            classmaintanks[unitid] = true
-                            classmaintanks[class] = true
-                        end
-                    else
-                        tmp.rank = UnitIsGroupLeader(unitid) and 2 or 0
-                        tmp.subgroup = 1
                     end
+                    if (raidtank == "MAINTANK" and self.opt.mainTank) then
+                        if (PallyPower_Assignments[self.player] and PallyPower_Assignments[self.player][class] == self.opt.mainTankGSpellsW and (raidmaintanks[tmp.name] == false or raidmaintanks[tmp.name] == nil)) or (PallyPower_NormalAssignments[self.player] and PallyPower_NormalAssignments[self.player][class] and PallyPower_NormalAssignments[self.player][class][tmp.name] ~= self.opt.mainTankSpellsW and raidmaintanks[tmp.name] == true) then
+                            SetNormalBlessings(self.player, class, tmp.name, self.opt.mainTankSpellsW)
+                            raidmaintanks[tmp.name] = true
+                        end
+                    end
+                    if (raidtank == "MAINASSIST" and self.opt.mainAssist) then
+                        if (PallyPower_Assignments[self.player] and PallyPower_Assignments[self.player][class] == self.opt.mainAssistGSpellsW and (raidmainassists[tmp.name] == false or raidmainassists[tmp.name] == nil)) or (PallyPower_NormalAssignments[self.player] and PallyPower_NormalAssignments[self.player][class] and PallyPower_NormalAssignments[self.player][class][tmp.name] ~= self.opt.mainAssistSpellsW and raidmainassists[tmp.name] == true) then
+                            SetNormalBlessings(self.player, class, tmp.name, self.opt.mainAssistSpellsW)
+                            raidmainassists[tmp.name] = true
+                        end
+                    end
+                end
+                -- Druids and Paladins
+                if (class == 4 or class == 5) then
+                    if (raidmaintanks[tmp.name] == true) then
+                        if PallyPower_NormalAssignments[self.player] and PallyPower_NormalAssignments[self.player][class] and PallyPower_NormalAssignments[self.player][class][tmp.name] == self.opt.mainTankSpellsDP then
+                            if PallyPower_Assignments[self.player] and PallyPower_Assignments[self.player][class] == self.opt.mainTankGSpellsDP and (raidtank == "MAINTANK" and self.opt.mainTank) then
+                            else
+                                SetNormalBlessings(self.player, class, tmp.name, 0)
+                                raidmaintanks[tmp.name] = false
+                            end
+                        end
+                    end
+                    if (raidmainassists[tmp.name] == true) then
+                        if PallyPower_NormalAssignments[self.player] and PallyPower_NormalAssignments[self.player][class] and PallyPower_NormalAssignments[self.player][class][tmp.name] == self.opt.mainAssistSpellsDP then
+                            if PallyPower_Assignments[self.player] and PallyPower_Assignments[self.player][class] == self.opt.mainAssistGSpellsDP and (raidtank == "MAINASSIST" and self.opt.mainAssist) then
+                            else
+                                SetNormalBlessings(self.player, class, tmp.name, 0)
+                                raidmainassists[tmp.name] = false
+                            end
+                        end
+                    end
+                    if (raidtank == "MAINTANK" and self.opt.mainTank) then
+                        if (PallyPower_Assignments[self.player] and PallyPower_Assignments[self.player][class] == self.opt.mainTankGSpellsDP and (raidmaintanks[tmp.name] == false or raidmaintanks[tmp.name] == nil)) or (PallyPower_NormalAssignments[self.player] and PallyPower_NormalAssignments[self.player][class] and PallyPower_NormalAssignments[self.player][class][tmp.name] ~= self.opt.mainTankSpellsDP and raidmaintanks[tmp.name] == true) then
+                            if (self.player == tmp.name and self.opt.mainTankSpellsDP == 7) then
+                                SetNormalBlessings(self.player, class, tmp.name, 0)
+                            else
+                                SetNormalBlessings(self.player, class, tmp.name, self.opt.mainTankSpellsDP)
+                            end
+                            raidmaintanks[tmp.name] = true
+                        end
+                    end
+                    if (raidtank == "MAINASSIST" and self.opt.mainAssist) then
+                        if (PallyPower_Assignments[self.player] and PallyPower_Assignments[self.player][class] == self.opt.mainAssistGSpellsDP and (raidmainassists[tmp.name] == false or raidmainassists[tmp.name] == nil)) or (PallyPower_NormalAssignments[self.player] and PallyPower_NormalAssignments[self.player][class] and PallyPower_NormalAssignments[self.player][class][tmp.name] ~= self.opt.mainAssistSpellsDP and raidmainassists[tmp.name] == true) then
+                            if (self.player == tmp.name and self.opt.mainTankSpellsDP == 7) then
+                                SetNormalBlessings(self.player, class, tmp.name, 0)
+                            else
+                                SetNormalBlessings(self.player, class, tmp.name, self.opt.mainAssistSpellsDP)
+                            end
+                            raidmainassists[tmp.name] = true
+                        end
+                    end
+                end
+
+                if classmaintanks[unitid] == true then
+                    classmaintanks[unitid] = nil
+                    classmaintanks[class] = nil
+                end
+
+                if (raidtank == "MAINTANK" and (class == 1 or class == 4 or class == 5)) then
+                    classmaintanks[unitid] = true
+                    classmaintanks[class] = true
+                end
+            else
+                tmp.rank = UnitIsGroupLeader(unitid) and 2 or 0
+                tmp.subgroup = 1
+            end
+            if pclass == "PALADIN" and (not isPet) then
+                if AllPallys[tmp.name] then
+                    AllPallys[tmp.name].subgroup = tmp.subgroup
                 end
             end
             if tmp.name and (tmp.rank > 0) then
