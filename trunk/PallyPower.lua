@@ -2937,8 +2937,13 @@ function PallyPower:GetUnitAndSpellSmart(classid, mousebutton, playerid)
                     greaterBlessing = true
                     penalty = PALLYPOWER_NORMALBLESSINGDURATION
                 end
-                -- If we're using Blessing of Sacrifice or we have an Alternate Blessing assigned then always allow buffing over a Greater Blessing: Set duration to zero and buff it
-                if (buffName and buffName == gspell) and (spell == "Blessing of Sacrifice" or (spell ~= "Blessing of Sacrifice" and spellID ~= gspellID)) then
+                -- If we're using Blessing of Sacrifice then set the expiration to match Normal Blessings so Auto Buff works.
+                if (buffName and buffName == gspell and spell == "Blessing of Sacrifice") then
+                    greaterBlessing = false
+                    buffExpire = 270
+                    penalty = 0
+                -- Alternate Blessing assigned then always allow buffing over a Greater Blessing: Set duration to zero and buff it.
+                elseif (spell ~= "Blessing of Sacrifice" and spellID ~= gspellID) then
                     greaterBlessing = false
                     buffExpire = 0
                     penalty = 0
@@ -3021,14 +3026,24 @@ function PallyPower:ButtonPreClick(button, mousebutton)
     local targetNames = ""
     local classid = button:GetAttribute("classID")
     local nSpell, gSpell, unitName, unitID
-    if (IsInRaid() and not IsInGroup(LE_PARTY_CATEGORY_INSTANCE)) and (mousebutton == "LeftButton") and (classid ~= 9) then
+    if IsInRaid() and not IsInGroup(LE_PARTY_CATEGORY_INSTANCE) and mousebutton == "LeftButton" then
         local numPlayers = 0
         for i = 1, PALLYPOWER_MAXPERCLASS do
             if numPlayers < 5 and classid and classes[classid] and classes[classid][i] then
                 local _, spell, gspell = self:GetUnitAndSpellSmart(classid, "LeftButton", classes[classid][i].unitid)
                 if gspell ~= nil or (gspell ~= nil and gspell ~= "") then
                     gSpell = gspell
-                    unitName = GetUnitName(classes[classid][i].unitid, true)
+                    if classid == 9 then
+                        local unitPrefix = "party"
+                        local offSet = 9
+                        if (classes[classid][i].unitid:find("raid")) then
+                            unitPrefix = "raid"
+                            offSet = 8
+                        end
+                        unitName = GetUnitName(unitPrefix .. classes[classid][i].unitid:sub(offSet), true) .. "-pet"
+                    else
+                        unitName = GetUnitName(classes[classid][i].unitid, true)
+                    end
                     if unitName ~= nil and unitName ~= sfind(targetNames, unitName) then
                         targetNames = targetNames .. "[@" .. unitName .. ",nodead]"
                         numPlayers = numPlayers + 1
@@ -3074,7 +3089,7 @@ function PallyPower:ButtonPreClick(button, mousebutton)
         for k, v in pairs(classmaintanks) do
             -- If the buff recipient unit(s) is in combat and there is a tank present in
             -- the Class Group then disable Greater Blessing of Salvation for this unit(s).
-            if UnitAffectingCombat(unitID) and gspellID == 4 and (k == classid and v == true) then
+            if unitID and UnitAffectingCombat(unitID) and gspellID == 4 and (k == classid and v == true) then
                 gSpell = false
             end
             if k == unitid and v == true then
@@ -3312,8 +3327,12 @@ function PallyPower:AutoBuff(button, mousebutton)
                 if buffName and buffName == gspell then
                     penalty = PALLYPOWER_NORMALBLESSINGDURATION
                 end
-                -- If we're using Blessing of Sacrifice or we have an Alternate Blessing assigned then always allow buffing over a Greater Blessing: Set duration to zero and buff it
-                if (buffName and buffName == gspell) and (spell == "Blessing of Sacrifice" or (spell ~= "Blessing of Sacrifice" and spellID ~= gspellID)) then
+                -- If we're using Blessing of Sacrifice then set the expiration to match Normal Blessings so Auto Buff works.
+                if (buffName and buffName == gspell and spell == "Blessing of Sacrifice") then
+                    buffExpire = 270
+                    penalty = 0
+                -- Alternate Blessing assigned then always allow buffing over a Greater Blessing: Set duration to zero and buff it.
+                elseif (spell ~= "Blessing of Sacrifice" and spellID ~= gspellID) then
                     buffExpire = 0
                     penalty = 0
                 end
