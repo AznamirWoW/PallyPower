@@ -80,7 +80,7 @@ PallyPower.options = {
 							type = "toggle",
 							width = 1.0,
 							disabled = function(info)
-								return PallyPower.opt.enabled == false or not PP_IsPally
+								return PallyPower.opt.enabled == false
 							end,
 							get = function(info)
 								return PallyPower.opt.ShowWhenSolo
@@ -189,9 +189,6 @@ PallyPower.options = {
 					name = L["PP_LOOKS"],
 					type = "group",
 					inline = true,
-					disabled = function(info)
-						return PallyPower.opt.enabled == false or not PP_IsPally
-					end,
 					args = {
 						buffscale = {
 							order = 1,
@@ -202,6 +199,9 @@ PallyPower.options = {
 							min = 0.4,
 							max = 1.5,
 							step = 0.05,
+							disabled = function(info)
+								return PallyPower.opt.enabled == false or not PP_IsPally
+							end,
 							get = function(info)
 								return PallyPower.opt.buffscale
 							end,
@@ -222,6 +222,9 @@ PallyPower.options = {
 							width = 1.4,
 							name = L["LAYOUT"],
 							desc = L["LAYOUT_DESC"],
+							disabled = function(info)
+								return PallyPower.opt.enabled == false or not PP_IsPally
+							end,
 							get = function(info)
 								return PallyPower.opt.layout
 							end,
@@ -248,6 +251,9 @@ PallyPower.options = {
 							width = 1.5,
 							dialogControl = "LSM30_Background",
 							values = AceGUIWidgetLSMlists.background,
+							disabled = function(info)
+								return PallyPower.opt.enabled == false or not PP_IsPally
+							end,
 							get = function(info)
 								return PallyPower.opt.skin
 							end,
@@ -270,6 +276,9 @@ PallyPower.options = {
 							width = 1.4,
 							dialogControl = "LSM30_Border",
 							values = AceGUIWidgetLSMlists.border,
+							disabled = function(info)
+								return PallyPower.opt.enabled == false or not PP_IsPally
+							end,
 							get = function(info)
 								return PallyPower.opt.border
 							end,
@@ -354,15 +363,15 @@ PallyPower.options = {
 			desc = L["BUTTONS_DESC"],
 			type = "group",
 			cmdHidden = true,
-			disabled = function(info)
-				return PallyPower.opt.enabled == false or not PP_IsPally
-			end,
 			args = {
 				aura_button = {
 					order = 1,
 					name = L["AURA"],
 					type = "group",
 					inline = true,
+					disabled = function(info)
+						return PallyPower.opt.enabled == false or not PP_IsPally
+					end,
 					args = {
 						aura_desc = {
 							order = 0,
@@ -413,6 +422,9 @@ PallyPower.options = {
 					name = L["SEAL"],
 					type = "group",
 					inline = true,
+					disabled = function(info)
+						return PallyPower.opt.enabled == false or not PP_IsPally
+					end,
 					args = {
 						seal_desc = {
 							order = 0,
@@ -480,6 +492,9 @@ PallyPower.options = {
 					name = L["AUTO"],
 					type = "group",
 					inline = true,
+					disabled = function(info)
+						return PallyPower.opt.enabled == false or not PP_IsPally
+					end,
 					args = {
 						auto_desc = {
 							order = 0,
@@ -520,6 +535,9 @@ PallyPower.options = {
 					name = L["CPBTNS"],
 					type = "group",
 					inline = true,
+					disabled = function(info)
+						return PallyPower.opt.enabled == false or not PP_IsPally
+					end,
 					args = {
 						cp_desc = {
 							order = 0,
@@ -549,7 +567,7 @@ PallyPower.options = {
 							name = L["PLAYERBTNS"],
 							desc = L["PLAYERBTNS_DESC"],
 							disabled = function(info)
-								return PallyPower.opt.display.showClassButtons == false
+								return PallyPower.opt.display.showClassButtons == false or not PP_IsPally
 							end,
 							get = function(info)
 								return PallyPower.opt.display.showPlayerButtons
@@ -568,7 +586,7 @@ PallyPower.options = {
 							name = L["BUFFDURATION"],
 							desc = L["BUFFDURATION_DESC"],
 							disabled = function(info)
-								return PallyPower.opt.display.showClassButtons == false
+								return PallyPower.opt.display.showClassButtons == false or not PP_IsPally
 							end,
 							get = function(info)
 								return PallyPower.opt.display.buffDuration
