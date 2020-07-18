@@ -134,7 +134,7 @@ PallyPower.options = {
 					type = "group",
 					inline = true,
 					disabled = function(info)
-						return PallyPower.opt.enabled == false
+						return PallyPower.opt.enabled == false or not PP_IsPally
 					end,
 					args = {
 						smart_buff = {
@@ -171,9 +171,6 @@ PallyPower.options = {
 							name = L["SALVCOMBAT"],
 							desc = L["SALVCOMBAT_DESC"],
 							width = 1.0,
-							disabled = function(info)
-								return not PP_IsPally
-							end,
 							get = function(info)
 								return PallyPower.opt.SalvInCombat
 							end,
@@ -287,11 +284,40 @@ PallyPower.options = {
 								PallyPower:ApplySkin()
 							end
 						},
-						reset = {
+						assignmentsscale = {
 							order = 7,
+							name = L["BAP"],
+							desc = L["BAP_DESC"],
+							type = "range",
+							width = 1.5,
+							min = 0.4,
+							max = 1.5,
+							step = 0.05,
+							disabled = function(info)
+								return PallyPower.opt.enabled == false or not PP_IsPally
+							end,
+							get = function(info)
+								return PallyPower.opt.configscale
+							end,
+							set = function(info, val)
+								PallyPower.opt.configscale = val
+								PallyPower:UpdateLayout()
+							end
+						},
+						padding3 = {
+							order = 8,
+							name = "",
+							type = "description",
+							width = .2
+						},
+						reset = {
+							order = 9,
 							name = L["RESET"],
 							desc = L["RESET_DESC"],
 							type = "execute",
+							disabled = function(info)
+								return PallyPower.opt.enabled == false
+							end,
 							func = function()
 								PallyPower:Reset()
 							end
@@ -363,6 +389,9 @@ PallyPower.options = {
 			desc = L["BUTTONS_DESC"],
 			type = "group",
 			cmdHidden = true,
+			disabled = function(info)
+				return PallyPower.opt.enabled == false
+			end,
 			args = {
 				aura_button = {
 					order = 1,
@@ -442,6 +471,9 @@ PallyPower.options = {
 							end,
 							set = function(info, val)
 								PallyPower.opt.rfbuff = val
+								if not PallyPower.opt.rfbuff then
+									PallyPower.opt.rf = false
+								end
 								PallyPower:UpdateRoster()
 							end
 						},
@@ -452,7 +484,7 @@ PallyPower.options = {
 							desc = L["RFM_DESC"],
 							width = 1.1,
 							disabled = function(info)
-								return PallyPower.opt.rfbuff == false
+								return PallyPower.opt.rfbuff == false or PallyPower.opt.enabled == false or not PP_IsPally
 							end,
 							get = function(info)
 								return PallyPower.opt.rf
@@ -555,8 +587,9 @@ PallyPower.options = {
 							end,
 							set = function(info, val)
 								PallyPower.opt.display.showClassButtons = val
-								if (PallyPower.opt.display.showPlayerButtons and not PallyPower.opt.display.showClassButtons) then
+								if not PallyPower.opt.display.showClassButtons then
 									PallyPower.opt.display.showPlayerButtons = false
+									PallyPower.opt.display.buffDuration = false
 								end
 								PallyPower:UpdateRoster()
 							end
@@ -567,7 +600,7 @@ PallyPower.options = {
 							name = L["PLAYERBTNS"],
 							desc = L["PLAYERBTNS_DESC"],
 							disabled = function(info)
-								return PallyPower.opt.display.showClassButtons == false or not PP_IsPally
+								return PallyPower.opt.display.showClassButtons == false or PallyPower.opt.enabled == false or not PP_IsPally
 							end,
 							get = function(info)
 								return PallyPower.opt.display.showPlayerButtons
@@ -586,7 +619,7 @@ PallyPower.options = {
 							name = L["BUFFDURATION"],
 							desc = L["BUFFDURATION_DESC"],
 							disabled = function(info)
-								return PallyPower.opt.display.showClassButtons == false or not PP_IsPally
+								return PallyPower.opt.display.showClassButtons == false or PallyPower.opt.enabled == false or not PP_IsPally
 							end,
 							get = function(info)
 								return PallyPower.opt.display.buffDuration
@@ -603,6 +636,9 @@ PallyPower.options = {
 					name = L["DRAG"],
 					type = "group",
 					inline = true,
+					disabled = function(info)
+						return PallyPower.opt.enabled == false
+					end,
 					args = {
 						misc_desc = {
 							order = 0,
