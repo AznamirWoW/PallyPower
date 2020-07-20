@@ -230,14 +230,14 @@ PallyPower.options = {
 								PallyPower:UpdateLayout()
 							end,
 							values = {
-								["Layout 1"] = L["VerDownRight"],
-								["Layout 2"] = L["VerDownLeft"],
-								["Layout 3"] = L["VerUpRight"],
-								["Layout 4"] = L["VerUpLeft"],
-								["Layout 5"] = L["HorRightDown"],
-								["Layout 6"] = L["HorRightUp"],
-								["Layout 7"] = L["HorLeftDown"],
-								["Layout 8"] = L["HorLeftUp"]
+								["Layout 1"] = L["VERDOWNRIGHT"],
+								["Layout 2"] = L["VERDOWNLEFT"],
+								["Layout 3"] = L["VERUPRIGHT"],
+								["Layout 4"] = L["VERUPLEFT"],
+								["Layout 5"] = L["HORRIGHTDOWN"],
+								["Layout 6"] = L["HORRIGHTUP"],
+								["Layout 7"] = L["HORLEFTDOWN"],
+								["Layout 8"] = L["HORLEFTUP"]
 							}
 						},
 						skin = {
@@ -335,7 +335,7 @@ PallyPower.options = {
 					args = {
 						color_good = {
 							order = 1,
-							name = L["Fully Buffed"],
+							name = L["FULLY_BUFFED"],
 							type = "color",
 							get = function()
 								return PallyPower.opt.cBuffGood.r, PallyPower.opt.cBuffGood.g, PallyPower.opt.cBuffGood.b, PallyPower.opt.cBuffGood.t
@@ -350,7 +350,7 @@ PallyPower.options = {
 						},
 						color_partial = {
 							order = 2,
-							name = L["Partially Buffed"],
+							name = L["PARTIALLY_BUFFED"],
 							type = "color",
 							width = 1.1,
 							get = function()
@@ -366,7 +366,7 @@ PallyPower.options = {
 						},
 						color_missing = {
 							order = 3,
-							name = L["None Buffed"],
+							name = L["NONE_BUFFED"],
 							type = "color",
 							get = function()
 								return PallyPower.opt.cBuffNeedAll.r, PallyPower.opt.cBuffNeedAll.g, PallyPower.opt.cBuffNeedAll.b, PallyPower.opt.cBuffNeedAll.t
@@ -434,7 +434,7 @@ PallyPower.options = {
 								PallyPower_AuraAssignments[PallyPower.player] = val
 							end,
 							values = {
-								[0] = L["None"],
+								[0] = L["NONE"],
 								[1] = PallyPower.Auras[1], -- Devotion Aura
 								[2] = PallyPower.Auras[2], -- Retribution Aura
 								[3] = PallyPower.Auras[3], -- Concentration Aura
@@ -508,7 +508,7 @@ PallyPower.options = {
 								PallyPower:SealAssign(PallyPower.opt.seal)
 							end,
 							values = {
-								[0] = L["None"],
+								[0] = L["NONE"],
 								[1] = PallyPower.Seals[1], -- Seal of Justice
 								[2] = PallyPower.Seals[2], -- Seal of Light
 								[3] = PallyPower.Seals[3], -- Seal of Wisdom
@@ -715,7 +715,7 @@ PallyPower.options = {
 								PallyPower:UpdateRoster()
 							end,
 							values = {
-								[0] = L["None"],
+								[0] = L["NONE"],
 								[1] = PallyPower.GSpells[1], -- Greater Blessing of Wisdom
 								[2] = PallyPower.GSpells[2], -- Greater Blessing of Might
 								[3] = PallyPower.GSpells[3], -- Greater Blessing of Kings
@@ -741,7 +741,7 @@ PallyPower.options = {
 								PallyPower:UpdateRoster()
 							end,
 							values = {
-								[0] = L["None"],
+								[0] = L["NONE"],
 								[1] = PallyPower.Spells[1], -- Blessing of Wisdom
 								[2] = PallyPower.Spells[2], -- Blessing of Might
 								[3] = PallyPower.Spells[3], -- Blessing of Kings
@@ -768,7 +768,7 @@ PallyPower.options = {
 								PallyPower:UpdateRoster()
 							end,
 							values = {
-								[0] = L["None"],
+								[0] = L["NONE"],
 								[1] = PallyPower.GSpells[1], -- Greater Blessing of Wisdom
 								[2] = PallyPower.GSpells[2], -- Greater Blessing of Might
 								[3] = PallyPower.GSpells[3], -- Greater Blessing of Kings
@@ -794,7 +794,7 @@ PallyPower.options = {
 								PallyPower:UpdateRoster()
 							end,
 							values = {
-								[0] = L["None"],
+								[0] = L["NONE"],
 								[1] = PallyPower.Spells[1], -- Blessing of Wisdom
 								[2] = PallyPower.Spells[2], -- Blessing of Might
 								[3] = PallyPower.Spells[3], -- Blessing of Kings
@@ -835,7 +835,7 @@ PallyPower.options = {
 								PallyPower:UpdateRoster()
 							end,
 							values = {
-								[0] = L["None"],
+								[0] = L["NONE"],
 								[1] = PallyPower.GSpells[1], -- Greater Blessing of Wisdom
 								[2] = PallyPower.GSpells[2], -- Greater Blessing of Might
 								[3] = PallyPower.GSpells[3], -- Greater Blessing of Kings
@@ -861,7 +861,7 @@ PallyPower.options = {
 								PallyPower:UpdateRoster()
 							end,
 							values = {
-								[0] = L["None"],
+								[0] = L["NONE"],
 								[1] = PallyPower.Spells[1], -- Blessing of Wisdom
 								[2] = PallyPower.Spells[2], -- Blessing of Might
 								[3] = PallyPower.Spells[3], -- Blessing of Kings
@@ -888,7 +888,7 @@ PallyPower.options = {
 								PallyPower:UpdateRoster()
 							end,
 							values = {
-								[0] = L["None"],
+								[0] = L["NONE"],
 								[1] = PallyPower.GSpells[1], -- Greater Blessing of Wisdom
 								[2] = PallyPower.GSpells[2], -- Greater Blessing of Might
 								[3] = PallyPower.GSpells[3], -- Greater Blessing of Kings
@@ -914,7 +914,7 @@ PallyPower.options = {
 								PallyPower:UpdateRoster()
 							end,
 							values = {
-								[0] = L["None"],
+								[0] = L["NONE"],
 								[1] = PallyPower.Spells[1], -- Blessing of Wisdom
 								[2] = PallyPower.Spells[2], -- Blessing of Might
 								[3] = PallyPower.Spells[3], -- Blessing of Kings
