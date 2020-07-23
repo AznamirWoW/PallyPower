@@ -121,7 +121,7 @@ PALLYPOWER_OTHER_VALUES = {
 		ShowTooltips = true,
 		ShowWhenSolo = true,
 		skin = "Smooth",
-		SmartBuffs = true
+		SmartBuffs = false
 	}
 }
 
@@ -263,8 +263,7 @@ PallyPower.GreaterBuffs = {
 	[3] = {{50, 25898}},
 	[4] = {{50, 25895}},
 	[5] = {{50, 25890}},
-	[6] = {{50, 25899}},
-	[7] = {{44, 20729}, {36, 6940}}
+	[6] = {{50, 25899}}
 }
 
 PallyPower.RFSpell = GetSpellInfo(25780) --BS["Righteous Fury"]
