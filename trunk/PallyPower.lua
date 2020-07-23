@@ -62,10 +62,11 @@ function PallyPower:Debug(string)
 end
 
 function PallyPower:OnInitialize()
-    if UnitClass("player") == "Paladin" then
-        self.db = LibStub("AceDB-3.0"):New("PallyPowerDB", PALLYPOWER_DEFAULT_VALUES, "Default")
-    else
+    if UnitClass("player") ~= "Paladin" then
         self.db = LibStub("AceDB-3.0"):New("PallyPowerDB", PALLYPOWER_OTHER_VALUES, "Other")
+        self.db:SetProfile("Other")
+    else
+        self.db = LibStub("AceDB-3.0"):New("PallyPowerDB", PALLYPOWER_DEFAULT_VALUES, "Default")
     end
     self.db.RegisterCallback(self, "OnProfileChanged", "OnProfileChanged")
     self.db.RegisterCallback(self, "OnProfileCopied", "OnProfileChanged")
@@ -1070,7 +1071,7 @@ end
 function PallyPower:CanBuffBlessing(spellId, gspellId, unitId)
     if unitId and spellId ~= nil or gspellId ~= nil then
         local normSpell, greatSpell
-        if UnitLevel(unitId) < 60 then
+        if UnitLevel(unitId) == 60 then
             normSpell = PallyPower.Spells[spellId]
             greatSpell = PallyPower.GSpells[gspellId]
             return normSpell, greatSpell
@@ -1095,9 +1096,9 @@ function PallyPower:CanBuffBlessing(spellId, gspellId, unitId)
                 end
             end
         else
-            normSpell = PallyPower.Spells[spellId]
+            normSpell = nil
         end
-        if gspellId > 0 then
+        if gspellId > 0 and UnitLevel(unitId) > 49 then
             for k, v in pairs(self.GreaterBuffs[gspellId]) do
                 if IsSpellKnown(v[2]) then
                     if UnitLevel(unitId) >= v[1] then
@@ -1117,7 +1118,7 @@ function PallyPower:CanBuffBlessing(spellId, gspellId, unitId)
                 end
             end
         else
-            greatSpell = PallyPower.GSpells[gspellId]
+            greatSpell = nil
         end
         return normSpell, greatSpell
     end
@@ -1448,7 +1449,7 @@ function PallyPower:PLAYER_ENTERING_WORLD()
     self:UpdateRoster()
     self:ReportChannels()
     if UnitName("player") == "Dyaxler" or UnitName("player") == "Minidyax" then
-        PP_DebugEnabled = true
+        --PP_DebugEnabled = true
         --LCD:ToggleDebug()
     end
 end
@@ -1600,7 +1601,7 @@ function PallyPower:UNIT_SPELLCAST_SUCCEEDED(event, unitTarget, castGUID, spellI
 end
 
 function PallyPower:PLAYER_ROLES_ASSIGNED(event)
-    self:Debug("[Event] PLAYER_ROLES_ASSIGNED")
+    --self:Debug("[Event] PLAYER_ROLES_ASSIGNED")
     C_Timer.After(
         2.0,
         function()
@@ -1893,7 +1894,7 @@ function PallyPower:GetClassID(class)
 end
 
 function PallyPower:UpdateRoster()
-    self:Debug("UpdateRoster()")
+    --self:Debug("UpdateRoster()")
     local units, class, raidtank
     for i = 1, PALLYPOWER_MAXCLASSES do
         classlist[i] = 0
@@ -2316,10 +2317,7 @@ function PallyPower:UpdateLayout()
             cButton:SetAttribute("type1", "macro")
             cButton:SetAttribute("type2", "macro")
             if (cButton:GetAttribute("macrotext1") == nil) then
-                PallyPower:ButtonPreClick(cButton, "LeftButton")
-                if gspellID == 4 then
-                    PallyPower:ButtonPostClick(cButton, "LeftButton")
-                end
+                PallyPower:ButtonPostClick(cButton, "LeftButton")
             end
             local pButtons = self.playerButtons[cbNum]
             for pbNum = 1, math.min(classlist[classIndex], PALLYPOWER_MAXPERCLASS) do
@@ -2955,27 +2953,21 @@ function PallyPower:GetUnit(classID, playerID)
     return classes[classID][playerID]
 end
 
-function PallyPower:GetUnitAndSpellSmart(classid, mousebutton, playerid)
+function PallyPower:GetUnitAndSpellSmart(classid, mousebutton)
     local class = classes[classid]
     local now = time()
     -- Greater Blessings
     if (mousebutton == "LeftButton") then
-        local unitID = nil
         local minExpire, classMinExpire, classNeedsBuff, classMinUnitPenalty, classMinUnit, classMinSpell, classMaxSpell = 600, 600, true, 600, nil, nil, nil
         for i, unit in pairs(class) do
-            if playerid then
-                unitID = playerid
-            else
-                unitID = unit.unitid
-            end
-            local isPet = unitID:find("pet")
+            local isPet = unit.unitid:find("pet")
             local spellID, gspellID = self:GetSpellID(classid, unit.name)
             local spell = self.Spells[spellID]
             local gspell = self.GSpells[gspellID]
-            if (IsSpellInRange(gspell, unitID) == 1) and (not UnitIsDeadOrGhost(unitID)) then
+            if (IsSpellInRange(gspell, unit.unitid) == 1) and (not UnitIsDeadOrGhost(unit.unitid)) then
                 local penalty = 0
-                local buffExpire, buffDuration, buffName = self:IsBuffActive(spell, gspell, unitID)
-                local nSpell, gSpell = self:CanBuffBlessing(spellID, gspellID, unitID)
+                local buffExpire, buffDuration, buffName = self:IsBuffActive(spell, gspell, unit.unitid)
+                local nSpell, gSpell = self:CanBuffBlessing(spellID, gspellID, unit.unitid)
                 if (self.AutoBuffedList[unit.name] and now - self.AutoBuffedList[unit.name] < 10) then
                     penalty = PALLYPOWER_GREATERBLESSINGDURATION
                 end
@@ -3001,7 +2993,7 @@ function PallyPower:GetUnitAndSpellSmart(classid, mousebutton, playerid)
                             -- Skip tanks if Salv is assigned. This allows autobuff to work since some tanks
                             -- have addons and/or scripts to auto cancel Salvation. Prevents getting stuck
                             -- buffing a tank when auto buff rotates among players in the class group.
-                            if k == unitID and v == true then
+                            if k == unit.unitid and v == true then
                                 buffExpire = 9999
                                 penalty = 9999
                             end
@@ -3023,7 +3015,7 @@ function PallyPower:GetUnitAndSpellSmart(classid, mousebutton, playerid)
                     classMaxSpell = gSpell
                     classMinExpire = (buffExpire or 0)
                 end
-            elseif (UnitIsVisible(unitID) == false and not UnitIsAFK(unitID) and UnitIsConnected(unitID)) and (IsInRaid() == false or #classes[classid] > 3) then
+            elseif (UnitIsVisible(unit.unitid) == false and not UnitIsAFK(unit.unitid) and UnitIsConnected(unit.unitid)) and (IsInRaid() == false or #classes[classid] > 3) then
                 classNeedsBuff = false
             end
         end
@@ -3035,23 +3027,18 @@ function PallyPower:GetUnitAndSpellSmart(classid, mousebutton, playerid)
         end
     -- Normal Blessings
     elseif (mousebutton == "RightButton") then
-        local unitID = nil
         local minExpire, minUnit, minSpell = 240, nil, nil
         for i, unit in pairs(class) do
-            if playerid then
-                unitID = playerid
-            else
-                unitID = unit.unitid
-            end
             local spellID, gspellID = self:GetSpellID(classid, unit.name)
             local spell = self.Spells[spellID]
             local spell2 = self.GSpells[spellID]
             local gspell = self.GSpells[gspellID]
-            if (IsSpellInRange(spell, unitID) == 1) and (not UnitIsDeadOrGhost(unitID)) then
+            if (IsSpellInRange(spell, unit.unitid) == 1) and (not UnitIsDeadOrGhost(unit.unitid)) then
                 local penalty = 0
                 local greaterBlessing = false
-                local buffExpire, buffDuration, buffName = self:IsBuffActive(spell, spell2, unitID)
-                local nSpell, gSpell = self:CanBuffBlessing(spellID, gspellID, unitID)
+                local buffExpire, buffDuration, buffName = self:IsBuffActive(spell, spell2, unit.unitid)
+                local nSpell, gSpell = self:CanBuffBlessing(spellID, gspellID, unit.unitid)
+
                 if (self.AutoBuffedList[unit.name] and now - self.AutoBuffedList[unit.name] < 10) then
                     penalty = PALLYPOWER_NORMALBLESSINGDURATION
                 end
@@ -3093,7 +3080,7 @@ function PallyPower:GetUnitAndSpellSmart(classid, mousebutton, playerid)
                             buff = buff - 1
                         end
                     end
-                    if not buffExpire or buffExpire < (300 - (1.6 * buff) + 1.6) then
+                    if not buffExpire or buffExpire < (300 - (1.65 * buff) + 1.65) then
                         buffExpire = 0
                         penalty = 0
                     end
@@ -3106,7 +3093,7 @@ function PallyPower:GetUnitAndSpellSmart(classid, mousebutton, playerid)
                     -- use to wipe Salvation from a tank. Prevents getting stuck buffing a tank when
                     -- auto buff rotates among players in the class group.
                     for k, v in pairs(classmaintanks) do
-                        if k == unitID and v == true then
+                        if k == unit.unitid and v == true then
                             if (spellID == 4 and not self.opt.SalvInCombat) then
                                 buffExpire = 9999
                                 penalty = 9999
@@ -3118,7 +3105,7 @@ function PallyPower:GetUnitAndSpellSmart(classid, mousebutton, playerid)
                 if ((not buffExpire or buffExpire + penalty < minExpire and buffExpire < PALLYPOWER_NORMALBLESSINGDURATION) and minExpire > 0 and not greaterBlessing) then
                     self.AutoBuffedList[unit.name] = now
                     self.PreviousAutoBuffedUnit = unit
-                    return unitID, nSpell, gSpell
+                    return unit.unitid, nSpell, gSpell
                 end
             end
         end
@@ -3154,38 +3141,23 @@ function PallyPower:ButtonPreClick(button, mousebutton)
     end
     -- Greater Blessing: Clear
     button:SetAttribute("macrotext1", nil)
+    button:SetAttribute("spellName1", nil)
+    button:SetAttribute("step1", nil)
+    button:UnwrapScript(button, "OnClick")
     -- Normal Blessing: Clear
     button:SetAttribute("macrotext2", nil)
-    local targetNames = ""
     local classid = button:GetAttribute("classID")
-    local nSpell, gSpell, unitName, unitID
-    if IsInRaid() and (not IsInGroup(LE_PARTY_CATEGORY_INSTANCE)) and (mousebutton == "LeftButton") and (classid ~= 9) then
-        local numPlayers = 0
-        for i = 1, PALLYPOWER_MAXPERCLASS do
-            if numPlayers < 5 and classid and classes[classid] and classes[classid][i] then
-                local _, spell, gspell = self:GetUnitAndSpellSmart(classid, "LeftButton", classes[classid][i].unitid)
-                if gspell ~= nil or (gspell ~= nil and gspell ~= "") then
-                    gSpell = gspell
-                    unitName = GetUnitName(classes[classid][i].unitid, true)
-                    if unitName ~= nil and unitName ~= sfind(targetNames, unitName) then
-                        targetNames = targetNames .. "[@" .. unitName .. ",nodead]"
-                        numPlayers = numPlayers + 1
-                        if numPlayers == 1 then
-                            unitID = classes[classid][i].unitid
-                        end
-                    end
-                end
-            else
-                break
-            end
+    local spell, gspell, unitName, unitid
+    if IsInRaid() and (mousebutton == "LeftButton") and (classid ~= 9) then
+        unitid, spell, gspell = self:GetUnitAndSpellSmart(classid, mousebutton)
+        if unitid and classid then
+            unitName = GetUnitName(unitid, true)
         end
-        nSpell = false
-    elseif not IsInRaid() or (IsInRaid() and IsInGroup(LE_PARTY_CATEGORY_INSTANCE)) or (IsInRaid() and not IsInGroup(LE_PARTY_CATEGORY_INSTANCE) and mousebutton == "RightButton") then
-        local unitid, spell, gspell = self:GetUnitAndSpellSmart(classid, mousebutton)
+        spell = false
+    elseif not IsInRaid() or ((IsInRaid() and mousebutton == "RightButton")) then
+        unitid, spell, gspell = self:GetUnitAndSpellSmart(classid, mousebutton)
         targetNames = false
         if unitid and classid then
-            nSpell = spell
-            gSpell = gspell
             if classid == 9 then
                 local unitPrefix = "party"
                 local offSet = 9
@@ -3197,64 +3169,21 @@ function PallyPower:ButtonPreClick(button, mousebutton)
             else
                 unitName = GetUnitName(unitid, true)
             end
-            unitID = unitid
         end
         if mousebutton == "LeftButton" then
-            nSpell = false
+            spell = false
         end
         if mousebutton == "RightButton" then
-            gSpell = false
+            gspell = false
         end
     end
-    local spellID, gspellID = self:GetSpellID(classid, self.player)
+    local spellID, gspellID = self:GetSpellID(classid, unitName)
     -- Enable Greater Blessing of Salvation on everyone but do not allow Normal Blessing of Salvation on tanks if SalvInCombat is disabled
-    if unitID and IsInRaid() and (spellID == 4 or gspellID == 4) and (not self.opt.SalvInCombat) then
+    if unitid and IsInRaid() and (spellID == 4 or gspellID == 4) and (not self.opt.SalvInCombat) then
         for k, v in pairs(classmaintanks) do
             -- If the buff recipient unit(s) is in combat and there is a tank present in
             -- the Class Group then disable Greater Blessing of Salvation for this unit(s).
-            if UnitAffectingCombat(unitID) and (gspellID == 4) and (k == classid and v == true) then
-                gSpell = false
-            end
-            if k == unitid and v == true then
-                -- Do not allow Salvation on tanks - Blessings [disabled]
-                if (spellID == 4) then
-                    nSpell = false
-                end
-                if (gspellID == 4) then
-                    gSpell = false
-                end
-            end
-        end
-    end
-    -- Set Greater Blessing: left click
-    if gSpell and targetNames then
-        local gspellMacro = "/cast " .. targetNames .. " " .. gSpell
-        button:SetAttribute("macrotext1", gspellMacro)
-    end
-    -- Set Greater Blessing: left click
-    if gSpell and targetNames == false then
-        local gspellMacro = "/cast [@" .. unitName .. ",nodead] " .. gSpell
-        button:SetAttribute("macrotext1", gspellMacro)
-    end
-    -- Set Normal Blessing: right click (only works while not in combat)
-    if nSpell and unitName then
-        local spellMacro = "/cast [@" .. unitName .. ",nodead] " .. nSpell
-        button:SetAttribute("macrotext2", spellMacro)
-    end
-end
-
-function PallyPower:ButtonPostClick(button, mousebutton)
-    if InCombatLockdown() then
-        return
-    end
-    local classid = button:GetAttribute("classID")
-    local spellID, gspellID = self:GetSpellID(classid, self.player)
-    -- Enable Greater Blessing of Salvation on everyone but do not allow Normal Blessing of Salvation on tanks if SalvInCombat is disabled
-    if IsInRaid() and (spellID == 4 or gspellID == 4) and not self.opt.SalvInCombat then
-        for k, v in pairs(classmaintanks) do
-            -- If for some reason the targeted unit is in combat and there is a tank present
-            -- in the Class Group then disable Greater Blessing of Salvation for this unit.
-            if gspellID == 4 and (k == classid and v == true) then
+            if UnitAffectingCombat(unitid) and (gspellID == 4) and (k == classid and v == true) then
                 gspell = false
             end
             if k == unitid and v == true then
@@ -3266,15 +3195,98 @@ function PallyPower:ButtonPostClick(button, mousebutton)
                     gspell = false
                 end
             end
-            -- Clear Greater Blessing: left click
-            if gspell == false and classid then
-                button:SetAttribute("macrotext1", nil)
+        end
+    end
+    -- Set Greater Blessing: left click
+    if gspell and unitName then
+        local gspellMacro = "/cast [@" .. unitName .. ",help,nodead] " .. gspell
+        button:SetAttribute("macrotext1", gspellMacro)
+        print("Single Unit Macro Executed: "..gspellMacro)
+    end
+    -- Set Normal Blessing: right click (Only works while not in combat. Cleared in PostClick.)
+    if spell and unitName then
+        local spellMacro = "/cast [@" .. unitName .. ",help,nodead] " .. spell
+        button:SetAttribute("macrotext2", spellMacro)
+        print("Single Unit Macro Executed: "..spellMacro)
+    end
+end
+
+function PallyPower:ButtonPostClick(button, mousebutton)
+    if InCombatLockdown() then
+        local gspellMacro = button:GetAttribute("macrotext1")
+        if gspellMacro then
+            print("Secure Macro Executed: "..gspellMacro)
+        end
+        return
+    end
+    -- Greater Blessing: Clear current macro
+    button:SetAttribute("macrotext1", nil)
+    button:SetAttribute("spellName1", nil)
+    button:SetAttribute("step1", nil)
+    button:UnwrapScript(button, "OnClick")
+    -- Normal Blessing: Clear current macro
+    button:SetAttribute("macrotext2", nil)
+    -- Create a list of viable players for in-combat script
+    local targetNames = {}
+    local gSpell = false
+    local numPlayers = 0
+    local classid = button:GetAttribute("classID")
+    --if IsInRaid() and (not IsInGroup(LE_PARTY_CATEGORY_INSTANCE)) and (mousebutton == "LeftButton") and (classid ~= 9) then
+    if IsInRaid() and (mousebutton == "LeftButton") and (classid ~= 9) then
+        for i = 1, PALLYPOWER_MAXPERCLASS do
+            if numPlayers < 8 and classid and classes[classid] and classes[classid][i] then
+                local unit = classes[classid][i]
+                local spellID, gspellID = self:GetSpellID(classid, unit.name)
+                local _, gspell = self:CanBuffBlessing(spellID, gspellID, unit.unitid)
+                if gspell and (IsSpellInRange(gspell, unit.unitid) == 1) and (not UnitIsDeadOrGhost(unit.unitid)) and (not UnitIsAFK(unit.unitid)) and UnitIsConnected(unit.unitid) then
+                    local unitName = GetUnitName(classes[classid][i].unitid, true)
+                    table.insert(targetNames, unitName)
+                    numPlayers = numPlayers + 1
+                    gSpell = gspell
+                end
+            else
+                break
             end
         end
     end
-    -- Clear Normal Blessing: right click (only works while not in combat)
-    if spell == false and classid then
-        button:SetAttribute("macrotext2", nil)
+    -- If there is a tank present for this "classid" then disable Greater Blessing of Salvation.
+    if IsInRaid() and gSpell and sfind(gSpell, "Greater Blessing of Salvation") and not self.opt.SalvInCombat then
+        for k, v in pairs(classmaintanks) do
+            if (k == classid and v == true) then
+                gSpell = false
+            end
+        end
+    end
+    if gSpell and numPlayers > 0 then
+        button:SetAttribute("spellName1", gSpell)
+        button:SetAttribute("step1", 1)
+
+        button:Execute("unitNames = newtable([=======[" .. unpack(targetNames) .. "]=======])")
+
+        button:WrapScript(button, "OnClick", [=[
+            local spellName = self:GetAttribute("spellName1")
+            local step = self:GetAttribute("step1")
+
+            if step == #unitNames then
+                step = 1
+            end
+
+            for i, unitName in pairs(unitNames) do
+                if i == step then
+                    if SecureCmdOptionParse("[@" .. unitName .. ",help,nodead]") then
+                        local gspellMacro = "/cast %s %s"
+                        local targetName = "[@" .. unitName .. ",help,nodead]"
+                        gspellMacro = format(gspellMacro, targetName, spellName)
+                        self:SetAttribute("macrotext1", gspellMacro)
+                        self:SetAttribute("step1", step + 1)
+                        break
+                    else
+                        step = step + 1
+                    end
+                end
+            end
+        ]=])
+        --print("Secure Code Script Created")
     end
 end
 
