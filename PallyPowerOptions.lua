@@ -205,6 +205,7 @@ PallyPower.options = {
 							set = function(info, val)
 								PallyPower.opt.buffscale = val
 								PallyPower:UpdateLayout()
+								PallyPower:UpdateRoster()
 							end
 						},
 						padding1 = {
@@ -228,6 +229,7 @@ PallyPower.options = {
 							set = function(info, val)
 								PallyPower.opt.layout = val
 								PallyPower:UpdateLayout()
+								PallyPower:UpdateRoster()
 							end,
 							values = {
 								["Layout 1"] = L["VERDOWNRIGHT"],
@@ -257,6 +259,7 @@ PallyPower.options = {
 							set = function(info, val)
 								PallyPower.opt.skin = val
 								PallyPower:ApplySkin()
+								PallyPower:UpdateRoster()
 							end
 						},
 						padding2 = {
@@ -282,6 +285,7 @@ PallyPower.options = {
 							set = function(info, val)
 								PallyPower.opt.border = val
 								PallyPower:ApplySkin()
+								PallyPower:UpdateRoster()
 							end
 						},
 						assignmentsscale = {
@@ -302,6 +306,7 @@ PallyPower.options = {
 							set = function(info, val)
 								PallyPower.opt.configscale = val
 								PallyPower:UpdateLayout()
+								PallyPower:UpdateRoster()
 							end
 						},
 						padding3 = {
@@ -320,6 +325,7 @@ PallyPower.options = {
 							end,
 							func = function()
 								PallyPower:Reset()
+								PallyPower:UpdateRoster()
 							end
 						}
 					}
