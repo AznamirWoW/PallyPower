@@ -1965,6 +1965,7 @@
                     self:StopMovingOrSizing();
                     self.isMoving = false
                 end
+                L_CloseDropDownMenus()
             </OnHide>
         </Scripts>
     </Frame>
