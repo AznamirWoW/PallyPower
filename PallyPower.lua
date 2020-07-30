@@ -225,6 +225,7 @@ end
 function PallyPower:OpenConfigWindow()
     if PallyPowerBlessingsFrame:IsVisible() then
         PallyPowerBlessingsFrame:Hide()
+        L_CloseDropDownMenus()
     end
     if not PallyPowerConfigFrame:IsShown() then
         PallyPowerConfigFrame:Show()
@@ -275,6 +276,7 @@ function PallyPowerBlessings_Toggle(msg)
     end
     if PallyPowerBlessingsFrame:IsVisible() then
         PallyPowerBlessingsFrame:Hide()
+        L_CloseDropDownMenus()
         PlaySound(SOUNDKIT.IG_SPELLBOOK_CLOSE)
     else
         local c = _G["PallyPowerBlessingsFrame"]
@@ -360,8 +362,8 @@ function PallyPowerGrid_NormalBlessingMenu(btn, mouseBtn, pname, class)
 
         local menu = {}
 
-        tinsert(menu, {text = "|cffffffff" .. pname .. "|r can be assigned", isTitle = true, isNotRadio = true, notCheckable = 1})
-        tinsert(menu, {text = "a Normal Blessing from:", isTitle = true, isNotRadio = true, notCheckable = 1})
+        tinsert(menu, {text = "|cffffffff" .. pname .. "|r " .. L["ALTMENU_LINE1"], isTitle = true, isNotRadio = true, notCheckable = 1})
+        tinsert(menu, {text = L["ALTMENU_LINE2"], isTitle = true, isNotRadio = true, notCheckable = 1})
 
 		local pre, suf
         for pally in pairs(AllPallys) do
@@ -410,7 +412,7 @@ function PallyPowerGrid_NormalBlessingMenu(btn, mouseBtn, pname, class)
             })
         end
 
-        tinsert(menu, {text = "Cancel", func = function() end, isNotRadio = true, notCheckable = 1})
+        tinsert(menu, {text = L["CANCEL"], func = function() end, isNotRadio = true, notCheckable = 1})
 
         L_EasyMenu(menu, PallyPower.menuFrame, "cursor", 0 , 0, "MENU")
 
@@ -433,7 +435,17 @@ function PallyPowerPlayerButton_OnClick(btn, mouseBtn)
     class = tonumber(class)
     pnum = tonumber(pnum)
     pname = classes[class][pnum].name
-    PallyPowerGrid_NormalBlessingMenu(btn, mouseBtn, pname, class)
+
+    local pallycount = 0
+    for name in pairs(AllPallys) do
+        pallycount = pallycount + 1
+    end
+
+    if pallycount > 1 then
+        PallyPowerGrid_NormalBlessingMenu(btn, mouseBtn, pname, class)
+    else
+        PallyPower:PerformPlayerCycle(btn, 1, pname, class)
+    end
 end
 
 function PallyPowerPlayerButton_OnMouseWheel(btn, arg1)
