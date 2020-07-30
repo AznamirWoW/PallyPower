@@ -33,5 +33,7 @@ externals:
 		https://repos.curseforge.com/wow/ace-gui-3-0-shared-media-widgets/trunk
 	Libs/LibClassicDurations:
 		https://repos.curseforge.com/wow/libclassicdurations
+	Libs/LibUIDropDownMenu:
+		https://repos.curseforge.com/wow/libuidropdownmenu/trunk
 	Libs/LibDBIcon-1.0:
 		https://repos.curseforge.com/wow/libdbicon-1-0/trunk

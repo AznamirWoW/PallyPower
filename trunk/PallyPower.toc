@@ -7,7 +7,7 @@
 ## Dependencies:
 ## OptionalDeps: Ace3
 ## X-Category: Paladin
-## X-Embeds: Ace3, LibClassicDurations
+## X-Embeds: Ace3, LibClassicDurations, LibUIDropDownMenu
 ## SavedVariables: PallyPowerDB, PallyPower_Assignments, PallyPower_NormalAssignments, PallyPower_AuraAssignments, PallyPower_SavedPresets, PallyPower_ChanNames, LCD_Data, LCD_GUIDAccess
 
 #@no-lib-strip@
