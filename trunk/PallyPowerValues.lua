@@ -201,6 +201,7 @@ PallyPower.AuraIcons = {
 
 -- XML Aliases
 PALLYPOWER_NAME = "  " .. L["PP_NAME"] .. " (" .. string.trim(GetAddOnMetadata("PallyPower", "Version")) .. ")"
+PALLYPOWER_KEYCAT = L["PP_NAME"]
 PALLYPOWER_CLEAR = L["PP_CLEAR"]
 PALLYPOWER_CLEAR_DESC = L["PP_CLEAR_DESC"]
 PALLYPOWER_REFRESH = L["PP_REFRESH"]
