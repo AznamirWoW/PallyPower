@@ -362,7 +362,9 @@ function PallyPowerGrid_NormalBlessingMenu(btn, mouseBtn, pname, class)
 
         local menu = {}
 
-        tinsert(menu, {text = "|cffffffff" .. pname .. "|r " .. L["ALTMENU_LINE1"], isTitle = true, isNotRadio = true, notCheckable = 1})
+        local shortname = select(1, strsplit("-", pname))
+
+        tinsert(menu, {text = "|cffffffff" .. shortname .. "|r " .. L["ALTMENU_LINE1"], isTitle = true, isNotRadio = true, notCheckable = 1})
         tinsert(menu, {text = L["ALTMENU_LINE2"], isTitle = true, isNotRadio = true, notCheckable = 1})
 
 		local pre, suf
@@ -398,8 +400,10 @@ function PallyPowerGrid_NormalBlessingMenu(btn, mouseBtn, pname, class)
                 end
             end
 
+            local shortname = select(1, strsplit("-", pally))
+
             tinsert(menu, {
-                text = sformat("%s%s%s", pre, pally, suf),
+                text = sformat("%s%s%s", pre, shortname, suf),
                 hasArrow = true,
                 menuList = pallyMenu,
                 checked = function()
@@ -443,8 +447,16 @@ function PallyPowerPlayerButton_OnClick(btn, mouseBtn)
 
     if pallycount > 1 then
         PallyPowerGrid_NormalBlessingMenu(btn, mouseBtn, pname, class)
-    else
+    elseif pallycount == 1 and (mouseBtn == "LeftButton") then
         PallyPower:PerformPlayerCycle(btn, 1, pname, class)
+    elseif pallycount == 1 and (mouseBtn == "RightButton") then
+        for pally in pairs(AllPallys) do
+            if PallyPower_NormalAssignments[pally] and PallyPower_NormalAssignments[pally][class] and PallyPower_NormalAssignments[pally][class][pname] then
+                PallyPower_NormalAssignments[pally][class][pname] = nil
+            end
+            PallyPower:SendMessage("NASSIGN " .. pally .. " " .. class .. " " .. pname .. " 0")
+            PallyPower:UpdateLayout()
+        end
     end
 end
 
@@ -866,8 +878,8 @@ function PallyPower:PerformCycle(name, class, skipzero)
     PallyPower_Assignments[name][class] = 0
     local testB
     for testB = cur + 1, 7 do
+        cur = testB
         if self:CanBuff(name, testB) and (self:NeedsBuff(class, testB) or shift or control) then
-            cur = testB
             do
                 break
             end
@@ -2528,6 +2540,7 @@ function PallyPower:UpdateButton(button, baseName, classID)
                     nneed = nneed - 1
                 end
                 if (buffName ~= self.Spells[7]) and spellID == 7 then
+                    nneed = nneed + 1
                     nspecial = nspecial - 1
                 end
             end
@@ -3140,13 +3153,22 @@ function PallyPower:GetUnitAndSpellSmart(classid, mousebutton)
                 if not self.opt.display.buffDuration then
                     for i = 1, recipients do
                         local unitID = classes[classid][i]
-                        if (unitID.hasbuff and unitID.hasbuff > 300) or IsSpellInRange(gSpell, unitID.unitid) ~= 1 or UnitIsDeadOrGhost(unitID.unitid) or UnitIsAFK(unitID.unitid) or not UnitIsConnected(unitID.unitid) then
+                        if (unitID.hasbuff and unitID.hasbuff > 300) or IsSpellInRange(nSpell, unitID.unitid) ~= 1 or UnitIsDeadOrGhost(unitID.unitid) or UnitIsAFK(unitID.unitid) or not UnitIsConnected(unitID.unitid) then
                             recipients = recipients - 1
                         end
                     end
-                    if not buffExpire or buffExpire < (300 - ((1.65 * recipients) - 1.65)) then
-                        buffExpire = 0
-                        penalty = 0
+                    -- Blessing of Sacrifice
+                    if (spell == self.Spells[7]) then
+                        if not buffExpire or buffExpire < (30 - ((1.65 * recipients) - 1.65)) then
+                            buffExpire = 0
+                            penalty = 0
+                        end
+                    -- Normal Blessings
+                    elseif (spell ~= self.Spells[7]) then
+                        if not buffExpire or buffExpire < (300 - ((1.65 * recipients) - 1.65)) then
+                            buffExpire = 0
+                            penalty = 0
+                        end
                     end
                 end
                 if IsInRaid() then
@@ -3519,7 +3541,7 @@ function PallyPower:AutoBuff(button, mousebutton)
                 else
                     penalty = 0
                 end
-                -- Flag valid Greater Blessings | If it falls below 4 min refresh it with a Normal Blessing
+                -- If a Greater Blessing falls below 4 min, refresh it with a Normal Blessing
                 if buffName and buffName == gspell and buffExpire > minExpire then
                     penalty = PALLYPOWER_NORMALBLESSINGDURATION
                 elseif buffName and buffName == gspell and buffExpire < minExpire then
@@ -3849,7 +3871,7 @@ function PallyPower:AssignNewBuffRatings(BuffPallys)
     -- assign new buff ratings based on the given BuffPallys (WisdomPallys, MightPallys, etc..) / Zid
     for _, pally in ipairs(BuffPallys) do
         if (pally.skill > 1) then
-            -- reduce the rated difference from defaultbuffs
+            -- reduce the rated difference from default buffs
             self:DownRateDefaultBuffs(pally.pallyname, pally.skill - 1)
         end
     end
@@ -3860,7 +3882,7 @@ function PallyPower:DownRateDefaultBuffs(name, rating)
     for i, pally in ipairs(SalvPallys) do
         if (pally.pallyname == self.player and PP_LeaderSalv) then
             SalvPallys[i].skill = SalvPallys[i].skill + rating
-        else
+        elseif pally.pallyname == name then
             SalvPallys[i].skill = SalvPallys[i].skill - rating
         end
     end
@@ -3918,7 +3940,6 @@ function PallyPower:BuffSelections(buff, class, pallys)
         t = SancPallys
     end
     local Buffer = ""
-    local BufferSkill = 0
     local pclass
     tsort(
         t,
@@ -3929,18 +3950,17 @@ function PallyPower:BuffSelections(buff, class, pallys)
     for i, v in pairs(t) do
         if self:PallyAvailable(v.pallyname, pallys) then --removed check if v.skill / Zid
             Buffer = v.pallyname
-            BufferSkill = v.skill
             break
         end
     end
     if Buffer ~= "" then
-        if PallyPower_Assignments and not PallyPower_Assignments[Buffer] then
-            PallyPower_Assignments[Buffer] = {}
-        end
         if (IsInRaid() and buff > 2) then
             for pclass = 1, PALLYPOWER_MAXCLASSES do
                 PallyPower_Assignments[Buffer][pclass] = buff
             end
+        elseif PallyPower_Assignments and not PallyPower_Assignments[Buffer] then
+            PallyPower_Assignments[Buffer] = {}
+            PallyPower_Assignments[Buffer][class] = buff
         else
             PallyPower_Assignments[Buffer][class] = buff
         end
