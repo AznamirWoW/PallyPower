@@ -447,7 +447,8 @@ PallyPower.options = {
 								[4] = PallyPower.Auras[4], -- Shadow Resistance Aura
 								[5] = PallyPower.Auras[5], -- Frost Resistance Aura
 								[6] = PallyPower.Auras[6], -- Fire Resistance Aura
-								[7] = PallyPower.Auras[7] -- Sanctity Aura
+								[7] = PallyPower.Auras[7], -- Sanctity Aura
+								[8] = PallyPower.Auras[8] -- Crusader Aura
 							}
 						}
 					}
@@ -520,7 +521,11 @@ PallyPower.options = {
 								[3] = PallyPower.Seals[3], -- Seal of Wisdom
 								[4] = PallyPower.Seals[4], -- Seal of Righteousness
 								[5] = PallyPower.Seals[5], -- Seal of the Crusader
-								[6] = PallyPower.Seals[6] -- Seal of Command
+								[6] = PallyPower.Seals[6], -- Seal of Command
+								[7] = PallyPower.Seals[7], -- Seal of Vengeance (Alliance)
+								[8] = PallyPower.Seals[8], -- Seal of Blood (Horde)
+								[9] = PallyPower.Seals[9], -- Seal of the Martyr (Alliance)
+								[10] = PallyPower.Seals[10] -- Seal of Vengeance (Horde)
 							}
 						}
 					}

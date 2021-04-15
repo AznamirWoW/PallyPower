@@ -3,11 +3,11 @@ local L = LibStub("AceLocale-3.0"):GetLocale("PallyPower")
 PallyPower.commPrefix = "PLPWR"
 C_ChatInfo.RegisterAddonMessagePrefix(PallyPower.commPrefix)
 
-PALLYPOWER_MAXCLASSES = 9
+PALLYPOWER_MAXCLASSES = 10
 PALLYPOWER_MAXPERCLASS = 15
-PALLYPOWER_NORMALBLESSINGDURATION = 5 * 60
-PALLYPOWER_GREATERBLESSINGDURATION = 15 * 60
-PALLYPOWER_MAXAURAS = 7
+PALLYPOWER_NORMALBLESSINGDURATION = PallyPower.isBCC and (10 * 60) or (5 * 60)
+PALLYPOWER_GREATERBLESSINGDURATION = PallyPower.isBCC and (30 * 60) or (15 * 60)
+PALLYPOWER_MAXAURAS = 8
 
 PALLYPOWER_DEFAULT_VALUES = {
 	profile = {
@@ -139,7 +139,8 @@ PallyPower.ClassID = {
 	[6] = "HUNTER",
 	[7] = "MAGE",
 	[8] = "WARLOCK",
-	[9] = "PET"
+	[9] = "SHAMAN",
+	[10] = "PET"
 }
 
 PallyPower.ClassToID = {
@@ -151,7 +152,8 @@ PallyPower.ClassToID = {
 	["HUNTER"] = 6,
 	["MAGE"] = 7,
 	["WARLOCK"] = 8,
-	["PET"] = 9
+	["SHAMAN"] = 9,
+	["PET"] = 10
 }
 
 PallyPower.ClassIcons = {
@@ -163,7 +165,8 @@ PallyPower.ClassIcons = {
 	[6] = "Interface\\AddOns\\PallyPower\\Icons\\Hunter",
 	[7] = "Interface\\AddOns\\PallyPower\\Icons\\Mage",
 	[8] = "Interface\\AddOns\\PallyPower\\Icons\\Warlock",
-	[9] = "Interface\\AddOns\\PallyPower\\Icons\\Pet"
+	[9] = "Interface\\AddOns\\PallyPower\\Icons\\shaman",
+	[10] = "Interface\\AddOns\\PallyPower\\Icons\\Pet"
 }
 
 PallyPower.BlessingIcons = {
@@ -196,7 +199,8 @@ PallyPower.AuraIcons = {
 	[4] = "Interface\\Icons\\Spell_Shadow_SealOfKings",
 	[5] = "Interface\\Icons\\Spell_Frost_WizardMark",
 	[6] = "Interface\\Icons\\Spell_Fire_SealOfFire",
-	[7] = "Interface\\Icons\\Spell_Holy_MindVision"
+	[7] = "Interface\\Icons\\Spell_Holy_MindVision",
+	[8] = "Interface\\Icons\\Spell_Holy_CrusaderAura"
 }
 
 -- XML Aliases
@@ -249,22 +253,22 @@ PallyPower.GSpells = {
 
 -- spell ranks
 PallyPower.NormalBuffs = {
-	[1] = {{50, 25290}, {44, 19854}, {34, 19853}, {24, 19852}, {14, 19850}, {4, 19742}},
-	[2] = {{50, 25291}, {42, 19838}, {32, 19837}, {22, 19836}, {12, 19835}, {4, 19834}, {0, 19740}},
+	[1] = {{55, 27142}, {50, 25290}, {44, 19854}, {34, 19853}, {24, 19852}, {14, 19850}, {4, 19742}},
+	[2] = {{60, 27140}, {50, 25291}, {42, 19838}, {32, 19837}, {22, 19836}, {12, 19835}, {4, 19834}, {0, 19740}},
 	[3] = {{10, 20217}},
 	[4] = {{16, 1038}},
-	[5] = {{50, 19979}, {40, 19978}, {30, 19977}},
-	[6] = {{50, 20914}, {40, 20913}, {30, 20912}, {20, 20911}},
-	[7] = {{44, 20729}, {36, 6940}}
+	[5] = {{59, 27144}, {50, 19979}, {40, 19978}, {30, 19977}},
+	[6] = {{60, 27168}, {50, 20914}, {40, 20913}, {30, 20912}, {20, 20911}},
+	[7] = {{60, 27148}, {52, 27147}, {44, 20729}, {36, 6940}}
 }
 
 PallyPower.GreaterBuffs = {
-	[1] = {{50, 25918}, {44, 25894}},
-	[2] = {{50, 25916}, {42, 25782}},
+	[1] = {{55, 27143}, {50, 25918}, {44, 25894}},
+	[2] = {{60, 27141}, {50, 25916}, {42, 25782}},
 	[3] = {{50, 25898}},
 	[4] = {{50, 25895}},
-	[5] = {{50, 25890}},
-	[6] = {{50, 25899}}
+	[5] = {{59, 27145}, {50, 25890}},
+	[6] = {{60, 27169}, {50, 25899}}
 }
 
 PallyPower.RFSpell = GetSpellInfo(25780) --BS["Righteous Fury"]
@@ -291,7 +295,11 @@ PallyPower.Seals = {
 	[3] = GetSpellInfo(20166), -- seal of wisdom
 	[4] = GetSpellInfo(21084), -- seal of righteousness
 	[5] = GetSpellInfo(21082), -- seal of the crusader
-	[6] = GetSpellInfo(20375) -- seal of command
+	[6] = GetSpellInfo(20375), -- seal of command
+	[7] = GetSpellInfo(31801), -- seal of vengeance (alliance)
+	[8] = GetSpellInfo(31892), -- seal of blood (horde)
+	[9] = GetSpellInfo(348700), -- seal of the martyr (alliance)
+	[10] = GetSpellInfo(348704) -- seal of vengeance (horde)
 }
 
 PallyPower.Auras = {
@@ -302,11 +310,12 @@ PallyPower.Auras = {
 	[4] = GetSpellInfo(19876), --BS["Shadow Resistance Aura"],
 	[5] = GetSpellInfo(19888), --BS["Frost Resistance Aura"],
 	[6] = GetSpellInfo(19891), --BS["Fire Resistance Aura"],
-	[7] = GetSpellInfo(20218) --BS["Sanctity Aura"],
+	[7] = GetSpellInfo(20218), --BS["Sanctity Aura"],
+	[7] = GetSpellInfo(32223) --BS["Crusader Aura"],
 }
 
 PallyPower.Cooldowns = {
-	[1] = {633, 2800, 10310}, -- Improved Lay On Hands
+	[1] = {633, 2800, 10310, 27154}, -- Improved Lay On Hands
 	[2] = {19752} -- Divine Intervention
 }
 
@@ -324,7 +333,8 @@ PallyPower.BattleGroundTemplates = {
 		[6] = {3, 1, 6, 5},
 		[7] = {3, 1, 6, 5},
 		[8] = {3, 1, 6, 5},
-		[9] = {3, 2, 6, 5}
+		[9] = {3, 2, 6, 1, 5},
+		[10] = {3, 2, 6, 5}
 	},
 	[2] = {
 		[1] = {3, 2, 6, 5},
@@ -335,7 +345,8 @@ PallyPower.BattleGroundTemplates = {
 		[6] = {3, 1, 6, 5},
 		[7] = {3, 1, 6, 5},
 		[8] = {3, 1, 6, 5},
-		[9] = {3, 2, 6, 5}
+		[9] = {3, 2, 6, 1, 5},
+		[10] = {3, 2, 6, 5}
 	},
 	[3] = {
 		[1] = {3, 2, 6, 5},
@@ -346,7 +357,8 @@ PallyPower.BattleGroundTemplates = {
 		[6] = {3, 1, 6, 5},
 		[7] = {3, 1, 6, 5},
 		[8] = {3, 1, 6, 5},
-		[9] = {3, 2, 6, 5}
+		[9] = {3, 2, 6, 1, 5},
+		[10] = {3, 2, 6, 5}
 	},
 	[4] = {
 		[1] = {3, 2, 6, 5},
@@ -357,7 +369,8 @@ PallyPower.BattleGroundTemplates = {
 		[6] = {3, 1, 6, 5},
 		[7] = {3, 1, 6, 5},
 		[8] = {3, 1, 6, 5},
-		[9] = {3, 2, 6, 5}
+		[9] = {3, 2, 6, 1, 5},
+		[10] = {3, 2, 6, 5}
 	},
 	[5] = {
 		[1] = {3, 2, 6, 5},
@@ -368,7 +381,8 @@ PallyPower.BattleGroundTemplates = {
 		[6] = {3, 1, 6, 5},
 		[7] = {3, 1, 6, 5},
 		[8] = {3, 1, 6, 5},
-		[9] = {3, 2, 6, 5}
+		[9] = {3, 2, 6, 1, 5},
+		[10] = {3, 2, 6, 5}
 	},
 	[6] = {
 		[1] = {3, 2, 0, 6, 5},
@@ -379,7 +393,8 @@ PallyPower.BattleGroundTemplates = {
 		[6] = {3, 0, 1, 6, 5},
 		[7] = {3, 0, 1, 6, 5},
 		[8] = {3, 0, 1, 6, 5},
-		[9] = {3, 2, 0, 6, 5}
+		[9] = {3, 2, 1, 6, 5},
+		[10] = {3, 2, 0, 6, 5}
 	}
 }
 
@@ -394,7 +409,8 @@ PallyPower.RaidTemplates = {
 		[6] = {4, 3, 1},
 		[7] = {4, 3, 1},
 		[8] = {4, 3, 1},
-		[9] = {4, 3, 2}
+		[9] = {4, 3, 1, 2},
+		[10] = {4, 3, 2}
 	},
 	[2] = {
 		[1] = {4, 3, 2, 6, 5},
@@ -405,7 +421,8 @@ PallyPower.RaidTemplates = {
 		[6] = {4, 3, 1, 6, 5},
 		[7] = {4, 3, 1, 6, 5},
 		[8] = {4, 3, 1, 6, 5},
-		[9] = {4, 3, 2, 6, 5}
+		[9] = {4, 3, 1, 2, 6, 5},
+		[10] = {4, 3, 2, 6, 5}
 	},
 	[3] = {
 		[1] = {4, 3, 2, 6, 5},
@@ -416,7 +433,8 @@ PallyPower.RaidTemplates = {
 		[6] = {4, 3, 1, 6, 5},
 		[7] = {4, 3, 1, 6, 5},
 		[8] = {4, 3, 1, 6, 5},
-		[9] = {4, 3, 2, 6, 5}
+		[9] = {4, 3, 1, 2, 6, 5},
+		[10] = {4, 3, 2, 6, 5}
 	},
 	[4] = {
 		[1] = {6, 4, 3, 2, 5},
@@ -427,7 +445,8 @@ PallyPower.RaidTemplates = {
 		[6] = {6, 4, 3, 1, 5},
 		[7] = {6, 4, 3, 1, 5},
 		[8] = {6, 4, 3, 1, 5},
-		[9] = {6, 4, 3, 2, 5}
+		[9] = {6, 4, 3, 1, 2, 5},
+		[10] = {6, 4, 3, 2, 5}
 	},
 	[5] = {
 		[1] = {6, 4, 3, 2, 5},
@@ -438,7 +457,8 @@ PallyPower.RaidTemplates = {
 		[6] = {6, 4, 3, 1, 5},
 		[7] = {6, 4, 3, 1, 5},
 		[8] = {6, 4, 3, 1, 5},
-		[9] = {6, 4, 3, 2, 5}
+		[9] = {6, 4, 3, 1, 2, 5},
+		[10] = {6, 4, 3, 2, 5}
 	},
 	[6] = {
 		[1] = {6, 4, 3, 2, 0, 5},
@@ -449,7 +469,8 @@ PallyPower.RaidTemplates = {
 		[6] = {6, 4, 3, 0, 1, 5},
 		[7] = {6, 4, 3, 0, 1, 5},
 		[8] = {6, 4, 3, 0, 1, 5},
-		[9] = {6, 4, 3, 2, 0, 5}
+		[9] = {6, 4, 3, 2, 1, 5},
+		[10] = {6, 4, 3, 2, 0, 5}
 	}
 }
 -- Normal Paladin Tmplates
@@ -463,7 +484,8 @@ PallyPower.Templates = {
 		[6] = {3, 1, 4, 5},
 		[7] = {3, 1, 4, 5},
 		[8] = {3, 1, 4, 5},
-		[9] = {3, 2, 4, 1, 5}
+		[9] = {3, 1, 4, 2, 5},
+		[10] = {3, 2, 4, 1, 5}
 	},
 	[2] = {
 		[1] = {3, 2, 4, 5},
@@ -474,7 +496,8 @@ PallyPower.Templates = {
 		[6] = {3, 1, 4, 5},
 		[7] = {3, 1, 4, 5},
 		[8] = {3, 1, 4, 5},
-		[9] = {3, 2, 4, 1, 5}
+		[9] = {3, 1, 4, 2, 5},
+		[10] = {3, 2, 4, 1, 5}
 	},
 	[3] = {
 		[1] = {3, 2, 4, 5},
@@ -485,7 +508,8 @@ PallyPower.Templates = {
 		[6] = {3, 1, 4, 5},
 		[7] = {3, 1, 4, 5},
 		[8] = {3, 1, 4, 5},
-		[9] = {3, 2, 4, 1, 5}
+		[9] = {3, 1, 4, 2, 5},
+		[10] = {3, 2, 4, 1, 5}
 	},
 	[4] = {
 		[1] = {6, 4, 3, 2, 5},
@@ -496,7 +520,8 @@ PallyPower.Templates = {
 		[6] = {6, 4, 3, 1, 5},
 		[7] = {6, 4, 3, 1, 5},
 		[8] = {6, 4, 3, 1, 5},
-		[9] = {6, 4, 3, 2, 1, 5}
+		[9] = {6, 4, 3, 1, 2, 5},
+		[10] = {6, 4, 3, 2, 1, 5}
 	},
 	[5] = {
 		[1] = {6, 4, 3, 2, 5},
@@ -507,7 +532,8 @@ PallyPower.Templates = {
 		[6] = {6, 4, 3, 1, 5},
 		[7] = {6, 4, 3, 1, 5},
 		[8] = {6, 4, 3, 1, 5},
-		[9] = {6, 4, 3, 2, 1, 5}
+		[9] = {6, 4, 3, 1, 2, 5},
+		[10] = {6, 4, 3, 2, 1, 5}
 	},
 	[6] = {
 		[1] = {6, 4, 3, 2, 0, 5},
@@ -518,7 +544,8 @@ PallyPower.Templates = {
 		[6] = {6, 4, 3, 0, 1, 5},
 		[7] = {6, 4, 3, 0, 1, 5},
 		[8] = {6, 4, 3, 0, 1, 5},
-		[9] = {6, 4, 3, 2, 0, 5}
+		[9] = {6, 4, 3, 2, 1, 5},
+		[10] = {6, 4, 3, 2, 0, 5}
 	}
 }
 
