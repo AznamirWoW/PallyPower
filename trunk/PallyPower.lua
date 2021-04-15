@@ -1275,8 +1275,8 @@ function PallyPower:NeedsBuff(class, test, playerName)
         if (class == 1 or class == 2) and test == 1 then
             return false
         end
-        -- no might for casters and hunters
-        if (class == 3 or class == 6 or class == 7 or class == 8) and test == 2 then
+        -- no might for casters (and hunters in Classic)
+        if (class == 3 or (not PallyPower.isBCC and class == 6) or class == 7 or class == 8) and test == 2 then
             return false
         end
     end
