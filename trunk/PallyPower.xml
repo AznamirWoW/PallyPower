@@ -932,6 +932,15 @@
                     </Anchor>
                 </Anchors>
             </Button>
+            <Button name = "$parentAuraButton8" inherits = "AuraButtonTemplate">
+                <Anchors>
+                    <Anchor point = "TOPLEFT">
+                        <Offset>
+                            <AbsDimension x = "3" y = "-145"/>
+                        </Offset>
+                    </Anchor>
+                </Anchors>
+            </Button>
         </Frames>
     </Frame>
 
@@ -1143,7 +1152,7 @@
                 </Texture>
                 <Texture name = "$parentLine1" file = "Interface\Tooltips\UI-Tooltip-Background" hidden = "false">
                     <Size>
-                        <AbsDimension x = "995" y = "2"/>
+                        <AbsDimension x = "1083" y = "2"/>
                     </Size>
                     <Anchors>
                         <Anchor point = "TOPLEFT">
@@ -1267,6 +1276,18 @@
                     </Size>
                     <Anchors>
                         <Anchor point = "TOPLEFT" relativeTo = "$parentLine10">
+                            <Offset>
+                                <AbsDimension x = "86" y = "0"/>
+                            </Offset>
+                        </Anchor>
+                    </Anchors>
+                </Texture>
+                <Texture name = "$parentLine12" file = "Interface\Tooltips\UI-Tooltip-Background" hidden = "false">
+                    <Size>
+                        <AbsDimension x = "2" y = "98"/>
+                    </Size>
+                    <Anchors>
+                        <Anchor point = "TOPLEFT" relativeTo = "$parentLine11">
                             <Offset>
                                 <AbsDimension x = "86" y = "0"/>
                             </Offset>
@@ -1498,12 +1519,32 @@
                     </Anchor>
                 </Anchors>
             </Button>
+             <Button name = "$parentClass10" inherits = "BuffGridButtonTemplate">
+                <Anchors>
+                    <Anchor point = "TOPLEFT" relativeTo = "$parentClass9" relativePoint = "TOPRIGHT">
+                        <Offset>
+                            <AbsDimension x = "2" y = "0"/>
+                        </Offset>
+                    </Anchor>
+                </Anchors>
+            </Button>
         </Frames>
     </Frame>
 
-    <Frame name = "PallyPowerBlessingsFrame" hidden = "true" toplevel = "true" frameStrata = "HIGH" enableMouse = "true" movable = "true" parent = "UIParent">
+    <Frame name="PallyPower_BackdropTemplate" mixin="PallyPower_BackdropTemplateMixin" virtual="true">
+        <Scripts>
+            <OnLoad method="OnBackdropLoaded"/>
+            <OnSizeChanged method="OnBackdropSizeChanged"/>
+        </Scripts>
+    </Frame>
+
+    <Frame name = "PallyPowerBlessingsFrame" hidden = "true" toplevel = "true" frameStrata = "HIGH" enableMouse = "true" movable = "true" parent = "UIParent" inherits="PallyPower_BackdropTemplate">
+		<KeyValues>
+		    <KeyValue key="backdropInfo" value="BACKDROP_TOOLTIP_16_16_5555" type="global"/>
+		    <KeyValue key="backdropColor" value="PALLYPOWER_BACKDROP_COLOR_DARK" type="global"/>
+		</KeyValues>
         <Size>
-            <AbsDimension x = "1010" y = "1200"/>
+            <AbsDimension x = "1098" y = "1200"/>
         </Size>
         <Anchors>
             <Anchor point = "TOPLEFT" relativeTo = "UIParent" relativePoint = "BOTTOMLEFT">
@@ -1662,6 +1703,15 @@
             <Frame name = "$parentClassGroup9" inherits = "ClassGroupTemplate">
                 <Anchors>
                     <Anchor point = "TOPLEFT" relativeTo = "$parentClassGroup8" relativePoint = "TOPRIGHT">
+                        <Offset>
+                            <AbsDimension x = "2" y = "0"/>
+                        </Offset>
+                    </Anchor>
+                </Anchors>
+            </Frame>
+            <Frame name = "$parentClassGroup10" inherits = "ClassGroupTemplate">
+                <Anchors>
+                    <Anchor point = "TOPLEFT" relativeTo = "$parentClassGroup9" relativePoint = "TOPRIGHT">
                         <Offset>
                             <AbsDimension x = "2" y = "0"/>
                         </Offset>
