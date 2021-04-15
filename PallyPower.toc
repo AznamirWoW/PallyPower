@@ -1,6 +1,6 @@
 ## Interface: 20501
 ## Author: Aznamir,Dyaxler
-## Title: PallyPower Classic (Burning Crusade Classic Edit)
+## Title: PallyPower BC Classic
 ## Version: @project-version@
 ## Notes: Raid/Party Paladin buffs.
 ## DefaultState: enabled
