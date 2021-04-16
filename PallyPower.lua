@@ -3043,7 +3043,7 @@ function PallyPower:ButtonsUpdate()
         self:ApplyBackdrop(autobutton, self.opt.cBuffGood)
     end
     time:SetText(self:FormatTime(minClassExpire))
-    time:SetTextColor(self:GetSeverityColor(minClassExpire and minClassDuration and and minClassDuration > 0 and (minClassExpire / minClassDuration) or 0))
+    time:SetTextColor(self:GetSeverityColor(minClassExpire and minClassDuration and minClassDuration > 0 and (minClassExpire / minClassDuration) or 0))
     time2:SetText(self:FormatTime(minSpecialExpire))
     time2:SetTextColor(self:GetSeverityColor(minSpecialExpire and minSpecialDuration and minSpecialDuration > 0 and (minSpecialExpire / minSpecialDuration) or 0))
     if (sumnneed + sumnspecial > 0) then
