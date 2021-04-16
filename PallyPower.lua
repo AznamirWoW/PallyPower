@@ -2670,9 +2670,9 @@ function PallyPower:UpdateButton(button, baseName, classID)
     buffIcon:SetTexture(self.BlessingIcons[gspellID])
     local classExpire, classDuration, specialExpire, specialDuration = self:GetBuffExpiration(classID)
     time:SetText(self:FormatTime(classExpire))
-    time:SetTextColor(self:GetSeverityColor(classExpire and classDuration and (classExpire / classDuration) or 0))
+    time:SetTextColor(self:GetSeverityColor(classExpire and classDuration and classDuration > 0 and (classExpire / classDuration) or 0))
     time2:SetText(self:FormatTime(specialExpire))
-    time2:SetTextColor(self:GetSeverityColor(specialExpire and specialDuration and (specialExpire / specialDuration) or 0))
+    time2:SetTextColor(self:GetSeverityColor(specialExpire and specialDuration and specialDuration > 0 and (specialExpire / specialDuration) or 0))
     if (nneed + nspecial > 0) then
         text:SetText(nneed + nspecial)
     else
@@ -3043,9 +3043,9 @@ function PallyPower:ButtonsUpdate()
         self:ApplyBackdrop(autobutton, self.opt.cBuffGood)
     end
     time:SetText(self:FormatTime(minClassExpire))
-    time:SetTextColor(self:GetSeverityColor(minClassExpire and minClassDuration and (minClassExpire / minClassDuration) or 0))
+    time:SetTextColor(self:GetSeverityColor(minClassExpire and minClassDuration and and minClassDuration > 0 and (minClassExpire / minClassDuration) or 0))
     time2:SetText(self:FormatTime(minSpecialExpire))
-    time2:SetTextColor(self:GetSeverityColor(minSpecialExpire and minSpecialDuration and (minSpecialExpire / minSpecialDuration) or 0))
+    time2:SetTextColor(self:GetSeverityColor(minSpecialExpire and minSpecialDuration and minSpecialDuration > 0 and (minSpecialExpire / minSpecialDuration) or 0))
     if (sumnneed + sumnspecial > 0) then
         text:SetText(sumnneed + sumnspecial)
     else
