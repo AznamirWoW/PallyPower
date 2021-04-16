@@ -34,6 +34,6 @@ externals:
 	Libs/LibClassicDurations:
 		https://repos.curseforge.com/wow/libclassicdurations
 	Libs/LibUIDropDownMenu:
-		https://repos.curseforge.com/wow/libuidropdownmenu/trunk
+		https://repos.wowace.com/wow/libuidropdownmenu/tags/v3.01.9000135522
 	Libs/LibDBIcon-1.0:
 		https://repos.curseforge.com/wow/libdbicon-1-0/trunk
