@@ -991,7 +991,7 @@ function PallyPower:PerformCycle(name, class, skipzero)
                     cur = 1
                 end
             elseif self:CanBuff(name, 2) then
-                if self.opt.SmartBuffs and (class == 3 or class == 6 or class == 7 or class == 8) then
+                if self.opt.SmartBuffs and (class == 3 or (not PallyPower.isBCC and class == 6) or class == 7 or class == 8) then
                     cur = 1
                 else
                     cur = 2
@@ -1053,7 +1053,7 @@ function PallyPower:PerformCycleBackwards(name, class, skipzero)
                 testB = 1
             end
         elseif self:CanBuff(name, 2) then
-            if self.opt.SmartBuffs and (class == 3 or class == 6 or class == 7 or class == 8) then
+            if self.opt.SmartBuffs and (class == 3 or (not PallyPower.isBCC and class == 6) or class == 7 or class == 8) then
                 testB = 1
             else
                 testB = 2
@@ -1116,9 +1116,9 @@ function PallyPower:PerformPlayerCycle(self, delta, pname, class)
     local count
     -- Can't give Blessing of Sacrifice to yourself
     if pname == PallyPower.player then
-        count = 7
-    else
         count = 8
+    else
+        count = 9
     end
     local test = (blessing - delta) % count
     while not (PallyPower:CanBuff(PallyPower.player, test) and PallyPower:NeedsBuff(class, test, pname) or control) and test > 0 do
@@ -1186,7 +1186,7 @@ function PallyPower:AssignPlayerAsClass(pname, pclass, tclass)
 end
 
 function PallyPower:CanBuff(name, test)
-    if test == 8 then
+    if test == 9 then
         return true
     end
     if (not AllPallys[name][test]) or (AllPallys[name][test].rank == 0) then
@@ -1267,7 +1267,7 @@ function PallyPower:CanBuffBlessing(spellId, gspellId, unitId)
 end
 
 function PallyPower:NeedsBuff(class, test, playerName)
-    if test == 8 or test == 0 then
+    if test == 9 or test == 0 then
         return true
     end
     if self.opt.SmartBuffs then
@@ -3361,7 +3361,7 @@ function PallyPower:ButtonPreClick(button, mousebutton)
     local classid = button:GetAttribute("classID")
     local spell, gspell, unitName, unitid
     if classid then
-        if IsInRaid() and (mousebutton == "LeftButton") and (classid ~= 9) then
+        if IsInRaid() and (mousebutton == "LeftButton") and (classid ~= 10) then
             unitid, spell, gspell = self:GetUnitAndSpellSmart(classid, mousebutton)
             if unitid and classid then
                 unitName = GetUnitName(unitid, true)
@@ -3370,7 +3370,7 @@ function PallyPower:ButtonPreClick(button, mousebutton)
         elseif not IsInRaid() or ((IsInRaid() and mousebutton == "RightButton")) then
             unitid, spell, gspell = self:GetUnitAndSpellSmart(classid, mousebutton)
             if unitid then
-                if classid == 9 then
+                if classid == 10 then
                     local unitPrefix = "party"
                     local offSet = 9
                     if (unitid:find("raid")) then
@@ -3441,9 +3441,9 @@ function PallyPower:ButtonPostClick(button, mousebutton)
         local gSpell = false
         local numPlayers = 0
         local classid = button:GetAttribute("classID")
-        if (mousebutton == "LeftButton") and (classid ~= 9) then
+        if (mousebutton == "LeftButton") and (classid ~= 10) then
             for i = 1, PALLYPOWER_MAXPERCLASS do
-                if numPlayers < 8 and classid and classes[classid] and classes[classid][i] then
+                if numPlayers < 9 and classid and classes[classid] and classes[classid][i] then
                     local unit = classes[classid][i]
                     local spellID, gspellID = self:GetSpellID(classid, unit.name)
                     local _, gspell = self:CanBuffBlessing(spellID, gspellID, unit.unitid)
@@ -4007,7 +4007,7 @@ function PallyPower:AutoAssignBlessings(shift)
     self:SelectBuffsByClass(pallycount, 7, pallytemplate[7]) -- mage
     self:SelectBuffsByClass(pallycount, 8, pallytemplate[8]) -- lock
     self:SelectBuffsByClass(pallycount, 9, pallytemplate[9]) -- shaman
-    self:SelectBuffsByClass(pallycount, 9, pallytemplate[10]) -- pets
+    self:SelectBuffsByClass(pallycount, 10, pallytemplate[10]) -- pets
 end
 
 function PallyPower:AssignNewBuffRatings(BuffPallys)
