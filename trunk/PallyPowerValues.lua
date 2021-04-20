@@ -311,7 +311,7 @@ PallyPower.Auras = {
 	[5] = GetSpellInfo(19888), --BS["Frost Resistance Aura"],
 	[6] = GetSpellInfo(19891), --BS["Fire Resistance Aura"],
 	[7] = GetSpellInfo(20218), --BS["Sanctity Aura"],
-	[7] = GetSpellInfo(32223) --BS["Crusader Aura"],
+	[8] = GetSpellInfo(32223) --BS["Crusader Aura"],
 }
 
 PallyPower.Cooldowns = {
