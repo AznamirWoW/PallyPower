@@ -40,7 +40,7 @@ PALLYPOWER_DEFAULT_VALUES = {
 		},
 		enabled = true,
 		layout = "Layout 2",
-		mainTank = true,
+		mainTank = false,
 		mainTankGSpellsDP = 4,
 		mainTankSpellsDP = 7,
 		mainTankGSpellsW = 4,
@@ -126,7 +126,7 @@ PALLYPOWER_OTHER_VALUES = {
 }
 
 PallyPower_Credits1 = "Originally written by Aznamir"
-PallyPower_Credits2 = "Updated for Classic by Dyaxler"
+PallyPower_Credits2 = "Updated for Classic by Dyaxler and Es"
 
 PallyPower.BuffBarTitle = "Pally Buffs (%d)"
 
@@ -165,7 +165,7 @@ PallyPower.ClassIcons = {
 	[6] = "Interface\\AddOns\\PallyPower\\Icons\\Hunter",
 	[7] = "Interface\\AddOns\\PallyPower\\Icons\\Mage",
 	[8] = "Interface\\AddOns\\PallyPower\\Icons\\Warlock",
-	[9] = "Interface\\AddOns\\PallyPower\\Icons\\shaman",
+	[9] = "Interface\\AddOns\\PallyPower\\Icons\\Shaman",
 	[10] = "Interface\\AddOns\\PallyPower\\Icons\\Pet"
 }
 
@@ -299,7 +299,7 @@ PallyPower.Seals = {
 	[7] = GetSpellInfo(31801), -- seal of vengeance (alliance)
 	[8] = GetSpellInfo(31892), -- seal of blood (horde)
 	[9] = GetSpellInfo(348700), -- seal of the martyr (alliance)
-	[10] = GetSpellInfo(348704) -- seal of vengeance (horde)
+	[10] = GetSpellInfo(348704) -- seal of corruption (horde)
 }
 
 PallyPower.Auras = {
