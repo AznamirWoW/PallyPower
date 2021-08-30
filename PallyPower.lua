@@ -4,6 +4,7 @@ local L = LibStub("AceLocale-3.0"):GetLocale("PallyPower")
 local LCD = not PallyPower.isBCC  and LibStub("LibClassicDurations", true)
 local LSM3 = LibStub("LibSharedMedia-3.0")
 local AceGUI = LibStub("AceGUI-3.0")
+local LUIDDM = LibStub("LibUIDropDownMenu-4.0")
 
 PALLYPOWER_BACKDROP_COLOR_DARK = CreateColor(0.05, 0.05, 0.05)
 
@@ -187,7 +188,7 @@ function PallyPower:OnInitialize()
     end
     self.AutoBuffedList = {}
     self.PreviousAutoBuffedUnit = nil
-    self.menuFrame = L_Create_UIDropDownMenu("PallyPowerMenuFrame", UIParent)
+    self.menuFrame = LUIDDM:Create_UIDropDownMenu("PallyPowerMenuFrame", UIParent)
     if not PallyPowerConfigFrame then
         local pallypowerconfigframe = AceGUI:Create("Frame")
         pallypowerconfigframe:EnableResize(false)
@@ -322,7 +323,7 @@ end
 function PallyPower:OpenConfigWindow()
     if PallyPowerBlessingsFrame:IsVisible() then
         PallyPowerBlessingsFrame:Hide()
-        L_CloseDropDownMenus()
+        LUIDDM:CloseDropDownMenus()
     end
     if not PallyPowerConfigFrame:IsShown() then
         PallyPowerConfigFrame:Show()
@@ -373,7 +374,7 @@ function PallyPowerBlessings_Toggle(msg)
     end
     if PallyPowerBlessingsFrame:IsVisible() then
         PallyPowerBlessingsFrame:Hide()
-        L_CloseDropDownMenus()
+        LUIDDM:CloseDropDownMenus()
         PlaySound(SOUNDKIT.IG_SPELLBOOK_CLOSE)
     else
         local c = _G["PallyPowerBlessingsFrame"]
@@ -479,7 +480,7 @@ function PallyPowerGrid_NormalBlessingMenu(btn, mouseBtn, pname, class)
             tinsert(pallyMenu, {
                 text = sformat("%s%s%s", pre, "(none)", suf),
                 checked = function() if GetNormalBlessings(pally, class, pname) == "0" then return true end end,
-                func = function() L_CloseDropDownMenus(); SetNormalBlessings(pally, class, pname, 0) end
+                func = function() LUIDDM:CloseDropDownMenus(); SetNormalBlessings(pally, class, pname, 0) end
             })
 
             for index, blessing in ipairs(PallyPower.Spells) do
@@ -490,7 +491,7 @@ function PallyPowerGrid_NormalBlessingMenu(btn, mouseBtn, pname, class)
                             tinsert(pallyMenu, {
                                 text = sformat("%s%s%s", pre, blessing, suf),
                                 checked = function() if GetNormalBlessings(pally, class, pname) == tostring(index) then return true end end,
-                                func = function() L_CloseDropDownMenus(); if control then SetNormalBlessings(pally, class, pname, index + 0) end end
+                                func = function() LUIDDM:CloseDropDownMenus(); if control then SetNormalBlessings(pally, class, pname, index + 0) end end
                             })
                         end
                     end
@@ -515,7 +516,7 @@ function PallyPowerGrid_NormalBlessingMenu(btn, mouseBtn, pname, class)
 
         tinsert(menu, {text = L["CANCEL"], func = function() end, isNotRadio = true, notCheckable = 1})
 
-        L_EasyMenu(menu, PallyPower.menuFrame, "cursor", 0 , 0, "MENU")
+        LUIDDM:EasyMenu(menu, PallyPower.menuFrame, "cursor", 0 , 0, "MENU")
 
     elseif (mouseBtn == "RightButton") then
         for pally in pairs(AllPallys) do
@@ -535,7 +536,7 @@ function PallyPowerPlayerButton_OnClick(btn, mouseBtn)
     local _, _, class, pnum = sfind(btn:GetName(), "PallyPowerBlessingsFrameClassGroup(.+)PlayerButton(.+)")
     class = tonumber(class)
     pnum = tonumber(pnum)
-    pname = classes[class][pnum].name
+    local pname = classes[class][pnum].name
 
     local pallycount = 0
     for name in pairs(AllPallys) do
@@ -564,7 +565,7 @@ function PallyPowerPlayerButton_OnMouseWheel(btn, arg1)
     local _, _, class, pnum = sfind(btn:GetName(), "PallyPowerBlessingsFrameClassGroup(.+)PlayerButton(.+)")
     class = tonumber(class)
     pnum = tonumber(pnum)
-    pname = classes[class][pnum].name
+    local pname = classes[class][pnum].name
     PallyPower:PerformPlayerCycle(btn, arg1, pname, class)
 end
 
@@ -2089,7 +2090,7 @@ function PallyPower:UpdateRoster()
                     end
                 elseif isPet then -- All other pet's
                     if (pclass == "PALADIN" and IsInRaid()) then
-                        -- Hide Succubus while in raids (they genreally always get sacraficed)
+                        -- Hide Succubus while in raids (they generally always get sacrificed)
                         tmp.class = ""
                     else
                         --self:Debug("isPet: "..tmp.name)
@@ -3329,7 +3330,7 @@ function PallyPower:IsBuffActive(spellName, gspellName, unitID)
             if PallyPower.isBCC then
                 _, _, _, _, buffDuration, buffExpire = UnitAura(unitID, j, "HELPFUL")
             else
-                _, _, _, _, buffDuration, buffExpire = LCD.UnitAuraWrapper(unit.unitid, j, "HELPFUL")
+                _, _, _, _, buffDuration, buffExpire = LCD.UnitAuraWrapper(unitID, j, "HELPFUL")
             end
             if buffExpire then
                 if buffExpire == 0 then

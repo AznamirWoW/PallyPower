@@ -2015,7 +2015,8 @@
                     self:StopMovingOrSizing();
                     self.isMoving = false
                 end
-                L_CloseDropDownMenus()
+                local LUIDDM = LibStub("LibUIDropDownMenu-4.0")
+                LUIDDM:CloseDropDownMenus()
             </OnHide>
         </Scripts>
     </Frame>
