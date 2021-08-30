@@ -525,7 +525,7 @@ PallyPower.options = {
 								[7] = PallyPower.Seals[7], -- Seal of Vengeance (Alliance)
 								[8] = PallyPower.Seals[8], -- Seal of Blood (Horde)
 								[9] = PallyPower.Seals[9], -- Seal of the Martyr (Alliance)
-								[10] = PallyPower.Seals[10] -- Seal of Vengeance (Horde)
+								[10] = PallyPower.Seals[10] -- Seal of Corruption (Horde)
 							}
 						}
 					}

@@ -2584,16 +2584,18 @@ end
 
 function PallyPower:UpdateButtonOnPostClick(button, mousebutton)
     local classID = button:GetAttribute("classID")
-    local _, _, cbNum = sfind(button:GetName(), "PallyPowerC(.+)")
-    self:UpdateButton(button, "PallyPowerC" .. cbNum, classID)
-    self:ButtonsUpdate()
-    C_Timer.After(
+    if classID and classID > 0 then
+        local _, _, cbNum = sfind(button:GetName(), "PallyPowerC(.+)")
+        self:UpdateButton(button, "PallyPowerC" .. cbNum, classID)
+        self:ButtonsUpdate()
+        C_Timer.After(
         1.0,
         function()
             self:UpdateButton(button, "PallyPowerC" .. cbNum, classID)
             self:ButtonsUpdate()
         end
-    )
+        )
+    end
 end
 
 function PallyPower:UpdateButton(button, baseName, classID)
@@ -3361,7 +3363,7 @@ function PallyPower:ButtonPreClick(button, mousebutton)
     button:SetAttribute("macrotext2", nil)
     local classid = button:GetAttribute("classID")
     local spell, gspell, unitName, unitid
-    if classid then
+    if classid and classid > 0 then
         if IsInRaid() and (mousebutton == "LeftButton") and (classid ~= 10) then
             unitid, spell, gspell = self:GetUnitAndSpellSmart(classid, mousebutton)
             if unitid and classid then
