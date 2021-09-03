@@ -538,24 +538,7 @@ function PallyPowerPlayerButton_OnClick(btn, mouseBtn)
     pnum = tonumber(pnum)
     local pname = classes[class][pnum].name
 
-    local pallycount = 0
-    for name in pairs(AllPallys) do
-        pallycount = pallycount + 1
-    end
-
-    if pallycount > 1 then
-        PallyPowerGrid_NormalBlessingMenu(btn, mouseBtn, pname, class)
-    elseif pallycount == 1 and (mouseBtn == "LeftButton") then
-        PallyPower:PerformPlayerCycle(btn, 1, pname, class)
-    elseif pallycount == 1 and (mouseBtn == "RightButton") then
-        for pally in pairs(AllPallys) do
-            if PallyPower_NormalAssignments[pally] and PallyPower_NormalAssignments[pally][class] and PallyPower_NormalAssignments[pally][class][pname] then
-                PallyPower_NormalAssignments[pally][class][pname] = nil
-            end
-            PallyPower:SendMessage("NASSIGN " .. pally .. " " .. class .. " " .. pname .. " 0")
-            PallyPower:UpdateLayout()
-        end
-    end
+    PallyPowerGrid_NormalBlessingMenu(btn, mouseBtn, pname, class)
 end
 
 function PallyPowerPlayerButton_OnMouseWheel(btn, arg1)
