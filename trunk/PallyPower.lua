@@ -485,15 +485,13 @@ function PallyPowerGrid_NormalBlessingMenu(btn, mouseBtn, pname, class)
 
             for index, blessing in ipairs(PallyPower.Spells) do
                 if PallyPower:CanBuff(pally, index) then
-                    if PallyPower:NeedsBuff(class, index, pname) then
-                        local unitID = PallyPower:GetUnitIdByName(pname)
-                        if PallyPower:CanBuffBlessing(index, 0, unitID) then
-                            tinsert(pallyMenu, {
-                                text = sformat("%s%s%s", pre, blessing, suf),
-                                checked = function() if GetNormalBlessings(pally, class, pname) == tostring(index) then return true end end,
-                                func = function() LUIDDM:CloseDropDownMenus(); if control then SetNormalBlessings(pally, class, pname, index + 0) end end
-                            })
-                        end
+                    local unitID = PallyPower:GetUnitIdByName(pname)
+                    if PallyPower:CanBuffBlessing(index, 0, unitID) then
+                        tinsert(pallyMenu, {
+                            text = sformat("%s%s%s", pre, blessing, suf),
+                            checked = function() if GetNormalBlessings(pally, class, pname) == tostring(index) then return true end end,
+                            func = function() LUIDDM:CloseDropDownMenus(); if control then SetNormalBlessings(pally, class, pname, index + 0) end end
+                        })
                     end
                 end
             end
