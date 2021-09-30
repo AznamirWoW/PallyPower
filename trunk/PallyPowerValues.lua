@@ -51,8 +51,8 @@ PALLYPOWER_DEFAULT_VALUES = {
 		mainAssistGSpellsW = 4,
 		mainAssistSpellsW = 7,
 		minimap = {
-            ["minimapPos"] = 190,
-            ["show"] = true,
+			["minimapPos"] = 190,
+			["show"] = true,
 		},
 		ReportChannel = 0,
 		rfbuff = true,
@@ -109,8 +109,8 @@ PALLYPOWER_OTHER_VALUES = {
 		mainAssistGSpellsW = 0,
 		mainAssistSpellsW = 0,
 		minimap = {
-            ["minimapPos"] = 190,
-            ["show"] = true,
+			["minimapPos"] = 190,
+			["show"] = true,
 		},
 		ReportChannel = 0,
 		rfbuff = false,
