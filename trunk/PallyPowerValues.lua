@@ -3,11 +3,11 @@ local L = LibStub("AceLocale-3.0"):GetLocale("PallyPower")
 PallyPower.commPrefix = "PLPWR"
 C_ChatInfo.RegisterAddonMessagePrefix(PallyPower.commPrefix)
 
-PALLYPOWER_MAXCLASSES = 10
+PALLYPOWER_MAXCLASSES = PallyPower.isBCC and 10 or 9
 PALLYPOWER_MAXPERCLASS = 15
 PALLYPOWER_NORMALBLESSINGDURATION = PallyPower.isBCC and (10 * 60) or (5 * 60)
 PALLYPOWER_GREATERBLESSINGDURATION = PallyPower.isBCC and (30 * 60) or (15 * 60)
-PALLYPOWER_MAXAURAS = 8
+PALLYPOWER_MAXAURAS = PallyPower.isBCC and 8 or 7
 
 PALLYPOWER_DEFAULT_VALUES = {
 	profile = {
@@ -127,7 +127,7 @@ PALLYPOWER_OTHER_VALUES = {
 
 PallyPower.BuffBarTitle = "Pally Buffs (%d)"
 
-PallyPower.ClassID = {
+PallyPower.ClassID = PallyPower.isBCC and {
 	[1] = "WARRIOR",
 	[2] = "ROGUE",
 	[3] = "PRIEST",
@@ -138,9 +138,19 @@ PallyPower.ClassID = {
 	[8] = "WARLOCK",
 	[9] = "SHAMAN",
 	[10] = "PET"
+} or {
+	[1] = "WARRIOR",
+	[2] = "ROGUE",
+	[3] = "PRIEST",
+	[4] = "DRUID",
+	[5] = "PALADIN",
+	[6] = "HUNTER",
+	[7] = "MAGE",
+	[8] = "WARLOCK",
+	[9] = "PET"
 }
 
-PallyPower.ClassToID = {
+PallyPower.ClassToID = PallyPower.isBCC and {
 	["WARRIOR"] = 1,
 	["ROGUE"] = 2,
 	["PRIEST"] = 3,
@@ -151,9 +161,19 @@ PallyPower.ClassToID = {
 	["WARLOCK"] = 8,
 	["SHAMAN"] = 9,
 	["PET"] = 10
+} or {
+	["WARRIOR"] = 1,
+	["ROGUE"] = 2,
+	["PRIEST"] = 3,
+	["DRUID"] = 4,
+	["PALADIN"] = 5,
+	["HUNTER"] = 6,
+	["MAGE"] = 7,
+	["WARLOCK"] = 8,
+	["PET"] = 9
 }
 
-PallyPower.ClassIcons = {
+PallyPower.ClassIcons = PallyPower.isBCC and {
 	[1] = "Interface\\Icons\\ClassIcon_Warrior",
 	[2] = "Interface\\Icons\\ClassIcon_Rogue",
 	[3] = "Interface\\Icons\\ClassIcon_Priest",
@@ -164,6 +184,16 @@ PallyPower.ClassIcons = {
 	[8] = "Interface\\Icons\\ClassIcon_Warlock",
 	[9] = "Interface\\Icons\\ClassIcon_Shaman",
 	[10] = "Interface\\Icons\\Ability_Mount_JungleTiger"
+} or {
+	[1] = "Interface\\Icons\\ClassIcon_Warrior",
+	[2] = "Interface\\Icons\\ClassIcon_Rogue",
+	[3] = "Interface\\Icons\\ClassIcon_Priest",
+	[4] = "Interface\\Icons\\ClassIcon_Druid",
+	[5] = "Interface\\Icons\\ClassIcon_Paladin",
+	[6] = "Interface\\Icons\\ClassIcon_Hunter",
+	[7] = "Interface\\Icons\\ClassIcon_Mage",
+	[8] = "Interface\\Icons\\ClassIcon_Warlock",
+	[9] = "Interface\\Icons\\Ability_Mount_JungleTiger"
 }
 
 PallyPower.BlessingIcons = {

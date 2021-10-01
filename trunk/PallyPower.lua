@@ -22,6 +22,7 @@ local WisdomPallys, MightPallys, KingsPallys, SalvPallys, LightPallys, SancPally
 local classlist, classes = {}, {}
 
 PallyPower.player = UnitName("player")
+PallyPower.realm = GetRealmName()
 
 PallyPower_Assignments = {}
 PallyPower_NormalAssignments = {}
@@ -394,7 +395,7 @@ function PallyPowerGrid_NormalBlessingMenu(btn, mouseBtn, pname, class)
 
 		local menu = {}
 
-		local shortname = select(1, strsplit("-", pname))
+		local shortname = strsplit("%-", pname)
 
 		tinsert(menu, {text = "|cffffffff" .. shortname .. "|r " .. L["ALTMENU_LINE1"], isTitle = true, isNotRadio = true, notCheckable = 1})
 		tinsert(menu, {text = L["ALTMENU_LINE2"], isTitle = true, isNotRadio = true, notCheckable = 1})
@@ -430,7 +431,7 @@ function PallyPowerGrid_NormalBlessingMenu(btn, mouseBtn, pname, class)
 				end
 			end
 
-			local shortname = select(1, strsplit("-", pally))
+			local shortname = strsplit("%-", pally)
 
 			tinsert(menu, {
 				text = format("%s%s%s", pre, shortname, suf),
@@ -574,8 +575,7 @@ function PallyPowerBlessingsGrid_Update(self, elapsed)
 			local SkillInfo = AllPallys[name]
 			local BuffInfo = PallyPower_Assignments[name]
 			local NormalBuffInfo = PallyPower_NormalAssignments[name]
-			local shortname = Ambiguate(name, "short")
-			_G[fname .. "Name"]:SetText(shortname)
+			_G[fname .. "Name"]:SetText(name)
 			if PallyPower:CanControl(name) then
 				_G[fname .. "Name"]:SetTextColor(1, 1, 1)
 			else
@@ -1667,17 +1667,22 @@ function PallyPower:PLAYER_ROLES_ASSIGNED(event)
 end
 
 function PallyPower:ParseMessage(sender, msg)
+	sender = self:RemoveRealmName(sender)
+
 	if strfind(msg, "^PPLEADER") then
 		local _, _, name = strfind(msg, "^PPLEADER (.*)")
+		name = self:RemoveRealmName(name)
 		if self:CheckLeader(name) then
 			PP_Leader = true
 		end
 	end
-	if (sender == self.player or sender == nil) or not initialized then
-		return
-	end
+
+	if (sender == self.player or sender == nil) or not initialized then return end
+
 	--self:Debug("[Parse Message] sender: " .. sender .. " | msg: " .. msg)
+
 	local leader = self:CheckLeader(sender)
+
 	if msg == "REQ" then
 		if IsInRaid() and IsInGroup(LE_PARTY_CATEGORY_INSTANCE) and IsInInstance() then
 			self:SendSelf()
@@ -1685,6 +1690,7 @@ function PallyPower:ParseMessage(sender, msg)
 			self:SendSelf(sender)
 		end
 	end
+
 	if strfind(msg, "^SELF") then
 		PallyPower_NormalAssignments[sender] = {}
 		PallyPower_Assignments[sender] = {}
@@ -1710,8 +1716,10 @@ function PallyPower:ParseMessage(sender, msg)
 			end
 		end
 	end
+
 	if strfind(msg, "^ASSIGN") then
 		local _, _, name, class, skill = strfind(msg, "^ASSIGN (.*) (.*) (.*)")
+		name = self:RemoveRealmName(name)
 		if name ~= sender and not (leader or self.opt.freeassign) then
 			return false
 		end
@@ -1722,8 +1730,10 @@ function PallyPower:ParseMessage(sender, msg)
 		skill = skill + 0
 		PallyPower_Assignments[name][class] = skill
 	end
+
 	if strfind(msg, "^PASSIGN") then
 		local _, _, name, assign = strfind(msg, "^PASSIGN (.*)@([0-9n]*)")
+		name = self:RemoveRealmName(name)
 		if name ~= sender and not (leader or self.opt.freeassign) then
 			return false
 		end
@@ -1740,27 +1750,31 @@ function PallyPower:ParseMessage(sender, msg)
 			end
 		end
 	end
+
 	if strfind(msg, "^NASSIGN") then
 		for pname, class, tname, skill in string.gmatch(strsub(msg, 9), "([^@]*) ([^@]*) ([^@]*) ([^@]*)") do
-			if pname ~= sender and not (leader or self.opt.freeassign) then
+			local name = self:RemoveRealmName(pname)
+			if name ~= sender and not (leader or self.opt.freeassign) then
 				return
 			end
-			if not PallyPower_NormalAssignments[pname] then
-				PallyPower_NormalAssignments[pname] = {}
+			if not PallyPower_NormalAssignments[name] then
+				PallyPower_NormalAssignments[name] = {}
 			end
 			class = class + 0
-			if not PallyPower_NormalAssignments[pname][class] then
-				PallyPower_NormalAssignments[pname][class] = {}
+			if not PallyPower_NormalAssignments[name][class] then
+				PallyPower_NormalAssignments[name][class] = {}
 			end
 			skill = skill + 0
 			if skill == 0 then
 				skill = nil
 			end
-			PallyPower_NormalAssignments[pname][class][tname] = skill
+			PallyPower_NormalAssignments[name][class][tname] = skill
 		end
 	end
+
 	if strfind(msg, "^MASSIGN") then
 		local _, _, name, skill = strfind(msg, "^MASSIGN (.*) (.*)")
+		name = self:RemoveRealmName(name)
 		if name ~= sender and not (leader or self.opt.freeassign) then
 			return false
 		end
@@ -1772,6 +1786,7 @@ function PallyPower:ParseMessage(sender, msg)
 			PallyPower_Assignments[name][i] = skill
 		end
 	end
+
 	if strfind(msg, "SYMCOUNT") then
 		local _, _, symcount = strfind(msg, "SYMCOUNT ([0-9]*)")
 		if AllPallys[sender] then
@@ -1782,6 +1797,7 @@ function PallyPower:ParseMessage(sender, msg)
 			end
 		end
 	end
+
 	if strfind(msg, "COOLDOWNS") then
 		local _, duration1, remaining1, duration2, remaining2 = strsplit(":", msg)
 		if AllPallys[sender] then
@@ -1804,6 +1820,7 @@ function PallyPower:ParseMessage(sender, msg)
 			end
 		end
 	end
+
 	if strfind(msg, "^CLEAR") then
 		if leader then
 			self:ClearAssignments(sender)
@@ -1811,12 +1828,15 @@ function PallyPower:ParseMessage(sender, msg)
 			self:ClearAssignments(self.player)
 		end
 	end
+
 	if strfind(msg, "FREEASSIGN YES") and AllPallys[sender] then
 		AllPallys[sender].freeassign = true
 	end
+
 	if strfind(msg, "FREEASSIGN NO") and AllPallys[sender] then
 		AllPallys[sender].freeassign = false
 	end
+
 	if strfind(msg, "^ASELF") then
 		PallyPower_AuraAssignments[sender] = 0
 		if AllPallys[sender] then
@@ -1841,8 +1861,10 @@ function PallyPower:ParseMessage(sender, msg)
 			end
 		end
 	end
+
 	if strfind(msg, "^AASSIGN") then
 		local _, _, name, aura = strfind(msg, "^AASSIGN (.*) (.*)")
+		name = self:RemoveRealmName(name)
 		if name ~= sender and not (leader or self.opt.freeassign) then
 			return false
 		end
@@ -1852,6 +1874,7 @@ function PallyPower:ParseMessage(sender, msg)
 		aura = aura + 0
 		PallyPower_AuraAssignments[name] = aura
 	end
+
 	self:UpdateLayout()
 end
 
@@ -1939,6 +1962,22 @@ function PallyPower:FormatTime(time)
 	return format("%d:%02d", mins, secs)
 end
 
+function PallyPower:AddRealmName(unitID)
+	local name, realm = strsplit("%-", unitID)
+	realm = realm or self.realm
+
+	return name .. "-" .. realm
+end
+
+function PallyPower:RemoveRealmName(unitID)
+	local name, realm = strsplit("%-", unitID)
+	if realm and realm ~= self.realm then
+		return unitID
+	else
+		return name
+	end
+end
+
 function PallyPower:GetClassID(class)
 	for id, name in pairs(self.ClassID) do
 		if (name == class) then
@@ -1966,7 +2005,7 @@ function PallyPower:UpdateRoster()
 		if unitid and UnitExists(unitid) then
 			local tmp = {}
 			tmp.unitid = unitid
-			tmp.name = UnitName(unitid)
+			tmp.name = GetUnitName(unitid, true)
 			local ShowPets = self.opt.ShowPets
 			local isPet = tmp.unitid:find("pet")
 			local pclass = select(2, UnitClass(unitid))
@@ -3313,13 +3352,13 @@ function PallyPower:ButtonPreClick(button, mousebutton)
 			if gspell then
 				local gspellMacro = "/cast [@" .. unitName .. ",help,nodead] " .. gspell
 				button:SetAttribute("macrotext1", gspellMacro)
-				self:Debug("Single Unit Macro Executed: "..gspellMacro)
+				--self:Debug("Single Unit Macro Executed: "..gspellMacro)
 			end
 			-- Set Normal Blessing: right click (Only works while not in combat. Cleared in PostClick.)
 			if spell then
 				local spellMacro = "/cast [@" .. unitName .. ",help,nodead] " .. spell
 				button:SetAttribute("macrotext2", spellMacro)
-				self:Debug("Single Unit Macro Executed: "..spellMacro)
+				--self:Debug("Single Unit Macro Executed: "..spellMacro)
 			end
 		end
 	end

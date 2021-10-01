@@ -1,4 +1,4 @@
-## Interface: 20502
+## Interface: 11400
 ## Author: Aznamir, Dyaxler, Es
 ## Title: PallyPower Classic
 ## Version: @project-version@
