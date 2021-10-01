@@ -1587,7 +1587,7 @@
 						PallyPowerBlessingsFrame_MouseDown(self, button);
 					</OnMouseDown>
 					<OnMouseUp>
-						PallyPowerBlessingsFrame_MouseUp(self, button);
+						PallyPowerBlessingsFrame_MouseUp();
 					</OnMouseUp>
 					<OnUpdate>
 						PallyPowerBlessingsGrid_Update(self, elapsed);
