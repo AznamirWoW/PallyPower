@@ -265,7 +265,7 @@
 						</Anchor>
 					</Anchors>
 				</FontString>
-				<Texture name = "$parentClassIcon" file = "Interface\AddOns\PallyPower\Icons\Warrior">
+				<Texture name = "$parentClassIcon" file = "Interface\Icons\ClassIcon_Warrior">
 					<Size>
 						<AbsDimension x = "26" y = "26"/>
 					</Size>
@@ -529,7 +529,7 @@
 		</Size>
 		<Layers>
 			<Layer level = "ARTWORK">
-				<Texture name = "$parentIcon" file = "Interface\AddOns\PallyPower\Icons\Warrior">
+				<Texture name = "$parentIcon" file = "Interface\Icons\ClassIcon_Warrior">
 					<Size>
 						<AbsDimension x = "32" y = "32"/>
 					</Size>
