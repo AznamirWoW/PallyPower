@@ -3683,12 +3683,10 @@ function PallyPower:ApplySkin()
 	local border = LSM3:Fetch("border", self.opt.border)
 	local background = LSM3:Fetch("background", self.opt.skin)
 	local tmp = {bgFile = background, edgeFile = border, tile = false, tileSize = 8, edgeSize = 8, insets = {left = 0, right = 0, top = 0, bottom = 0}}
-	if self.isBCC then
-		if BackdropTemplateMixin then
-			Mixin(PallyPowerAura, BackdropTemplateMixin)
-			Mixin(PallyPowerRF, BackdropTemplateMixin)
-			Mixin(PallyPowerAuto, BackdropTemplateMixin)
-		end
+	if BackdropTemplateMixin then
+		Mixin(PallyPowerAura, BackdropTemplateMixin)
+		Mixin(PallyPowerRF, BackdropTemplateMixin)
+		Mixin(PallyPowerAuto, BackdropTemplateMixin)
 	end
 	PallyPowerAura:SetBackdrop(tmp)
 	PallyPowerRF:SetBackdrop(tmp)
