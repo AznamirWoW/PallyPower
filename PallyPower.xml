@@ -1531,7 +1531,7 @@
 		</Frames>
 	</Frame>
 
-	<Frame name="PallyPower_BackdropTemplate" mixin="PallyPower_BackdropTemplateMixin" virtual="true">
+	<Frame name="PallyPower_BackdropTemplate" mixin="BackdropTemplateMixin" virtual="true">
 		<Scripts>
 			<OnLoad method="OnBackdropLoaded"/>
 			<OnSizeChanged method="OnBackdropSizeChanged"/>
