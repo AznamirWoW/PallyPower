@@ -32,8 +32,9 @@ SyncList = {}
 PP_DebugEnabled = false
 
 local initialized = false
+local isPally = false
+
 PP_Symbols = 0
-PP_IsPally = false
 PP_Leader = false
 PP_LeaderSalv = false
 
@@ -76,20 +77,27 @@ function PallyPower:Debug(string)
 	end
 end
 
+-------------------------------------------------------------------
+-- Ace Framework Events
+-------------------------------------------------------------------
 function PallyPower:OnInitialize()
-	if UnitClass("player") ~= "Paladin" then
+	if select(2, UnitClass("player")) == "PALADIN" then
+		self.db = LibStub("AceDB-3.0"):New("PallyPowerDB", PALLYPOWER_DEFAULT_VALUES, "Default")
+	else
 		self.db = LibStub("AceDB-3.0"):New("PallyPowerDB", PALLYPOWER_OTHER_VALUES, "Other")
 		self.db:SetProfile("Other")
-	else
-		self.db = LibStub("AceDB-3.0"):New("PallyPowerDB", PALLYPOWER_DEFAULT_VALUES, "Default")
 	end
+
 	self.db.RegisterCallback(self, "OnProfileChanged", "OnProfileChanged")
 	self.db.RegisterCallback(self, "OnProfileCopied", "OnProfileChanged")
 	self.db.RegisterCallback(self, "OnProfileReset", "OnProfileChanged")
+
 	self.opt = self.db.profile
 	self.options.args.profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db)
+
 	LibStub("AceConfig-3.0"):RegisterOptionsTable("PallyPower", self.options, {"pp", "pallypower"})
 	self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("PallyPower", "PallyPower")
+
 	LSM3:Register("background", "None", "Interface\\Tooltips\\UI-Tooltip-Background")
 	LSM3:Register("background", "Banto", "Interface\\AddOns\\PallyPower\\Skins\\Banto")
 	LSM3:Register("background", "BantoBarReverse", "Interface\\AddOns\\PallyPower\\Skins\\BantoBarReverse")
@@ -98,24 +106,30 @@ function PallyPower:OnInitialize()
 	LSM3:Register("background", "Healbot", "Interface\\AddOns\\PallyPower\\Skins\\Healbot")
 	LSM3:Register("background", "oCB", "Interface\\AddOns\\PallyPower\\Skins\\oCB")
 	LSM3:Register("background", "Smooth", "Interface\\AddOns\\PallyPower\\Skins\\Smooth")
+
 	self.zone = GetRealZoneText()
+
 	self:ScanInventory()
 	self:CreateLayout()
+
 	if self.opt.skin then
 		self:ApplySkin(self.opt.skin)
 	end
+
 	self.AutoBuffedList = {}
 	self.PreviousAutoBuffedUnit = nil
 	self.menuFrame = LUIDDM:Create_UIDropDownMenu("PallyPowerMenuFrame", UIParent)
+
 	if not PallyPowerConfigFrame then
-		local pallypowerconfigframe = AceGUI:Create("Frame")
-		pallypowerconfigframe:EnableResize(false)
+		local ConfigFrame = AceGUI:Create("Frame")
+		ConfigFrame:EnableResize(false)
 		LibStub("AceConfigDialog-3.0"):SetDefaultSize("PallyPower", 625, 580)
-		LibStub("AceConfigDialog-3.0"):Open("PallyPower", pallypowerconfigframe)
-		pallypowerconfigframe:Hide()
-		_G["PallyPowerConfigFrame"] = pallypowerconfigframe.frame
+		LibStub("AceConfigDialog-3.0"):Open("PallyPower", ConfigFrame)
+		ConfigFrame:Hide()
+		_G["PallyPowerConfigFrame"] = ConfigFrame.frame
 		table.insert(UISpecialFrames, "PallyPowerConfigFrame")
 	end
+
 	self.MinimapIcon = LibStub("LibDBIcon-1.0")
 	self.LDB =
 		LibStub("LibDataBroker-1.1"):NewDataObject(
@@ -123,7 +137,7 @@ function PallyPower:OnInitialize()
 		{
 			["type"] = "data source",
 			["text"] = "PallyPower",
-			["icon"] = "Interface\\Icons\\Spell_Holy_SummonChampion",
+			["icon"] = "Interface\\AddOns\\PallyPower\\Icons\\SummonChampion",
 			["OnTooltipShow"] = function(tooltip)
 				if self.opt.ShowTooltips then
 					tooltip:SetText(L["PP_NAME"] .. " (" .. string.trim(GetAddOnMetadata("PallyPower", "Version")) .. ")")
@@ -141,18 +155,21 @@ function PallyPower:OnInitialize()
 		}
 	)
 	self.MinimapIcon:Register("PallyPower", self.LDB, self.opt.minimap)
-	if not self.isBCC then
-		LCD:Register("PallyPower")
-	end
 	C_Timer.After(
 		2.0,
 		function()
 			PallyPowerMinimapIcon_Toggle()
 		end
 	)
+
+	if not self.isBCC then
+		LCD:Register("PallyPower")
+	end
 end
 
 function PallyPower:OnEnable()
+	isPally = select(2, UnitClass("player")) == "PALADIN"
+
 	self.opt.enable = true
 	self:ScanSpells()
 	self:ScanCooldowns()
@@ -168,7 +185,7 @@ function PallyPower:OnEnable()
 	self:RegisterEvent("CHANNEL_UI_UPDATE", "ReportChannels")
 	self:RegisterBucketEvent("SPELLS_CHANGED", 1, "SPELLS_CHANGED")
 	self:RegisterBucketEvent("PLAYER_ENTERING_WORLD", 2, "PLAYER_ENTERING_WORLD")
-	if PP_IsPally then
+	if isPally then
 		self:ScheduleRepeatingTimer(self.ScanInventory, 60, self)
 		self.ButtonsUpdate(self)
 	end
@@ -210,6 +227,9 @@ function PallyPower:UnbindKeys()
 	ClearOverrideBindings(self.autoButton)
 end
 
+-------------------------------------------------------------------
+-- Config Window Functionality
+-------------------------------------------------------------------
 function PallyPower:Purge()
 	PallyPower_Assignments = nil
 	PallyPower_NormalAssignments = nil
@@ -729,6 +749,9 @@ function PallyPower_ScalingFrame_Update(self, elapsed)
 	end
 end
 
+-------------------------------------------------------------------
+-- Main Functionality
+-------------------------------------------------------------------
 function PallyPower:ReportChannels()
 	local channels = {GetChannelList()}
 	PallyPower_ChanNames = {}
@@ -990,7 +1013,7 @@ end
 function PallyPower:PerformPlayerCycle(self, delta, pname, class)
 	local control = (IsControlKeyDown() and PallyPowerBlessingsFrame:IsMouseOver())
 	local blessing = 0
-	if not PP_IsPally then
+	if not isPally then
 		return
 	end
 	if PallyPower_NormalAssignments[self.player] and PallyPower_NormalAssignments[self.player][class] and PallyPower_NormalAssignments[self.player][class][pname] then
@@ -1186,8 +1209,7 @@ end
 
 function PallyPower:ScanSpells()
 	--self:Debug("[ScanSpells]")
-	local _, class = UnitClass("player")
-	if (class == "PALADIN") then
+	if isPally then
 		local RankInfo = {}
 		for i = 1, #self.Spells do -- find max spell ranks
 			local spellName = GetSpellInfo(self.Spells[i])
@@ -1259,19 +1281,17 @@ function PallyPower:ScanSpells()
 				end
 			end
 		end
-		PP_IsPally = true
+		isPally = true
 		if not AllPallys[self.player].subgroup then
 			AllPallys[self.player].subgroup = 1
 		end
-	else
-		PP_IsPally = false
 	end
 	initialized = true
 end
 
 function PallyPower:ScanCooldowns()
 	--self:Debug("[ScanCooldowns]")
-	if not initialized or not PP_IsPally then
+	if not initialized or not isPally then
 		return
 	end
 	local CooldownInfo = AllPallys[self.player].CooldownInfo
@@ -1293,7 +1313,7 @@ function PallyPower:ScanCooldowns()
 end
 
 function PallyPower:ScanInventory()
-	if not initialized or not PP_IsPally then
+	if not initialized or not isPally then
 		return
 	end
 	--self:Debug("[ScanInventory]")
@@ -1308,7 +1328,7 @@ function PallyPower:SendSelf(sender)
 		if PallyPower:CheckLeader(self.player) then
 			self:SendMessage("PPLEADER " .. self.player)
 		end
-		if not PP_IsPally then
+		if not isPally then
 			return
 		end
 	end
@@ -2279,7 +2299,7 @@ function PallyPower:UpdateLayout()
 	autob:ClearAllPoints()
 	autob:SetPoint(point, self.Header, "CENTER", ox, oy)
 	autob:SetAttribute("type", "spell")
-	if PP_IsPally and self.opt.enabled and self.opt.autobuff.autobutton and ((GetNumGroupMembers() == 0 and self.opt.ShowWhenSolo) or (GetNumGroupMembers() > 0 and self.opt.ShowInParty)) then
+	if isPally and self.opt.enabled and self.opt.autobuff.autobutton and ((GetNumGroupMembers() == 0 and self.opt.ShowWhenSolo) or (GetNumGroupMembers() > 0 and self.opt.ShowInParty)) then
 		autob:Show()
 	else
 		autob:Hide()
@@ -2302,7 +2322,7 @@ function PallyPower:UpdateLayout()
 	rfb:SetAttribute("type2", "spell")
 	rfb:SetAttribute("unit2", "player")
 	self:SealAssign(self.opt.seal)
-	if PP_IsPally and self.opt.enabled and self.opt.rfbuff and ((GetNumGroupMembers() == 0 and self.opt.ShowWhenSolo) or (GetNumGroupMembers() > 0 and self.opt.ShowInParty)) then
+	if isPally and self.opt.enabled and self.opt.rfbuff and ((GetNumGroupMembers() == 0 and self.opt.ShowWhenSolo) or (GetNumGroupMembers() > 0 and self.opt.ShowInParty)) then
 		rfb:Show()
 	else
 		rfb:Hide()
@@ -2329,7 +2349,7 @@ function PallyPower:UpdateLayout()
 	if self.opt.auras then
 		self:UpdateAuraButton(PallyPower_AuraAssignments[self.player])
 	end
-	if PP_IsPally and self.opt.enabled and self.opt.auras and AllPallys[self.player].AuraInfo[1] and ((GetNumGroupMembers() == 0 and self.opt.ShowWhenSolo) or (GetNumGroupMembers() > 0 and self.opt.ShowInParty)) then
+	if isPally and self.opt.enabled and self.opt.auras and AllPallys[self.player].AuraInfo[1] and ((GetNumGroupMembers() == 0 and self.opt.ShowWhenSolo) or (GetNumGroupMembers() > 0 and self.opt.ShowInParty)) then
 		auraBtn:Show()
 	else
 		auraBtn:Hide()
@@ -2340,7 +2360,7 @@ function PallyPower:UpdateLayout()
 		if (classlist[classIndex] and classlist[classIndex] ~= 0 and (gspellID ~= 0 or self:NormalBlessingCount(classIndex) > 0)) then
 			cbNum = cbNum + 1
 			local cButton = self.classButtons[cbNum]
-			if PP_IsPally and self.opt.enabled and self.opt.display.showClassButtons and ((GetNumGroupMembers() == 0 and self.opt.ShowWhenSolo) or (GetNumGroupMembers() > 0 and self.opt.ShowInParty)) then
+			if isPally and self.opt.enabled and self.opt.display.showClassButtons and ((GetNumGroupMembers() == 0 and self.opt.ShowWhenSolo) or (GetNumGroupMembers() > 0 and self.opt.ShowInParty)) then
 				cButton:Show()
 			else
 				cButton:Hide()
@@ -2962,7 +2982,7 @@ function PallyPower:ButtonsUpdate()
 		self:UpdateAuraButton(PallyPower_AuraAssignments[self.player])
 	end
 	if minClassExpire ~= 9999 or minSpecialExpire ~= 9999 or expire1 ~= 9999 or expire2 ~= 9999 then
-		if PP_IsPally and not self.buttonUpdate then
+		if isPally and not self.buttonUpdate then
 			self.buttonUpdate = self:ScheduleRepeatingTimer(self.ButtonsUpdate, 1, self)
 		end
 	else
@@ -3814,7 +3834,7 @@ function PallyPower:AutoAssignBlessings(shift)
 		pallycount = 6
 	end
 
-	if PP_IsPally then
+	if isPally then
 		-- Does leader have salvation? This is the hardest assignment to deal with so
 		-- we'd want someone with experience dealing with DPS classes that can also
 		-- Tank; and thus know how to assign alternate Normal Blessings to Tanks so
