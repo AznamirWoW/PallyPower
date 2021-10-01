@@ -2,12 +2,14 @@
 ## Author: Aznamir, Dyaxler, Es
 ## Title: PallyPower Classic
 ## Version: @project-version@
-## Notes: Raid/Party Paladin buffs.
+## Notes: Raid/Party Paladin buffs
+## Notes-esES: Buffs de Paladín para Grupo/Banda
+## Notes-zhCN: 圣骑士祝福管理
 ## DefaultState: enabled
 ## Dependencies:
-## OptionalDeps: Ace3
+## OptionalDeps: Ace3, LibSharedMedia-3.0, SharedMedia
 ## X-Category: Paladin
-## X-Embeds: Ace3, LibClassicDurations, LibUIDropDownMenu
+## X-Embeds: Ace3, LibClassicDurations, LibSharedMedia-3.0, LibUIDropDownMenu
 ## SavedVariables: PallyPowerDB, PallyPower_Assignments, PallyPower_NormalAssignments, PallyPower_AuraAssignments, PallyPower_SavedPresets, PallyPower_ChanNames, LCD_Data, LCD_GUIDAccess
 
 #@no-lib-strip@

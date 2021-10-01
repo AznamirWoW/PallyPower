@@ -6,6 +6,9 @@ if (class == "PALADIN") then
 	PP_IsPally = true
 end
 
+-------------------------------------------------------------------
+-- AceConfig
+-------------------------------------------------------------------
 PallyPower.options = {
 	name = "  " .. L["PP_NAME"],
 	type = "group",
