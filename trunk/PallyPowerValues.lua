@@ -125,8 +125,8 @@ PALLYPOWER_OTHER_VALUES = {
 	}
 }
 
-PallyPower_Credits1 = "Originally written by Aznamir"
-PallyPower_Credits2 = "Updated for Classic by Dyaxler and Es"
+PallyPower.Credits1 = "PallyPower - by Aznamir (Lightbringer US)"
+PallyPower.Credits2 = "Updated for Classic by Dyaxler and Es"
 
 PallyPower.BuffBarTitle = "Pally Buffs (%d)"
 

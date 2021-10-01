@@ -310,8 +310,8 @@ end
 function PallyPowerBlessings_ShowCredits(self)
 	if PallyPower.opt.ShowTooltips then
 		GameTooltip:SetOwner(self, "ANCHOR_TOP")
-		GameTooltip:SetText(PallyPower_Credits1, 1, 1, 1)
-		GameTooltip:AddLine(PallyPower_Credits2, 1, 1, 1)
+		GameTooltip:SetText(PallyPower.Credits1, 1, 1, 1)
+		GameTooltip:AddLine(PallyPower.Credits2, 1, 1, 1)
 		GameTooltip:Show()
 	end
 end
