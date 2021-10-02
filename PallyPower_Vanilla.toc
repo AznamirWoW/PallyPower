@@ -30,4 +30,4 @@ locale\zhTW.lua
 PallyPower.lua
 PallyPowerValues.lua
 PallyPowerOptions.lua
-PallyPower.xml
+PallyPower_Vanilla.xml
