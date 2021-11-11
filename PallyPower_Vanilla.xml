@@ -1501,18 +1501,7 @@
 		</Frames>
 	</Frame>
 
-	<Frame name="PallyPower_BackdropTemplate" mixin="BackdropTemplateMixin" virtual="true">
-		<Scripts>
-			<OnLoad method="OnBackdropLoaded"/>
-			<OnSizeChanged method="OnBackdropSizeChanged"/>
-		</Scripts>
-	</Frame>
-
-	<Frame name = "PallyPowerBlessingsFrame" hidden = "true" toplevel = "true" frameStrata = "HIGH" enableMouse = "true" movable = "true" parent = "UIParent" inherits="PallyPower_BackdropTemplate">
-		<KeyValues>
-			<KeyValue key="backdropInfo" value="BACKDROP_TOOLTIP_16_16_5555" type="global"/>
-			<KeyValue key="backdropColor" value="PALLYPOWER_BACKDROP_COLOR_DARK" type="global"/>
-		</KeyValues>
+	<Frame name = "PallyPowerBlessingsFrame" hidden = "true" toplevel = "true" frameStrata = "HIGH" enableMouse = "true" movable = "true" parent = "UIParent">
 		<Size>
 			<AbsDimension x = "1010" y = "1200"/>
 		</Size>
@@ -1965,6 +1954,20 @@
 			</Layer>
 		</Layers>
 		<Scripts>
+			<OnLoad inherit="prepend">
+				Mixin(self, BackdropTemplateMixin)
+				self:SetBackdrop( {
+				bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+				edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+				tile = true,
+				tileEdge = true,
+				tileSize = 16,
+				edgeSize = 16,
+				insets = { left = 5, right = 5, top = 5, bottom = 5 }
+				})
+				self:SetBackdropColor(0.05, 0.05, 0.05)
+				self:SetBackdropBorderColor(1, 1, 1, 1)
+			</OnLoad>
 			<OnMouseUp>
 				PallyPowerBlessingsFrame_MouseUp();
 			</OnMouseUp>

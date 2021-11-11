@@ -8,8 +8,6 @@ local LUIDDM = LibStub("LibUIDropDownMenu-4.0")
 PallyPower.isBCC = _G.WOW_PROJECT_ID == _G.WOW_PROJECT_BURNING_CRUSADE_CLASSIC
 local LCD = not PallyPower.isBCC  and LibStub("LibClassicDurations", true)
 
-PALLYPOWER_BACKDROP_COLOR_DARK = CreateColor(0.05, 0.05, 0.05)
-
 local tinsert = table.insert
 local tremove = table.remove
 local twipe = table.wipe
