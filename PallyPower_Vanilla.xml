@@ -424,7 +424,7 @@
 			<OnMouseWheel>
 				if InCombatLockdown() then return false end
 				local pname = (PallyPower:GetUnit(self:GetAttribute("classID"), self:GetAttribute("playerID"))).name
-				PallyPower:PerformPlayerCycle(self, delta, pname, self:GetAttribute("classID"));
+				PallyPower:PerformPlayerCycle(delta, pname, self:GetAttribute("classID"));
 				PallyPower:ButtonsUpdate();
 			</OnMouseWheel>
 		</Scripts>
