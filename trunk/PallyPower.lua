@@ -478,7 +478,7 @@ function PallyPowerPlayerButton_OnMouseWheel(btn, arg1)
 	class = tonumber(class)
 	pnum = tonumber(pnum)
 	local pname = classes[class][pnum].name
-	PallyPower:PerformPlayerCycle(btn, arg1, pname, class)
+	PallyPower:PerformPlayerCycle(arg1, pname, class)
 end
 
 function PallyPowerGridButton_OnClick(btn, mouseBtn)
@@ -1008,7 +1008,7 @@ function PallyPower:PerformCycleBackwards(name, class, skipzero)
 	end
 end
 
-function PallyPower:PerformPlayerCycle(self, delta, pname, class)
+function PallyPower:PerformPlayerCycle(delta, pname, class)
 	local control = (IsControlKeyDown() and PallyPowerBlessingsFrame:IsMouseOver())
 	local blessing = 0
 	if not isPally then
@@ -1020,9 +1020,9 @@ function PallyPower:PerformPlayerCycle(self, delta, pname, class)
 	local count
 	-- Can't give Blessing of Sacrifice to yourself
 	if pname == self.player then
-		count = 8
+		count = 7
 	else
-		count = 9
+		count = 8
 	end
 	local test = (blessing - delta) % count
 	while not (PallyPower:CanBuff(self.player, test) and PallyPower:NeedsBuff(class, test, pname) or control) and test > 0 do
