@@ -1616,19 +1616,6 @@ function PallyPower:CHAT_MSG_SYSTEM(event, text)
 	end
 end
 
-function PallyPower:UNIT_AURA(event, unitTarget)
-	local ShowPets = self.opt.ShowPets
-	local isPet = unitTarget:find("pet")
-	local pclass = select(2, UnitClass(unitTarget))
-	if ShowPets then
-		if isPet and (pclass == "MAGE" or pclass == "PALADIN") then --Warlock Imp or Succubus pet
-			self:UpdateLayout()
-			self:UpdateRoster()
-			--self:Debug("EVENT: UNIT_AURA - [Warlock Imp Changed Phase]")
-		end
-	end
-end
-
 function PallyPower:UNIT_SPELLCAST_SUCCEEDED(event, unitTarget, castGUID, spellID)
 	if select(2, UnitClass(unitTarget)) == "PALADIN" then
 		for _, spells in pairs(self.Cooldowns) do
