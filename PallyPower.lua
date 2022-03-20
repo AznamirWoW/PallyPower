@@ -2006,7 +2006,7 @@ function PallyPower:UpdateRoster()
 			tmp.name = GetUnitName(unitid, true)
 			local ShowPets = self.opt.ShowPets
 			local isPet = tmp.unitid:find("pet")
-			local pclass = select(2, UnitClass(unitid))
+			local pclass = (UnitClassBase(unitid))
 			if ShowPets or (not isPet) then
 				if isPet and pclass == "MAGE" then --Warlock Imp pet
 					local i = 1
