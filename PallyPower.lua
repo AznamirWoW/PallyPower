@@ -2578,17 +2578,17 @@ function PallyPower:UpdateButton(button, baseName, classID)
 			local gspell = self.GSpells[gspellID]
 			if raidtank == "MAINTANK" then
 				local _, _, buffName = self:IsBuffActive(spell, spell2, unit.unitid)
-				if (buffName == self.GSpells[4] or buffName == self.Spells[4]) then
+				if unit.hasbuff and (buffName == self.GSpells[4] or buffName == self.Spells[4]) then
 					nneed = nneed + 1
 					nhave = nhave - 1
 					if InCombatLockdown() and (buffName ~= self.Spells[7]) then
 						nspecial = nspecial - 1
 					end
-				elseif (buffName ~= self.GSpells[4] and gspellID == 4) or (buffName ~= self.Spells[4] and spellID == 4) then
+				elseif (not unit.hasbuff) and ((buffName ~= self.GSpells[4] and gspellID == 4) or (buffName ~= self.Spells[4] and spellID == 4)) then
 					nhave = nhave + 1
 					nneed = nneed - 1
 				end
-				if (buffName ~= self.Spells[7]) and spellID == 7 then
+				if unit.specialbuff and (not unit.hasbuff) and (buffName ~= self.Spells[7]) and spellID == 7 then
 					nneed = nneed + 1
 					nspecial = nspecial - 1
 				end
