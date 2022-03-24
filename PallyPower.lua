@@ -550,7 +550,11 @@ function PallyPowerBlessingsGrid_Update(self, elapsed)
 					local unit = classes[i][j]
 					if unit.name then
 						local shortname = Ambiguate(unit.name, "short")
-						_G[pbnt .. "Text"]:SetText(shortname)
+                        if unit.unitid:find("pet") then
+                            _G[pbnt .. "Text"]:SetText("|T132242:0|t "..shortname)
+                        else
+                            _G[pbnt .. "Text"]:SetText(shortname)
+                        end
 					end
 					local normal, greater = PallyPower:GetSpellID(i, unit.name)
 					if normal ~= greater then
@@ -1991,39 +1995,27 @@ function PallyPower:UpdateRoster()
 			local tmp = {}
 			tmp.unitid = unitid
 			tmp.name = GetUnitName(unitid, true)
+            local isPet = tmp.unitid:find("pet")
 			local ShowPets = self.opt.ShowPets
-			local isPet = tmp.unitid:find("pet")
 			local pclass = (UnitClassBase(unitid))
 			if ShowPets or (not isPet) then
-				if isPet and pclass == "MAGE" then --Warlock Imp pet
-					local i = 1
-					local name, icon = UnitBuff(unitid, i)
-					local isPhased = false
-					while name do
-						if icon == 136164 then
-							--self:Debug("isPet [isPhased]: "..tmp.name)
-							isPhased = true
-							break
-						end
-						i = i + 1
-						name, icon = UnitBuff(unitid, i)
-					end
-					if not isPhased then
-						--self:Debug("isPet [notPhased]: "..tmp.name)
-						tmp.class = "PET"
-					end
-				elseif isPet then -- All other pet's
-					if (pclass == "PALADIN" and IsInRaid()) then
-						-- Hide Succubus while in raids (they generally always get sacrificed)
-						tmp.class = ""
-					else
-						--self:Debug("isPet: "..tmp.name)
-						tmp.class = "PET"
-					end
-				else --Players
-					--self:Debug("isPlayer: "..tmp.name)
-					tmp.class = pclass
-				end
+                tmp.class = pclass
+                if isPet then
+                    local i = 1
+                    local isPhased = false
+                    local buffSpellId = select(10, UnitBuff(unitid, i))
+                    while buffSpellId do
+                        if (buffSpellId == 7870) or (buffSpellId == 4511) then -- 7870: Lesser Invisibility (Sayaad), 4511: Phase Shift (Imp)
+                            isPhased = true
+                            break
+                        end
+                        i = i + 1
+                        buffSpellId = select(10, UnitBuff(unitid, i))
+                    end
+                    if isPhased then
+                        tmp.class = ""
+                    end
+                end
 			end
 			if IsInRaid() and (not isPet) then
 				local n = select(3, unitid:find("(%d+)"))
@@ -2917,7 +2909,11 @@ function PallyPower:UpdatePButton(button, baseName, classID, playerID, mousebutt
 		end
 		if unit.name then
 			local shortname = Ambiguate(unit.name, "short")
-			name:SetText(shortname)
+            if unit.unitid:find("pet") then
+                name:SetText("|T132242:0|t "..shortname)
+            else
+                name:SetText(shortname)
+            end
 		end
 	else
 		self:ApplyBackdrop(button, self.opt.cBuffGood)
@@ -3071,7 +3067,6 @@ function PallyPower:GetUnitAndSpellSmart(classid, mousebutton)
 	if (mousebutton == "LeftButton") then
 		local minExpire, classMinExpire, classNeedsBuff, classMinUnitPenalty, classMinUnit, classMinSpell, classMaxSpell = 600, 600, true, 600, nil, nil, nil
 		for _, unit in pairs(class) do
-			local isPet = unit.unitid:find("pet")
 			local spellID, gspellID = self:GetSpellID(classid, unit.name)
 			local spell = self.Spells[spellID]
 			local gspell = self.GSpells[gspellID]
@@ -3120,11 +3115,6 @@ function PallyPower:GetUnitAndSpellSmart(classid, mousebutton)
 							end
 						end
 					end
-				end
-				-- We don't buff pets with Greater Blessings
-				if isPet then
-					buffExpire = 9999
-					penalty = 9999
 				end
 				-- Refresh any greater blessing under a 10 min duration
 				if ((not buffExpire or (buffExpire < classMinExpire) and buffExpire < PALLYPOWER_GREATERBLESSINGDURATION) and classMinExpire > 0) then
@@ -3480,7 +3470,6 @@ function PallyPower:AutoBuff(button, mousebutton)
 					local spellID, gspellID = self:GetSpellID(i, unit.name)
 					local spell = self.Spells[spellID]
 					local gspell = self.GSpells[gspellID]
-					local isPet = unit.unitid:find("pet")
 					if (IsSpellInRange(gspell, unit.unitid) == 1) and not UnitIsDeadOrGhost(unit.unitid) then
 						local penalty = 0
 						local buffExpire, buffDuration, buffName = self:IsBuffActive(spell, gspell, unit.unitid)
@@ -3518,11 +3507,6 @@ function PallyPower:AutoBuff(button, mousebutton)
 										penalty = 9999
 									end
 								end
-							end
-							-- We don't buff pets with Greater Blessings
-							if isPet then
-								buffExpire = 9999
-								penalty = 9999
 							end
 						end
 						-- Refresh any greater blessing under a 10 min duration
