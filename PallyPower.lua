@@ -55,13 +55,17 @@ do
 
 	for i = 1, MAX_PARTY_MEMBERS do
 		table.insert(party_units, ("party%d"):format(i))
-		table.insert(party_units, ("partypet%d"):format(i))
 	end
+    for i = 1, MAX_PARTY_MEMBERS do
+        table.insert(party_units, ("partypet%d"):format(i))
+    end
 
 	for i = 1, MAX_RAID_MEMBERS do
 		table.insert(raid_units, ("raid%d"):format(i))
-		table.insert(raid_units, ("raidpet%d"):format(i))
 	end
+    for i = 1, MAX_RAID_MEMBERS do
+		table.insert(raid_units, ("raidpet%d"):format(i))
+    end
 end
 
 PallyPower.Credits1 = "PallyPower - by Aznamir (Lightbringer US)"
