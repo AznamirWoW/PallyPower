@@ -181,7 +181,6 @@ PallyPower.ClassIcons = PallyPower.isBCC and {
 	[7] = "Interface\\Icons\\ClassIcon_Mage",
 	[8] = "Interface\\Icons\\ClassIcon_Warlock",
 	[9] = "Interface\\Icons\\ClassIcon_Shaman",
-	[10] = "Interface\\Icons\\Ability_Mount_JungleTiger"
 } or {
 	[1] = "Interface\\Icons\\ClassIcon_Warrior",
 	[2] = "Interface\\Icons\\ClassIcon_Rogue",
