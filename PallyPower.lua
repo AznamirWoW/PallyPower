@@ -2005,19 +2005,21 @@ function PallyPower:UpdateRoster()
 			if ShowPets or (not isPet) then
                 tmp.class = pclass
                 if isPet then
-                    local i = 1
-                    local isPhased = false
-                    local buffSpellId = select(10, UnitBuff(unitid, i))
-                    while buffSpellId do
-                        if (buffSpellId == 7870) or (buffSpellId == 4511) then -- 7870: Lesser Invisibility (Sayaad), 4511: Phase Shift (Imp)
-                            isPhased = true
-                            break
-                        end
-                        i = i + 1
-                        buffSpellId = select(10, UnitBuff(unitid, i))
-                    end
-                    if isPhased then
+                    local npcId = (select(6, ("-"):split(UnitGUID(unitid))))
+                    if (npcId == "510") or (npcId == "19668") or (npcId == "1863") or (npcId == "185317") then -- 510: Water Elemental, 19668: Shadowfiend, 1863: Succubus, 185317: Incubus
                         tmp.class = ""
+                    else
+                        local i = 1
+                        local isPhased = false
+                        local buffSpellId = select(10, UnitBuff(unitid, i))
+                        while buffSpellId do
+                            if (buffSpellId == 4511) then -- 4511: Phase Shift (Imp)
+                                tmp.class = ""
+                                break
+                            end
+                            i = i + 1
+                            buffSpellId = select(10, UnitBuff(unitid, i))
+                        end
                     end
                 end
 			end
