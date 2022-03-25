@@ -2025,6 +2025,7 @@ function PallyPower:UpdateRoster()
 				tmp.name, tmp.rank, tmp.subgroup = GetRaidRosterInfo(n)
 				tmp.zone = select(7, GetRaidRosterInfo(n))
 				raidtank = select(10, GetRaidRosterInfo(n))
+				tmp.tank = ((raidtank == "MAINTANK") or (self.opt.mainAssist and (raidtank == "MAINASSIST")))
 				class = self:GetClassID(pclass)
 				-- Warriors
 				if (class == 1) then
@@ -2510,6 +2511,26 @@ function PallyPower:UpdateButtonOnPostClick(button, mousebutton)
 	end
 end
 
+-- returns:
+-- "need_big" for missing greater blessing
+-- "need_small" for missing single blessing
+-- "have" for no missing buff
+local function ClassifyUnitBuffStateForButton(unit)
+	-- do not highlight dead players in combat
+	if unit.dead and InCombatLockdown() then
+		return "have"
+	end
+	if not unit.hasbuff then
+		if unit.specialbuff then
+			return "need_small"
+		else
+			return "need_big"
+		end
+	else
+		return "have"
+	end
+end
+
 function PallyPower:UpdateButton(button, baseName, classID)
 	local button = _G[baseName]
 	local classIcon = _G[baseName .. "ClassIcon"]
@@ -2520,63 +2541,23 @@ function PallyPower:UpdateButton(button, baseName, classID)
 	local nneed = 0
 	local nspecial = 0
 	local nhave = 0
-	local ndead = 0
 	for _, unit in pairs(classes[classID]) do
-		if unit.visible then
-			if not unit.hasbuff then
-				if unit.specialbuff then
-					nspecial = nspecial + 1
-				else
-					nneed = nneed + 1
-				end
-			else
-				nhave = nhave + 1
-			end
-		elseif UnitIsConnected(unit.unitid) then
-			if unit.hasbuff then
-				nhave = nhave + 1
-			else
-				nneed = nneed + 1
-			end
+		local state = ClassifyUnitBuffStateForButton(unit)
+		-- do not show tanks clicking off salvation on the class button
+		if unit.tank and (state == "need_big") and (self:GetSpellID(classID, unit.name) == 4) then
+			state = "have"
 		end
-		if unit.dead then
-			ndead = ndead + 1
+		-- do not show unreachable units on the class button
+		if (not unit.visible) and InCombatLockdown() then
+			state = "have"
 		end
-		local isPet = unit.unitid:find("pet")
-		if IsInRaid() and (not isPet) then
-			local n = select(3, unit.unitid:find("(%d+)"))
-			local raidtank
-			if n then
-				raidtank = select(10, GetRaidRosterInfo(n))
-			end
-			local spellID, gspellID = self:GetSpellID(classID, unit.name)
-			local spell = self.Spells[spellID]
-			local spell2 = self.GSpells[spellID]
-			local gspell = self.GSpells[gspellID]
-			if raidtank == "MAINTANK" then
-				local _, _, buffName = self:IsBuffActive(spell, spell2, unit.unitid)
-				if unit.hasbuff and (buffName == self.GSpells[4] or buffName == self.Spells[4]) then
-					nneed = nneed + 1
-					nhave = nhave - 1
-					if InCombatLockdown() and (buffName ~= self.Spells[7]) then
-						nspecial = nspecial - 1
-					end
-				elseif (not unit.hasbuff) and ((buffName ~= self.GSpells[4] and gspellID == 4) or (buffName ~= self.Spells[4] and spellID == 4)) then
-					nhave = nhave + 1
-					nneed = nneed - 1
-				end
-				if unit.specialbuff and (not unit.hasbuff) and (buffName ~= self.Spells[7]) and spellID == 7 then
-					nneed = nneed + 1
-					nspecial = nspecial - 1
-				end
-			end
-			if self.zone ~= unit.zone then
-				if unit.hasbuff then
-					nhave = nhave + 1
-				else
-					nneed = nneed - 1
-				end
-			end
+		
+		if state == "need_big" then
+			nneed = nneed + 1
+		elseif state == "need_small" then
+			nspecial = nspecial + 1
+		else
+			nhave = nhave + 1
 		end
 	end
 	classIcon:SetTexture(self.ClassIcons[classID])
@@ -2772,65 +2753,12 @@ function PallyPower:UpdatePButton(button, baseName, classID, playerID, mousebutt
 	local unit = classes[classID][playerID]
 	local raidtank
 	if unit then
-		local nneed = 0
-		local nspecial = 0
-		local nhave = 0
-		local ndead = 0
-		if unit.visible then
-			if not unit.hasbuff then
-				if unit.specialbuff then
-					nspecial = 1
-				end
-			else
-				nhave = 1
-			end
-		else
-			if unit.hasbuff then
-				nhave = 1
-			else
-				nneed = 1
-			end
-		end
-		if unit.dead then
-			ndead = 1
-		end
 		local spellID, gspellID = self:GetSpellID(classID, unit.name)
-		tankIcon:Hide()
+		tankIcon[unit.tank and "Show" or "Hide"](tankIcon)
 		buffIcon:SetTexture(self.BlessingIcons[spellID])
 		buffIcon:SetVertexColor(1, 1, 1)
 		time:SetText(self:FormatTime(unit.hasbuff))
-		local spell = self.Spells[spellID]
-		local spell2 = self.GSpells[spellID]
-		local gspell = self.GSpells[gspellID]
-		local isPet = unit.unitid:find("pet")
-		if IsInRaid() and (not isPet) then
-			local n = select(3, unit.unitid:find("(%d+)"))
-			if n then
-				raidtank = select(10, GetRaidRosterInfo(n))
-			end
-			if raidtank == "MAINTANK" then
-				local _, _, buffName = self:IsBuffActive(spell, spell2, unit.unitid)
-				tankIcon:Show()
-				if buffName == self.GSpells[4] or buffName == self.Spells[4] then
-					nhave = 0
-					if InCombatLockdown() and (buffName ~= self.Spells[7]) then
-						nspecial = 0
-					end
-				elseif (buffName ~= self.GSpells[4] and gspellID == 4) or (buffName ~= self.Spells[4] and spellID == 4) then
-					nhave = 1
-				end
-				if (buffName ~= self.Spells[7]) and spellID == 7 then
-					nspecial = 0
-				end
-			end
-			if self.zone ~= unit.zone then
-				if unit.hasbuff then
-					nhave = 1
-				else
-					nneed = 0
-				end
-			end
-		end
+		
 		-- The following logic keeps Blessing of Salvation from being assigned to Warrior, Druid and Paladin tanks while in a RAID
 		-- and SalvInCombat isn't enabled. Allows Normal Blessing of Salvation on everyone else and all other blessings.
 		if not InCombatLockdown() then
@@ -2865,13 +2793,16 @@ function PallyPower:UpdatePButton(button, baseName, classID, playerID, mousebutt
 				button:SetAttribute("spell2", nSpell)
 			end
 		end
-		if (nspecial == 1) then
-			self:ApplyBackdrop(button, self.opt.cBuffNeedSpecial)
-		elseif (nhave == 0) then
+		
+		local state = ClassifyUnitBuffStateForButton(unit)
+		if state == "need_big" then
 			self:ApplyBackdrop(button, self.opt.cBuffNeedAll)
+		elseif state == "need_small" then
+			self:ApplyBackdrop(button, self.opt.cBuffNeedSpecial)
 		else
 			self:ApplyBackdrop(button, self.opt.cBuffGood)
 		end
+		
 		if unit.hasbuff then
 			buffIcon:SetAlpha(1)
 			if not unit.visible and not unit.inrange then
