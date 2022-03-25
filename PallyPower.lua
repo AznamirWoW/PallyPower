@@ -2147,14 +2147,13 @@ function PallyPower:UpdateRoster()
 end
 
 function PallyPower:ScanClass(classID)
-	local class = classes[classID]
-	local hasBuffs = false
-	for _, unit in pairs(class) do
+	for _, unit in pairs(classes[classID]) do
 		if unit.unitid then
 			local spellID, gspellID = self:GetSpellID(classID, unit.name)
 			local spell = self.Spells[spellID]
 			local spell2 = self.GSpells[spellID]
 			local gspell = self.GSpells[gspellID]
+			local isMainTank = false
 			if IsInRaid() then
 				local n = select(3, unit.unitid:find("(%d+)"))
 				if unit.zone then
@@ -2165,13 +2164,9 @@ function PallyPower:ScanClass(classID)
 			unit.visible = UnitIsVisible(unit.unitid) and UnitIsConnected(unit.unitid)
 			unit.dead = UnitIsDeadOrGhost(unit.unitid)
 			unit.hasbuff = self:IsBuffActive(spell, spell2, unit.unitid)
-			unit.specialbuff = spellID ~= gspellID
-			if unit.hasbuff then
-				hasBuffs = true
-			end
+			unit.specialbuff = (spellID ~= gspellID)
 		end
 	end
-	return hasBuffs
 end
 
 function PallyPower:CreateLayout()
