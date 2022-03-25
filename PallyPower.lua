@@ -71,12 +71,9 @@ end
 PallyPower.Credits1 = "PallyPower - by Aznamir (Lightbringer US)"
 PallyPower.Credits2 = "Updated for Classic by Dyaxler and Es"
 
-function PallyPower:Debug(string)
-	if not string then
-		string = "(nil)"
-	end
+function PallyPower:Debug(s)
 	if (PP_DebugEnabled) then
-		DEFAULT_CHAT_FRAME:AddMessage("[PP] " .. string, 1, 0, 0)
+		DEFAULT_CHAT_FRAME:AddMessage("[PP] " .. tostring(s), 1, 0, 0)
 	end
 end
 
