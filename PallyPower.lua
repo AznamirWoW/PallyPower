@@ -56,16 +56,16 @@ do
 	for i = 1, MAX_PARTY_MEMBERS do
 		table.insert(party_units, ("party%d"):format(i))
 	end
-    for i = 1, MAX_PARTY_MEMBERS do
-        table.insert(party_units, ("partypet%d"):format(i))
-    end
+	for i = 1, MAX_PARTY_MEMBERS do
+		table.insert(party_units, ("partypet%d"):format(i))
+	end
 
 	for i = 1, MAX_RAID_MEMBERS do
 		table.insert(raid_units, ("raid%d"):format(i))
 	end
-    for i = 1, MAX_RAID_MEMBERS do
+	for i = 1, MAX_RAID_MEMBERS do
 		table.insert(raid_units, ("raidpet%d"):format(i))
-    end
+	end
 end
 
 PallyPower.Credits1 = "PallyPower - by Aznamir (Lightbringer US)"
@@ -554,11 +554,11 @@ function PallyPowerBlessingsGrid_Update(self, elapsed)
 					local unit = classes[i][j]
 					if unit.name then
 						local shortname = Ambiguate(unit.name, "short")
-                        if unit.unitid:find("pet") then
-                            _G[pbnt .. "Text"]:SetText("|T132242:0|t "..shortname)
-                        else
-                            _G[pbnt .. "Text"]:SetText(shortname)
-                        end
+						if unit.unitid:find("pet") then
+							_G[pbnt .. "Text"]:SetText("|T132242:0|t "..shortname)
+						else
+							_G[pbnt .. "Text"]:SetText(shortname)
+						end
 					end
 					local normal, greater = PallyPower:GetSpellID(i, unit.name)
 					if normal ~= greater then
@@ -1999,29 +1999,29 @@ function PallyPower:UpdateRoster()
 			local tmp = {}
 			tmp.unitid = unitid
 			tmp.name = GetUnitName(unitid, true)
-            local isPet = tmp.unitid:find("pet")
+			local isPet = tmp.unitid:find("pet")
 			local ShowPets = self.opt.ShowPets
 			local pclass = (UnitClassBase(unitid))
 			if ShowPets or (not isPet) then
-                tmp.class = pclass
-                if isPet then
-                    local npcId = (select(6, ("-"):split(UnitGUID(unitid))))
-                    if (npcId == "510") or (npcId == "19668") or (npcId == "1863") or (npcId == "185317") then -- 510: Water Elemental, 19668: Shadowfiend, 1863: Succubus, 185317: Incubus
-                        tmp.class = ""
-                    else
-                        local i = 1
-                        local isPhased = false
-                        local buffSpellId = select(10, UnitBuff(unitid, i))
-                        while buffSpellId do
-                            if (buffSpellId == 4511) then -- 4511: Phase Shift (Imp)
-                                tmp.class = ""
-                                break
-                            end
-                            i = i + 1
-                            buffSpellId = select(10, UnitBuff(unitid, i))
-                        end
-                    end
-                end
+				tmp.class = pclass
+				if isPet then
+					local npcId = (select(6, ("-"):split(UnitGUID(unitid))))
+					if (npcId == "510") or (npcId == "19668") or (npcId == "1863") or (npcId == "185317") then -- 510: Water Elemental, 19668: Shadowfiend, 1863: Succubus, 185317: Incubus
+						tmp.class = ""
+					else
+						local i = 1
+						local isPhased = false
+						local buffSpellId = select(10, UnitBuff(unitid, i))
+						while buffSpellId do
+							if (buffSpellId == 4511) then -- 4511: Phase Shift (Imp)
+								tmp.class = ""
+								break
+							end
+							i = i + 1
+							buffSpellId = select(10, UnitBuff(unitid, i))
+						end
+					end
+				end
 			end
 			if IsInRaid() and (not isPet) then
 				local n = select(3, unitid:find("(%d+)"))
@@ -2915,11 +2915,11 @@ function PallyPower:UpdatePButton(button, baseName, classID, playerID, mousebutt
 		end
 		if unit.name then
 			local shortname = Ambiguate(unit.name, "short")
-            if unit.unitid:find("pet") then
-                name:SetText("|T132242:0|t "..shortname)
-            else
-                name:SetText(shortname)
-            end
+			if unit.unitid:find("pet") then
+				name:SetText("|T132242:0|t "..shortname)
+			else
+				name:SetText(shortname)
+			end
 		end
 	else
 		self:ApplyBackdrop(button, self.opt.cBuffGood)
