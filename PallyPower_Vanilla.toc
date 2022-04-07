@@ -10,6 +10,7 @@
 ## OptionalDeps: Ace3, LibSharedMedia-3.0, SharedMedia
 ## X-Category: Paladin
 ## X-Embeds: Ace3, LibClassicDurations, LibSharedMedia-3.0, LibUIDropDownMenu
+## X-Curse-Project-ID: 2703
 ## SavedVariables: PallyPowerDB, PallyPower_Assignments, PallyPower_NormalAssignments, PallyPower_AuraAssignments, PallyPower_SavedPresets, PallyPower_ChanNames, LCD_Data, LCD_GUIDAccess
 
 #@no-lib-strip@
