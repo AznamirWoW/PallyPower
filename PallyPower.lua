@@ -6,6 +6,7 @@ local AceGUI = LibStub("AceGUI-3.0")
 local LUIDDM = LibStub("LibUIDropDownMenu-4.0")
 
 PallyPower.isBCC = _G.WOW_PROJECT_ID == _G.WOW_PROJECT_BURNING_CRUSADE_CLASSIC
+PallyPower.petsShareBaseClass = PallyPower.isBCC
 local LCD = not PallyPower.isBCC  and LibStub("LibClassicDurations", true)
 
 local tinsert = table.insert
@@ -2002,6 +2003,9 @@ function PallyPower:UpdateRoster()
 			if ShowPets or (not isPet) then
 				tmp.class = pclass
 				if isPet then
+                    if not PallyPower.petsShareBaseClass then
+                        tmp.class = "PET"
+                    end
 					local npcId = (select(6, ("-"):split(UnitGUID(unitid))))
 					if (npcId == "510") or (npcId == "19668") or (npcId == "1863") or (npcId == "185317") then -- 510: Water Elemental, 19668: Shadowfiend, 1863: Succubus, 185317: Incubus
 						tmp.class = ""
@@ -3045,6 +3049,12 @@ function PallyPower:GetUnitAndSpellSmart(classid, mousebutton)
 						end
 					end
 				end
+
+                if (not PallyPower.petsShareBaseClass) and unit.unitid:find("pet") then
+                    -- in builds where pets do not share greater blessings, we don't autobuff them with such
+                    buffExpire = 9999
+                    penalty = 9999
+                end
 				-- Refresh any greater blessing under a 10 min duration
 				if ((not buffExpire or (buffExpire < classMinExpire) and buffExpire < PALLYPOWER_GREATERBLESSINGDURATION) and classMinExpire > 0) then
 					if (penalty < classMinUnitPenalty) then
@@ -3438,6 +3448,12 @@ function PallyPower:AutoBuff(button, mousebutton)
 								end
 							end
 						end
+                        
+                        if (not PallyPower.petsShareBaseClass) and unit.unitid:find("pet") then
+                            buffExpire = 9999
+                            penalty = 9999
+                        end
+
 						-- Refresh any greater blessing under a 10 min duration
 						if ((not buffExpire or buffExpire < classMinExpire and buffExpire < PALLYPOWER_GREATERBLESSINGDURATION) and classMinExpire > 0) then
 							if (penalty < classMinUnitPenalty) then
