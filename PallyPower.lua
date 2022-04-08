@@ -1984,6 +1984,7 @@ function PallyPower:UpdateRoster()
 	for i = 1, PALLYPOWER_MAXCLASSES do
 		classlist[i] = 0
 		classes[i] = {}
+        classmaintanks[i] = false
 	end
 	if IsInRaid() then
 		units = raid_units
@@ -2106,7 +2107,7 @@ function PallyPower:UpdateRoster()
 					end
 				end
 
-				if (raidtank == "MAINTANK" and (class == 1 or class == 4 or class == 5)) then
+				if raidtank == "MAINTANK" then
 					classmaintanks[class] = true
 				end
 			else
