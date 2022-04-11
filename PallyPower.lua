@@ -2998,7 +2998,7 @@ function PallyPower:GetUnitAndSpellSmart(classid, mousebutton)
 			local spellID, gspellID = self:GetSpellID(classid, unit.name)
 			local spell = self.Spells[spellID]
 			local gspell = self.GSpells[gspellID]
-			if (IsSpellInRange(gspell, unit.unitid) == 1) and (not UnitIsDeadOrGhost(unit.unitid)) then
+			if (not unit.specialbuff) and (IsSpellInRange(gspell, unit.unitid) == 1) and (not UnitIsDeadOrGhost(unit.unitid)) then
 				local penalty = 0
 				local buffExpire, buffDuration, buffName = self:IsBuffActive(spell, gspell, unit.unitid)
 				local nSpell, gSpell = self:CanBuffBlessing(spellID, gspellID, unit.unitid)
