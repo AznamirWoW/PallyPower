@@ -1502,12 +1502,7 @@ function PallyPower:PLAYER_ENTERING_WORLD()
 	self:UpdateLayout()
 	self:UpdateRoster()
 	self:ReportChannels()
-	if UnitName("player") == "Dyaxler" or UnitName("player") == "Minidyax" then
-		--PP_DebugEnabled = true
-		--if not self.isBCC then
-			--LCD:ToggleDebug()
-		--end
-	end
+
 end
 
 function PallyPower:ZONE_CHANGED()
@@ -1985,7 +1980,7 @@ function PallyPower:UpdateRoster()
 	for i = 1, PALLYPOWER_MAXCLASSES do
 		classlist[i] = 0
 		classes[i] = {}
-        classmaintanks[i] = false
+		classmaintanks[i] = false
 	end
 	if IsInRaid() then
 		units = raid_units
@@ -2005,9 +2000,9 @@ function PallyPower:UpdateRoster()
 			if ShowPets or (not isPet) then
 				tmp.class = pclass
 				if isPet then
-                    if not PallyPower.petsShareBaseClass then
-                        tmp.class = "PET"
-                    end
+					if not PallyPower.petsShareBaseClass then
+						tmp.class = "PET"
+					end
 					local npcId = (select(6, ("-"):split(UnitGUID(unitid))))
 					if (npcId == "510") or (npcId == "19668") or (npcId == "1863") or (npcId == "185317") then -- 510: Water Elemental, 19668: Shadowfiend, 1863: Succubus, 185317: Incubus
 						tmp.class = ""
@@ -3023,21 +3018,21 @@ function PallyPower:GetUnitAndSpellSmart(classid, mousebutton)
 					end
 				end
 
-                if gspellID == 4 then
-                    -- Skip tanks if Salv is assigned. This allows autobuff to work since some tanks
-                    -- have addons and/or scripts to auto cancel Salvation. Prevents getting stuck
-                    -- buffing a tank when auto buff rotates among players in the class group.
-                    if unit.tank then
-                        buffExpire = 9999
-                        penalty = 9999
-                    end
-                end
+				if gspellID == 4 then
+					-- Skip tanks if Salv is assigned. This allows autobuff to work since some tanks
+					-- have addons and/or scripts to auto cancel Salvation. Prevents getting stuck
+					-- buffing a tank when auto buff rotates among players in the class group.
+					if unit.tank then
+						buffExpire = 9999
+						penalty = 9999
+					end
+				end
 
-                if (not PallyPower.petsShareBaseClass) and unit.unitid:find("pet") then
-                    -- in builds where pets do not share greater blessings, we don't autobuff them with such
-                    buffExpire = 9999
-                    penalty = 9999
-                end
+				if (not PallyPower.petsShareBaseClass) and unit.unitid:find("pet") then
+					-- in builds where pets do not share greater blessings, we don't autobuff them with such
+					buffExpire = 9999
+					penalty = 9999
+				end
 				-- Refresh any greater blessing under a 10 min duration
 				if ((not buffExpire or (buffExpire < classMinExpire) and buffExpire < PALLYPOWER_GREATERBLESSINGDURATION) and classMinExpire > 0) then
 					if (penalty < classMinUnitPenalty) then
@@ -3407,27 +3402,27 @@ function PallyPower:AutoBuff(button, mousebutton)
 							buffExpire = 0
 							penalty = 0
 						end
-                        
-                        if gspellID == 4 then
-                            -- If for some reason the targeted unit is in combat and there is a tank present
-                            -- in the Class Group then disable Greater Blessing of Salvation for this unit.
-                            if (not self.opt.SalvInCombat) and UnitAffectingCombat(unit.unitid) and classmaintanks[classID] then
-                                buffExpire = 9999
-                                penalty = 9999
-                            end
-                            -- Skip tanks if Salv is assigned. This allows autobuff to work since some tanks
-                            -- have addons and/or scripts to auto cancel Salvation. Prevents getting stuck
-                            -- buffing a tank when auto buff rotates among players in the class group.
-                            if unit.tank then
-                                buffExpire = 9999
-                                penalty = 9999
-                            end
-                        end
-                        
-                        if (not PallyPower.petsShareBaseClass) and unit.unitid:find("pet") then
-                            buffExpire = 9999
-                            penalty = 9999
-                        end
+						
+						if gspellID == 4 then
+							-- If for some reason the targeted unit is in combat and there is a tank present
+							-- in the Class Group then disable Greater Blessing of Salvation for this unit.
+							if (not self.opt.SalvInCombat) and UnitAffectingCombat(unit.unitid) and classmaintanks[classID] then
+								buffExpire = 9999
+								penalty = 9999
+							end
+							-- Skip tanks if Salv is assigned. This allows autobuff to work since some tanks
+							-- have addons and/or scripts to auto cancel Salvation. Prevents getting stuck
+							-- buffing a tank when auto buff rotates among players in the class group.
+							if unit.tank then
+								buffExpire = 9999
+								penalty = 9999
+							end
+						end
+						
+						if (not PallyPower.petsShareBaseClass) and unit.unitid:find("pet") then
+							buffExpire = 9999
+							penalty = 9999
+						end
 
 						-- Refresh any greater blessing under a 10 min duration
 						if ((not buffExpire or buffExpire < classMinExpire and buffExpire < PALLYPOWER_GREATERBLESSINGDURATION) and classMinExpire > 0) then
@@ -3512,12 +3507,12 @@ function PallyPower:AutoBuff(button, mousebutton)
 					-- Raid than there are buffs to assign so an Alternate Blessing might not be in
 					-- use to wipe Salvation from a tank. Prevents getting stuck buffing a tank when
 					-- auto buff rotates among players in the class group.
-                    
+					
 					if unit.tank then
-                        if (spellID == 4 and not self.opt.SalvInCombat) then
-                            buffExpire = 9999
-                            penalty = 9999
-                        end
+						if (spellID == 4 and not self.opt.SalvInCombat) then
+							buffExpire = 9999
+							penalty = 9999
+						end
 					end
 				end
 				-- Refresh any blessing under a 4 min duration
