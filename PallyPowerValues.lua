@@ -171,6 +171,16 @@ PallyPower.ClassToID = PallyPower.isBCC and {
 	["PET"] = 9
 }
 
+PallyPower.IDToBless = {
+    [0] = "NONE",
+    [1] = "WISDOM",
+    [2] = "MIGHT",
+    [3] = "KING",
+    [4] = "SALVATION",
+    [5] = "LIGHT",
+    [6] = "SANCTUARY",
+}
+
 PallyPower.ClassIcons = PallyPower.isBCC and {
 	[1] = "Interface\\Icons\\ClassIcon_Warrior",
 	[2] = "Interface\\Icons\\ClassIcon_Rogue",
