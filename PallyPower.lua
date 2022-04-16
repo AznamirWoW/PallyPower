@@ -7,7 +7,8 @@ local LUIDDM = LibStub("LibUIDropDownMenu-4.0")
 
 PallyPower.isBCC = (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_BURNING_CRUSADE_CLASSIC)
 PallyPower.petsShareBaseClass = PallyPower.isBCC
-local LCD = not PallyPower.isBCC  and LibStub("LibClassicDurations", true)
+local LCD = (not PallyPower.isBCC) and LibStub("LibClassicDurations", true)
+local UnitAura = LCD and LCD.UnitAuraWrapper or UnitAura
 
 local tinsert = table.insert
 local tremove = table.remove
@@ -176,6 +177,7 @@ function PallyPower:OnEnable()
 	self:ScanCooldowns()
 	self:RegisterEvent("CHAT_MSG_ADDON")
 	self:RegisterEvent("CHAT_MSG_SYSTEM")
+	self:RegisterEvent("CHAT_MSG_WHISPER")
 	self:RegisterEvent("ZONE_CHANGED")
 	self:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 	self:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
@@ -184,7 +186,6 @@ function PallyPower:OnEnable()
 	self:RegisterEvent("PLAYER_ROLES_ASSIGNED")
 	self:RegisterEvent("UPDATE_BINDINGS", "BindKeys")
 	self:RegisterEvent("CHANNEL_UI_UPDATE", "ReportChannels")
-	self:RegisterEvent("CHAT_MSG_WHISPER")
 	self:RegisterBucketEvent("SPELLS_CHANGED", 1, "SPELLS_CHANGED")
 	self:RegisterBucketEvent("PLAYER_ENTERING_WORLD", 2, "PLAYER_ENTERING_WORLD")
 	if isPally then
@@ -358,82 +359,6 @@ function GetNormalBlessings(pname, class, tname)
 		end
 	end
 end
-
-
--- set normal bless using whispering e.g. "/w paladin !BOK" will set Bless of King for the player who whisp
-function PallyPower:CHAT_MSG_WHISPER(event, text, a, b, c, wguid)
-    if text then
-        text = string.upper(text)
-        local blessID, blessName
-
-        if strfind(text, "!WISDOM") then
-            blessID = 1
-        elseif strfind(text, "!MIGHT") or strfind(text, "!BOM") then
-            blessID = 2
-        elseif strfind(text, "!KING") or strfind(text, "!BOK") then
-            blessID = 3
-        elseif strfind(text, "!SALVATION") or strfind(text, "!BOS") or strfind(text, "!SALV") then
-            blessID = 4
-        elseif strfind(text, "!LIGHT") or strfind(text, "!BOL") then
-            blessID = 5
-        elseif strfind(text, "!SANCTUARY") or strfind(text, "!SANCT") then
-            blessID = 6
-        elseif strfind(text, "!BLESSINFO") or strfind(text, "!PP") then
-            blessID = 99
-        else
-            blessID = 0
-        end
-
-        blessName = PallyPower.IDToBless[blessID]
-
-        if blessID > 0 then
-            local playerGuid = UnitGUID(wguid)
-            -- self:Print(playerGuid)
-
-            if playerGuid then
-                local localizedClass, englishClass, localizedRace, englishRace, sex, playerName, realm = GetPlayerInfoByGUID(playerGuid)
-
-                if blessID == 99 then
-                    local normalBlessText, normalBlessID
-                    for pally in pairs(AllPallys) do
-
-                        if PallyPower_Assignments[pally][PallyPower.ClassToID[englishClass]] then
-                            -- self:Print(PallyPower_Assignments[pally][PallyPower.ClassToID[englishClass]])
-                            -- self:Print(GetNormalBlessings(pally, PallyPower.ClassToID[englishClass], playerName))
-                            normalBlessID = GetNormalBlessings(pally, PallyPower.ClassToID[englishClass], playerName)
-                            -- self:Print(normalBlessID)
-                            if normalBlessID then
-                                -- self:Print(normalBlessID)
-                                normalBlessText = " (single bless: " .. PallyPower.IDToBless[tonumber(normalBlessID)] .. ") "
-                            else
-                                normalBlessText = ""
-                            end
-
-                            SendChatMessage(pally .. " -> " .. PallyPower.IDToBless[PallyPower_Assignments[pally][PallyPower.ClassToID[englishClass]]] .. normalBlessText, "WHISPER", "Common", playerName)
-                        end
-
-                    end
-                    -- self:Print(PallyPower_Assignments[PallyPower.player][PallyPower.ClassToID[englishClass]])
-                    return false
-                end
-                -- self:Print(text)
-                -- self:Print(PallyPower.player)
-                -- self:Print(englishClass)
-                -- self:Print(PallyPower.ClassToID[englishClass])
-
-                SetNormalBlessings(PallyPower.player, PallyPower.ClassToID[englishClass], playerName, blessID)
-
-                self:Print(playerName .. " has now assigned " .. blessName .. " bless (small)")
-                SendChatMessage("You have now assigned " .. blessName .. " bless (small)", "WHISPER", "Common", playerName)
-            else
-                self:Print("Player not found. Is he/she in your group?")
-            end -- end playerGuid
-        end -- end BlessID > 0
-    end --end text != nil
-end
--- FIBONACCI END
-
-
 
 function SetNormalBlessings(pname, class, tname, value)
 	if not PallyPower_NormalAssignments[pname] then
@@ -1578,12 +1503,7 @@ function PallyPower:PLAYER_ENTERING_WORLD()
 	self:UpdateLayout()
 	self:UpdateRoster()
 	self:ReportChannels()
-	if UnitName("player") == "Dyaxler" or UnitName("player") == "Minidyax" then
-		--PP_DebugEnabled = true
-		--if not self.isBCC then
-			--LCD:ToggleDebug()
-		--end
-	end
+
 end
 
 function PallyPower:ZONE_CHANGED()
@@ -1697,6 +1617,78 @@ function PallyPower:CHAT_MSG_SYSTEM(event, text)
 			end
 		end
 	end
+end
+
+-- set normal bless using whispering e.g. "/w paladin !BOK" will set Bless of King for the player who whisp
+function PallyPower:CHAT_MSG_WHISPER(event, text, a, b, c, wguid)
+    if text then
+        text = string.upper(text)
+        local blessID, blessName
+
+        if sfind(text, "!WISDOM") then
+            blessID = 1
+        elseif sfind(text, "!MIGHT") or sfind(text, "!BOM") then
+            blessID = 2
+        elseif sfind(text, "!KING") or sfind(text, "!BOK") then
+            blessID = 3
+        elseif sfind(text, "!SALVATION") or sfind(text, "!BOS") or sfind(text, "!SALV") then
+            blessID = 4
+        elseif sfind(text, "!LIGHT") or sfind(text, "!BOL") then
+            blessID = 5
+        elseif sfind(text, "!SANCTUARY") or sfind(text, "!SANCT") then
+            blessID = 6
+        elseif sfind(text, "!BLESSINFO") or sfind(text, "!PP") then
+            blessID = 99
+        else
+            blessID = 0
+        end
+
+        blessName = PallyPower.IDToBless[blessID]
+
+        if blessID > 0 then
+            local playerGuid = UnitGUID(wguid)
+            -- self:Print(playerGuid)
+
+            if playerGuid then
+                local localizedClass, englishClass, localizedRace, englishRace, sex, playerName, realm = GetPlayerInfoByGUID(playerGuid)
+
+                if blessID == 99 then
+                    local normalBlessText, normalBlessID
+                    for pally in pairs(AllPallys) do
+
+                        if PallyPower_Assignments[pally][PallyPower.ClassToID[englishClass]] then
+                            -- self:Print(PallyPower_Assignments[pally][PallyPower.ClassToID[englishClass]])
+                            -- self:Print(GetNormalBlessings(pally, PallyPower.ClassToID[englishClass], playerName))
+                            normalBlessID = GetNormalBlessings(pally, PallyPower.ClassToID[englishClass], playerName)
+                            -- self:Print(normalBlessID)
+                            if normalBlessID then
+                                -- self:Print(normalBlessID)
+                                normalBlessText = " (single bless: " .. PallyPower.IDToBless[tonumber(normalBlessID)] .. ") "
+                            else
+                                normalBlessText = ""
+                            end
+
+                            SendChatMessage(pally .. " -> " .. PallyPower.IDToBless[PallyPower_Assignments[pally][PallyPower.ClassToID[englishClass]]] .. normalBlessText, "WHISPER", "Common", playerName)
+                        end
+
+                    end
+                    -- self:Print(PallyPower_Assignments[PallyPower.player][PallyPower.ClassToID[englishClass]])
+                    return false
+                end
+                -- self:Print(text)
+                -- self:Print(PallyPower.player)
+                -- self:Print(englishClass)
+                -- self:Print(PallyPower.ClassToID[englishClass])
+
+                SetNormalBlessings(PallyPower.player, PallyPower.ClassToID[englishClass], playerName, blessID)
+
+                self:Print(playerName .. " has now assigned " .. blessName .. " bless (small)")
+                SendChatMessage("You have now assigned " .. blessName .. " bless (small)", "WHISPER", "Common", playerName)
+            else
+                self:Print("Player not found. Is he/she in your group?")
+            end -- end playerGuid
+        end -- end BlessID > 0
+    end --end text != nil
 end
 
 function PallyPower:UNIT_SPELLCAST_SUCCEEDED(event, unitTarget, castGUID, spellID)
@@ -2061,7 +2053,7 @@ function PallyPower:UpdateRoster()
 	for i = 1, PALLYPOWER_MAXCLASSES do
 		classlist[i] = 0
 		classes[i] = {}
-        classmaintanks[i] = false
+		classmaintanks[i] = false
 	end
 	if IsInRaid() then
 		units = raid_units
@@ -2081,9 +2073,9 @@ function PallyPower:UpdateRoster()
 			if ShowPets or (not isPet) then
 				tmp.class = pclass
 				if isPet then
-                    if not PallyPower.petsShareBaseClass then
-                        tmp.class = "PET"
-                    end
+					if not PallyPower.petsShareBaseClass then
+						tmp.class = "PET"
+					end
 					local npcId = (select(6, ("-"):split(UnitGUID(unitid))))
 					if (npcId == "510") or (npcId == "19668") or (npcId == "1863") or (npcId == "185317") then -- 510: Water Elemental, 19668: Shadowfiend, 1863: Succubus, 185317: Incubus
 						tmp.class = ""
@@ -2627,7 +2619,7 @@ function PallyPower:UpdateButton(button, baseName, classID)
 		if (not unit.visible) and InCombatLockdown() then
 			state = "have"
 		end
-
+		
 		if state == "need_big" then
 			nneed = nneed + 1
 		elseif state == "need_small" then
@@ -2689,12 +2681,7 @@ function PallyPower:GetBuffExpiration(classID)
 			local buffName = UnitBuff(unit.unitid, j)
 			while buffName do
 				if (buffName == gspell) then
-					local _, buffDuration, buffExpire
-					if self.isBCC then
-						_, _, _, _, buffDuration, buffExpire = UnitAura(unit.unitid, j, "HELPFUL")
-					else
-						_, _, _, _, buffDuration, buffExpire = LCD.UnitAuraWrapper(unit.unitid, j, "HELPFUL")
-					end
+					local _, _, _, _, buffDuration, buffExpire = UnitAura(unit.unitid, j, "HELPFUL")
 					if buffExpire then
 						if buffExpire == 0 then
 							buffExpire = 0
@@ -2707,12 +2694,7 @@ function PallyPower:GetBuffExpiration(classID)
 						break
 					end
 				elseif (buffName == spell) then
-					local _, buffDuration, buffExpire
-					if self.isBCC then
-						_, _, _, _, buffDuration, buffExpire = UnitAura(unit.unitid, j, "HELPFUL")
-					else
-						_, _, _, _, buffDuration, buffExpire = LCD.UnitAuraWrapper(unit.unitid, j, "HELPFUL")
-					end
+					local _, _, _, _, buffDuration, buffExpire = UnitAura(unit.unitid, j, "HELPFUL")
 					if buffExpire then
 						if buffExpire == 0 then
 							buffExpire = 0
@@ -2834,7 +2816,7 @@ function PallyPower:UpdatePButton(button, baseName, classID, playerID, mousebutt
 		buffIcon:SetTexture(self.BlessingIcons[spellID])
 		buffIcon:SetVertexColor(1, 1, 1)
 		time:SetText(self:FormatTime(unit.hasbuff))
-
+		
 		-- The following logic keeps Blessing of Salvation from being assigned to Warrior, Druid and Paladin tanks while in a RAID
 		-- and SalvInCombat isn't enabled. Allows Normal Blessing of Salvation on everyone else and all other blessings.
 		if not InCombatLockdown() then
@@ -2869,7 +2851,7 @@ function PallyPower:UpdatePButton(button, baseName, classID, playerID, mousebutt
 				button:SetAttribute("spell2", nSpell)
 			end
 		end
-
+		
 		local state = ClassifyUnitBuffStateForButton(unit)
 		if state == "need_big" then
 			self:ApplyBackdrop(button, self.opt.cBuffNeedAll)
@@ -2878,7 +2860,7 @@ function PallyPower:UpdatePButton(button, baseName, classID, playerID, mousebutt
 		else
 			self:ApplyBackdrop(button, self.opt.cBuffGood)
 		end
-
+		
 		if unit.hasbuff then
 			buffIcon:SetAlpha(1)
 			if not unit.visible and not unit.inrange then
@@ -3075,7 +3057,7 @@ function PallyPower:GetUnitAndSpellSmart(classid, mousebutton)
 			local spellID, gspellID = self:GetSpellID(classid, unit.name)
 			local spell = self.Spells[spellID]
 			local gspell = self.GSpells[gspellID]
-			if (IsSpellInRange(gspell, unit.unitid) == 1) and (not UnitIsDeadOrGhost(unit.unitid)) then
+			if (not unit.specialbuff) and (IsSpellInRange(gspell, unit.unitid) == 1) and (not UnitIsDeadOrGhost(unit.unitid)) then
 				local penalty = 0
 				local buffExpire, buffDuration, buffName = self:IsBuffActive(spell, gspell, unit.unitid)
 				local nSpell, gSpell = self:CanBuffBlessing(spellID, gspellID, unit.unitid)
@@ -3109,21 +3091,21 @@ function PallyPower:GetUnitAndSpellSmart(classid, mousebutton)
 					end
 				end
 
-                if gspellID == 4 then
-                    -- Skip tanks if Salv is assigned. This allows autobuff to work since some tanks
-                    -- have addons and/or scripts to auto cancel Salvation. Prevents getting stuck
-                    -- buffing a tank when auto buff rotates among players in the class group.
-                    if unit.tank then
-                        buffExpire = 9999
-                        penalty = 9999
-                    end
-                end
+				if gspellID == 4 then
+					-- Skip tanks if Salv is assigned. This allows autobuff to work since some tanks
+					-- have addons and/or scripts to auto cancel Salvation. Prevents getting stuck
+					-- buffing a tank when auto buff rotates among players in the class group.
+					if unit.tank then
+						buffExpire = 9999
+						penalty = 9999
+					end
+				end
 
-                if (not PallyPower.petsShareBaseClass) and unit.unitid:find("pet") then
-                    -- in builds where pets do not share greater blessings, we don't autobuff them with such
-                    buffExpire = 9999
-                    penalty = 9999
-                end
+				if (not PallyPower.petsShareBaseClass) and unit.unitid:find("pet") then
+					-- in builds where pets do not share greater blessings, we don't autobuff them with such
+					buffExpire = 9999
+					penalty = 9999
+				end
 				-- Refresh any greater blessing under a 10 min duration
 				if ((not buffExpire or (buffExpire < classMinExpire) and buffExpire < PALLYPOWER_GREATERBLESSINGDURATION) and classMinExpire > 0) then
 					if (penalty < classMinUnitPenalty) then
@@ -3247,12 +3229,7 @@ function PallyPower:IsBuffActive(spellName, gspellName, unitID)
 	local buffName = UnitBuff(unitID, j)
 	while buffName do
 		if (buffName == spellName) or (buffName == gspellName) then
-			local _, buffDuration, buffExpire
-			if self.isBCC then
-				_, _, _, _, buffDuration, buffExpire = UnitAura(unitID, j, "HELPFUL")
-			else
-				_, _, _, _, buffDuration, buffExpire = LCD.UnitAuraWrapper(unitID, j, "HELPFUL")
-			end
+			local _, _, _, _, buffDuration, buffExpire = UnitAura(unitID, j, "HELPFUL")
 			if buffExpire then
 				if buffExpire == 0 then
 					buffExpire = 0
@@ -3478,7 +3455,7 @@ function PallyPower:AutoBuff(button, mousebutton)
 					local spellID, gspellID = self:GetSpellID(i, unit.name)
 					local spell = self.Spells[spellID]
 					local gspell = self.GSpells[gspellID]
-					if (IsSpellInRange(gspell, unit.unitid) == 1) and not UnitIsDeadOrGhost(unit.unitid) then
+					if (not unit.specialbuff) and (IsSpellInRange(gspell, unit.unitid) == 1) and not UnitIsDeadOrGhost(unit.unitid) then
 						local penalty = 0
 						local buffExpire, buffDuration, buffName = self:IsBuffActive(spell, gspell, unit.unitid)
 						local nSpell, gSpell = self:CanBuffBlessing(spellID, gspellID, unit.unitid)
@@ -3498,27 +3475,27 @@ function PallyPower:AutoBuff(button, mousebutton)
 							buffExpire = 0
 							penalty = 0
 						end
-
-                        if gspellID == 4 then
-                            -- If for some reason the targeted unit is in combat and there is a tank present
-                            -- in the Class Group then disable Greater Blessing of Salvation for this unit.
-                            if (not self.opt.SalvInCombat) and UnitAffectingCombat(unit.unitid) and classmaintanks[classID] then
-                                buffExpire = 9999
-                                penalty = 9999
-                            end
-                            -- Skip tanks if Salv is assigned. This allows autobuff to work since some tanks
-                            -- have addons and/or scripts to auto cancel Salvation. Prevents getting stuck
-                            -- buffing a tank when auto buff rotates among players in the class group.
-                            if unit.tank then
-                                buffExpire = 9999
-                                penalty = 9999
-                            end
-                        end
-
-                        if (not PallyPower.petsShareBaseClass) and unit.unitid:find("pet") then
-                            buffExpire = 9999
-                            penalty = 9999
-                        end
+						
+						if gspellID == 4 then
+							-- If for some reason the targeted unit is in combat and there is a tank present
+							-- in the Class Group then disable Greater Blessing of Salvation for this unit.
+							if (not self.opt.SalvInCombat) and UnitAffectingCombat(unit.unitid) and classmaintanks[classID] then
+								buffExpire = 9999
+								penalty = 9999
+							end
+							-- Skip tanks if Salv is assigned. This allows autobuff to work since some tanks
+							-- have addons and/or scripts to auto cancel Salvation. Prevents getting stuck
+							-- buffing a tank when auto buff rotates among players in the class group.
+							if unit.tank then
+								buffExpire = 9999
+								penalty = 9999
+							end
+						end
+						
+						if (not PallyPower.petsShareBaseClass) and unit.unitid:find("pet") then
+							buffExpire = 9999
+							penalty = 9999
+						end
 
 						-- Refresh any greater blessing under a 10 min duration
 						if ((not buffExpire or buffExpire < classMinExpire and buffExpire < PALLYPOWER_GREATERBLESSINGDURATION) and classMinExpire > 0) then
@@ -3603,12 +3580,12 @@ function PallyPower:AutoBuff(button, mousebutton)
 					-- Raid than there are buffs to assign so an Alternate Blessing might not be in
 					-- use to wipe Salvation from a tank. Prevents getting stuck buffing a tank when
 					-- auto buff rotates among players in the class group.
-
+					
 					if unit.tank then
-                        if (spellID == 4 and not self.opt.SalvInCombat) then
-                            buffExpire = 9999
-                            penalty = 9999
-                        end
+						if (spellID == 4 and not self.opt.SalvInCombat) then
+							buffExpire = 9999
+							penalty = 9999
+						end
 					end
 				end
 				-- Refresh any blessing under a 4 min duration
