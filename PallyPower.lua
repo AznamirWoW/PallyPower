@@ -7,7 +7,8 @@ local LUIDDM = LibStub("LibUIDropDownMenu-4.0")
 
 PallyPower.isBCC = (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_BURNING_CRUSADE_CLASSIC)
 PallyPower.petsShareBaseClass = PallyPower.isBCC
-local LCD = not PallyPower.isBCC  and LibStub("LibClassicDurations", true)
+local LCD = (not PallyPower.isBCC) and LibStub("LibClassicDurations", true)
+local UnitAura = LCD and LCD.UnitAuraWrapper or UnitAura
 
 local tinsert = table.insert
 local tremove = table.remove
@@ -2612,12 +2613,7 @@ function PallyPower:GetBuffExpiration(classID)
 			local buffName = UnitBuff(unit.unitid, j)
 			while buffName do
 				if (buffName == gspell) then
-					local _, buffDuration, buffExpire
-					if self.isBCC then
-						_, _, _, _, buffDuration, buffExpire = UnitAura(unit.unitid, j, "HELPFUL")
-					else
-						_, _, _, _, buffDuration, buffExpire = LCD.UnitAuraWrapper(unit.unitid, j, "HELPFUL")
-					end
+					local _, _, _, _, buffDuration, buffExpire = UnitAura(unit.unitid, j, "HELPFUL")
 					if buffExpire then
 						if buffExpire == 0 then
 							buffExpire = 0
@@ -2630,12 +2626,7 @@ function PallyPower:GetBuffExpiration(classID)
 						break
 					end
 				elseif (buffName == spell) then
-					local _, buffDuration, buffExpire
-					if self.isBCC then
-						_, _, _, _, buffDuration, buffExpire = UnitAura(unit.unitid, j, "HELPFUL")
-					else
-						_, _, _, _, buffDuration, buffExpire = LCD.UnitAuraWrapper(unit.unitid, j, "HELPFUL")
-					end
+					local _, _, _, _, buffDuration, buffExpire = UnitAura(unit.unitid, j, "HELPFUL")
 					if buffExpire then
 						if buffExpire == 0 then
 							buffExpire = 0
@@ -3170,12 +3161,7 @@ function PallyPower:IsBuffActive(spellName, gspellName, unitID)
 	local buffName = UnitBuff(unitID, j)
 	while buffName do
 		if (buffName == spellName) or (buffName == gspellName) then
-			local _, buffDuration, buffExpire
-			if self.isBCC then
-				_, _, _, _, buffDuration, buffExpire = UnitAura(unitID, j, "HELPFUL")
-			else
-				_, _, _, _, buffDuration, buffExpire = LCD.UnitAuraWrapper(unitID, j, "HELPFUL")
-			end
+			local _, _, _, _, buffDuration, buffExpire = UnitAura(unitID, j, "HELPFUL")
 			if buffExpire then
 				if buffExpire == 0 then
 					buffExpire = 0
