@@ -25,8 +25,8 @@ PallyPower.options = {
 					args = {
 						globally = {
 							order = 1,
-							name = L["ENABLEPP"],
-							desc = L["ENABLEPP_DESC"],
+							name = L["Enable PallyPower"],
+							desc = L["[Enable/Disable] PallyPower"],
 							type = "toggle",
 							width = 1.0,
 							get = function(info)
@@ -188,8 +188,8 @@ PallyPower.options = {
 					args = {
 						buffscale = {
 							order = 1,
-							name = L["BSC"],
-							desc = L["BSC_DESC"],
+							name = L["PallyPower Buttons Scale"],
+							desc = L["This allows you to adjust the overall size of the PallyPower Buttons"],
 							type = "range",
 							width = 1.5,
 							min = 0.4,
@@ -269,8 +269,8 @@ PallyPower.options = {
 						},
 						edges = {
 							order = 6,
-							name = L["DISPEDGES"],
-							desc = L["DISPEDGES_DESC"],
+							name = L["Borders"],
+							desc = L["Change the Button Borders"],
 							type = "select",
 							width = 1.4,
 							dialogControl = "LSM30_Border",
@@ -289,8 +289,8 @@ PallyPower.options = {
 						},
 						assignmentsscale = {
 							order = 7,
-							name = L["BAP"],
-							desc = L["BAP_DESC"],
+							name = L["Blessing Assignments Scale"],
+							desc = L["This allows you to adjust the overall size of the Blessing Assignments Panel"],
 							type = "range",
 							width = 1.5,
 							min = 0.4,
@@ -390,8 +390,8 @@ PallyPower.options = {
 		},
 		buttons = {
 			order = 2,
-			name = L["BUTTONS"],
-			desc = L["BUTTONS_DESC"],
+			name = L["Buttons"],
+			desc = L["Change the button settings"],
 			type = "group",
 			cmdHidden = true,
 			disabled = function(info)
@@ -400,7 +400,7 @@ PallyPower.options = {
 			args = {
 				aura_button = {
 					order = 1,
-					name = L["AURA"],
+					name = L["Aura Button"],
 					type = "group",
 					inline = true,
 					disabled = function(info)
@@ -410,13 +410,13 @@ PallyPower.options = {
 						aura_desc = {
 							order = 0,
 							type = "description",
-							name = L["AURA_DESC"]
+							name = L["[|cffffd200Enable|r/|cffffd200Disable|r] The Aura Button or select the Aura you want to track."]
 						},
 						aura_enable = {
 							order = 1,
 							type = "toggle",
-							name = L["AURABTN"],
-							desc = L["AURABTN_DESC"],
+							name = L["Aura Button"],
+							desc = L["[Enable/Disable] The Aura Button"],
 							width = 1.1,
 							get = function(info)
 								return PallyPower.opt.auras
@@ -430,8 +430,8 @@ PallyPower.options = {
 						aura = {
 							order = 2,
 							type = "select",
-							name = L["AURATRACKER"],
-							desc = L["AURATRACKER_DESC"],
+							name = L["Aura Tracker"],
+							desc = L["Select the Aura you want to track"],
 							get = function(info)
 								return PallyPower_AuraAssignments[PallyPower.player]
 							end,
@@ -439,7 +439,7 @@ PallyPower.options = {
 								PallyPower_AuraAssignments[PallyPower.player] = val
 							end,
 							values = {
-								[0] = L["NONE"],
+								[0] = L["None"],
 								[1] = PallyPower.Auras[1], -- Devotion Aura
 								[2] = PallyPower.Auras[2], -- Retribution Aura
 								[3] = PallyPower.Auras[3], -- Concentration Aura
@@ -514,7 +514,7 @@ PallyPower.options = {
 								PallyPower:SealAssign(PallyPower.opt.seal)
 							end,
 							values = {
-								[0] = L["NONE"],
+								[0] = L["None"],
 								[1] = PallyPower.Seals[1], -- Seal of Justice
 								[2] = PallyPower.Seals[2], -- Seal of Light
 								[3] = PallyPower.Seals[3], -- Seal of Wisdom
@@ -531,7 +531,7 @@ PallyPower.options = {
 				},
 				auto_button = {
 					order = 3,
-					name = L["AUTO"],
+					name = L["Auto Buff Button"],
 					type = "group",
 					inline = true,
 					disabled = function(info)
@@ -541,13 +541,13 @@ PallyPower.options = {
 						auto_desc = {
 							order = 0,
 							type = "description",
-							name = L["AUTO_DESC"]
+							name = L["[|cffffd200Enable|r/|cffffd200Disable|r] The Auto Buff Button or [|cffffd200Enable|r/|cffffd200Disable|r] Wait for Players."]
 						},
 						auto_enable = {
 							order = 1,
 							type = "toggle",
-							name = L["AUTOBTN"],
-							desc = L["AUTOBTN_DESC"],
+							name = L["Auto Buff Button"],
+							desc = L["[Enable/Disable] The Auto Buff Button"],
 							width = 1.1,
 							get = function(info)
 								return PallyPower.opt.autobuff.autobutton
@@ -574,7 +574,7 @@ PallyPower.options = {
 				},
 				cp_button = {
 					order = 4,
-					name = L["CPBTNS"],
+					name = L["Class & Player Buttons"],
 					type = "group",
 					inline = true,
 					disabled = function(info)
@@ -584,13 +584,13 @@ PallyPower.options = {
 						cp_desc = {
 							order = 0,
 							type = "description",
-							name = L["CPBTNS_DESC"]
+							name = L["[|cffffd200Enable|r/|cffffd200Disable|r] The Player(s) or Class Buttons."]
 						},
 						class_enable = {
 							order = 1,
 							type = "toggle",
-							name = L["CLASSBTN"],
-							desc = L["CLASSBTN_DESC"],
+							name = L["Class Buttons"],
+							desc = L["If this option is disabled it will also disable the Player Buttons and you will only be able to buff using the Auto Buff button."],
 							width = 1.1,
 							get = function(info)
 								return PallyPower.opt.display.showClassButtons
@@ -626,8 +626,8 @@ PallyPower.options = {
 						buff_Duration = {
 							order = 3,
 							type = "toggle",
-							name = L["BUFFDURATION"],
-							desc = L["BUFFDURATION_DESC"],
+							name = L["Buff Duration"],
+							desc = L["If this option is disabled then Class and Player buttons will ignore buffs' duration, allowing buffs to be reapplied at will. This is especially useful for Protection Paladins when they spam Greater Blessings to generate more threat."],
 							disabled = function(info)
 								return PallyPower.opt.display.showClassButtons == false or PallyPower.opt.enabled == false or not isPally
 							end,
@@ -643,7 +643,7 @@ PallyPower.options = {
 				},
 				drag_button = {
 					order = 5,
-					name = L["DRAG"],
+					name = L["Drag Handle Button"],
 					type = "group",
 					inline = true,
 					disabled = function(info)
@@ -653,13 +653,13 @@ PallyPower.options = {
 						misc_desc = {
 							order = 0,
 							type = "description",
-							name = L["DRAG_DESC"]
+							name = L["[|cffffd200Enable|r/|cffffd200Disable|r] The Drag Handle Button."]
 						},
 						drag_enable = {
 							order = 1,
 							type = "toggle",
-							name = L["DRAGHANDLE_ENABLED"],
-							desc = L["DRAGHANDLE_ENABLED_DESC"],
+							name = L["Drag Handle"],
+							desc = L["[Enable/Disable] The Drag Handle"],
 							width = 1.1,
 							get = function(info)
 								return PallyPower.opt.display.enableDragHandle
@@ -725,7 +725,7 @@ PallyPower.options = {
 								PallyPower:UpdateRoster()
 							end,
 							values = {
-								[0] = L["NONE"],
+								[0] = L["None"],
 								[1] = PallyPower.GSpells[1], -- Greater Blessing of Wisdom
 								[2] = PallyPower.GSpells[2], -- Greater Blessing of Might
 								[3] = PallyPower.GSpells[3], -- Greater Blessing of Kings
@@ -751,7 +751,7 @@ PallyPower.options = {
 								PallyPower:UpdateRoster()
 							end,
 							values = {
-								[0] = L["NONE"],
+								[0] = L["None"],
 								[1] = PallyPower.Spells[1], -- Blessing of Wisdom
 								[2] = PallyPower.Spells[2], -- Blessing of Might
 								[3] = PallyPower.Spells[3], -- Blessing of Kings
@@ -778,7 +778,7 @@ PallyPower.options = {
 								PallyPower:UpdateRoster()
 							end,
 							values = {
-								[0] = L["NONE"],
+								[0] = L["None"],
 								[1] = PallyPower.GSpells[1], -- Greater Blessing of Wisdom
 								[2] = PallyPower.GSpells[2], -- Greater Blessing of Might
 								[3] = PallyPower.GSpells[3], -- Greater Blessing of Kings
@@ -804,7 +804,7 @@ PallyPower.options = {
 								PallyPower:UpdateRoster()
 							end,
 							values = {
-								[0] = L["NONE"],
+								[0] = L["None"],
 								[1] = PallyPower.Spells[1], -- Blessing of Wisdom
 								[2] = PallyPower.Spells[2], -- Blessing of Might
 								[3] = PallyPower.Spells[3], -- Blessing of Kings
@@ -845,7 +845,7 @@ PallyPower.options = {
 								PallyPower:UpdateRoster()
 							end,
 							values = {
-								[0] = L["NONE"],
+								[0] = L["None"],
 								[1] = PallyPower.GSpells[1], -- Greater Blessing of Wisdom
 								[2] = PallyPower.GSpells[2], -- Greater Blessing of Might
 								[3] = PallyPower.GSpells[3], -- Greater Blessing of Kings
@@ -871,7 +871,7 @@ PallyPower.options = {
 								PallyPower:UpdateRoster()
 							end,
 							values = {
-								[0] = L["NONE"],
+								[0] = L["None"],
 								[1] = PallyPower.Spells[1], -- Blessing of Wisdom
 								[2] = PallyPower.Spells[2], -- Blessing of Might
 								[3] = PallyPower.Spells[3], -- Blessing of Kings
@@ -898,7 +898,7 @@ PallyPower.options = {
 								PallyPower:UpdateRoster()
 							end,
 							values = {
-								[0] = L["NONE"],
+								[0] = L["None"],
 								[1] = PallyPower.GSpells[1], -- Greater Blessing of Wisdom
 								[2] = PallyPower.GSpells[2], -- Greater Blessing of Might
 								[3] = PallyPower.GSpells[3], -- Greater Blessing of Kings
@@ -924,7 +924,7 @@ PallyPower.options = {
 								PallyPower:UpdateRoster()
 							end,
 							values = {
-								[0] = L["NONE"],
+								[0] = L["None"],
 								[1] = PallyPower.Spells[1], -- Blessing of Wisdom
 								[2] = PallyPower.Spells[2], -- Blessing of Might
 								[3] = PallyPower.Spells[3], -- Blessing of Kings

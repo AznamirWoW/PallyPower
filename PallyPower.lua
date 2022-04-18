@@ -398,8 +398,8 @@ function PallyPowerGrid_NormalBlessingMenu(btn, mouseBtn, pname, class)
 
 		local shortname = strsplit("%-", pname)
 
-		tinsert(menu, {text = "|cffffffff" .. shortname .. "|r " .. L["ALTMENU_LINE1"], isTitle = true, isNotRadio = true, notCheckable = 1})
-		tinsert(menu, {text = L["ALTMENU_LINE2"], isTitle = true, isNotRadio = true, notCheckable = 1})
+		tinsert(menu, {text = "|cffffffff" .. shortname .. "|r " .. L["can be assigned"], isTitle = true, isNotRadio = true, notCheckable = 1})
+		tinsert(menu, {text = L["a Normal Blessing from:"], isTitle = true, isNotRadio = true, notCheckable = 1})
 
 		local pre, suf
 		for pally in pairs(AllPallys) do
@@ -448,7 +448,7 @@ function PallyPowerGrid_NormalBlessingMenu(btn, mouseBtn, pname, class)
 			})
 		end
 
-		tinsert(menu, {text = L["CANCEL"], func = function() end, isNotRadio = true, notCheckable = 1})
+		tinsert(menu, {text = _G.CANCEL, func = function() end, isNotRadio = true, notCheckable = 1})
 
 		LUIDDM:EasyMenu(menu, PallyPower.menuFrame, "cursor", 0 , 0, "MENU")
 
