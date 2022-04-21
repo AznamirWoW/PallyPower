@@ -143,7 +143,7 @@ function PallyPower:OnInitialize()
 			["OnTooltipShow"] = function(tooltip)
 				if self.opt.ShowTooltips then
 					tooltip:SetText(L["PP_NAME"] .. " (" .. string.trim(GetAddOnMetadata("PallyPower", "Version")) .. ")")
-					tooltip:AddLine(L["MINIMAPICON"])
+					tooltip:AddLine(L["MINIMAP_ICON_TOOLTIP"])
 					tooltip:Show()
 				end
 			end,

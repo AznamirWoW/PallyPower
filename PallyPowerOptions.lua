@@ -217,8 +217,8 @@ PallyPower.options = {
 							order = 3,
 							type = "select",
 							width = 1.4,
-							name = L["LAYOUT"],
-							desc = L["LAYOUT_DESC"],
+							name = L["Buff Button | Player Button Layout"],
+							desc = L["LAYOUT_TOOLTIP"],
 							disabled = function(info)
 								return PallyPower.opt.enabled == false or not isPally
 							end,
@@ -235,10 +235,10 @@ PallyPower.options = {
 								["Layout 2"] = L["VERDOWNLEFT"],
 								["Layout 3"] = L["VERUPRIGHT"],
 								["Layout 4"] = L["VERUPLEFT"],
-								["Layout 5"] = L["HORRIGHTDOWN"],
-								["Layout 6"] = L["HORRIGHTUP"],
-								["Layout 7"] = L["HORLEFTDOWN"],
-								["Layout 8"] = L["HORLEFTUP"]
+								["Layout 5"] = L["Horizontal Right | Down"],
+								["Layout 6"] = L["Horizontal Right | Up"],
+								["Layout 7"] = L["Horizontal Left | Down"],
+								["Layout 8"] = L["Horizontal Left | Up"]
 							}
 						},
 						skin = {
@@ -340,7 +340,7 @@ PallyPower.options = {
 					args = {
 						color_good = {
 							order = 1,
-							name = L["FULLY_BUFFED"],
+							name = L["Fully Buffed"],
 							type = "color",
 							get = function()
 								return PallyPower.opt.cBuffGood.r, PallyPower.opt.cBuffGood.g, PallyPower.opt.cBuffGood.b, PallyPower.opt.cBuffGood.t
@@ -355,7 +355,7 @@ PallyPower.options = {
 						},
 						color_partial = {
 							order = 2,
-							name = L["PARTIALLY_BUFFED"],
+							name = L["Partially Buffed"],
 							type = "color",
 							width = 1.1,
 							get = function()
@@ -371,7 +371,7 @@ PallyPower.options = {
 						},
 						color_missing = {
 							order = 3,
-							name = L["NONE_BUFFED"],
+							name = L["None Buffed"],
 							type = "color",
 							get = function()
 								return PallyPower.opt.cBuffNeedAll.r, PallyPower.opt.cBuffNeedAll.g, PallyPower.opt.cBuffNeedAll.b, PallyPower.opt.cBuffNeedAll.t
@@ -685,14 +685,14 @@ PallyPower.options = {
 			args = {
 				mainroles = {
 					order = 1,
-					name = L["MAINROLES"],
+					name = L["Main Tank / Main Assist Roles"],
 					type = "group",
 					inline = true,
 					args = {
 						mainroles_desc = {
 							order = 0,
 							type = "description",
-							name = L["MAINROLES_DESC"]
+							name = L["MAIN_ROLES_DESCRIPTION"]
 						},
 						maintank_buff = {
 							order = 1,
@@ -711,8 +711,8 @@ PallyPower.options = {
 						maintank_GBWarrior = {
 							order = 2,
 							type = "select",
-							name = L["MAINTANKGBUFFW"],
-							desc = L["MAINTANKGBUFFW_DESC"],
+							name = L["Override Warriors..."],
+							desc = L["Select the Greater Blessing assignment you wish to over-write on Main Tank: Warriors."],
 							width = 1.2,
 							disabled = function(info)
 								return (not (PallyPower.opt.mainTank))
@@ -737,8 +737,8 @@ PallyPower.options = {
 						maintank_NBWarrior = {
 							order = 3,
 							type = "select",
-							name = L["MAINTANKNBUFFW"],
-							desc = L["MAINTANKNBUFFW_DESC"],
+							name = L["...with Normal..."],
+							desc = L["Select the Normal Blessing you wish to use to over-write the Main Tank: Warriors."],
 							width = 0.9,
 							disabled = function(info)
 								return (not (PallyPower.opt.mainTank))
@@ -764,8 +764,8 @@ PallyPower.options = {
 						maintank_GBDruidPPaladin = {
 							order = 4,
 							type = "select",
-							name = L["MAINTANKGBUFFDP"],
-							desc = L["MAINTANKGBUFFDP_DESC"],
+							name = L["Override Druids / Paladins..."],
+							desc = L["Select the Greater Blessing assignment you wish to over-write on Main Tank: Druids / Paladins."],
 							width = 1.2,
 							disabled = function(info)
 								return (not (PallyPower.opt.mainTank))
@@ -790,8 +790,8 @@ PallyPower.options = {
 						maintank_NBDruidPPaladin = {
 							order = 5,
 							type = "select",
-							name = L["MAINTANKNBUFFDP"],
-							desc = L["MAINTANKNBUFFDP_DESC"],
+							name = L["...with Normal..."],
+							desc = L["Select the Normal Blessing you wish to use to over-write the Main Tank: Druids / Paladins."],
 							width = 0.9,
 							disabled = function(info)
 								return (not (PallyPower.opt.mainTank))
@@ -817,8 +817,8 @@ PallyPower.options = {
 						mainassist_buff = {
 							order = 6,
 							type = "toggle",
-							name = L["MAINASSISTANT"],
-							desc = L["MAINASSISTANT_DESC"],
+							name = L["Auto-Buff Main Assistant"],
+							desc = L["If you enable this option PallyPower will automatically over-write a Greater Blessing with a Normal Blessing on players marked with the |cffffd200Main Assistant|r role in the Blizzard Raid Panel. This is useful to avoid blessing the |cffffd200Main Assistant|r role with a Greater Blessing of Salvation."],
 							width = "full",
 							get = function(info)
 								return PallyPower.opt.mainAssist
@@ -831,8 +831,8 @@ PallyPower.options = {
 						mainassist_GBWarrior = {
 							order = 7,
 							type = "select",
-							name = L["MAINASSISTANTGBUFFW"],
-							desc = L["MAINASSISTANTGBUFFW_DESC"],
+							name = L["Override Warriors..."],
+							desc = L["Select the Greater Blessing assignment you wish to over-write on Main Assist: Warriors."],
 							width = 1.2,
 							disabled = function(info)
 								return (not (PallyPower.opt.mainAssist))
@@ -857,8 +857,8 @@ PallyPower.options = {
 						mainassist_NBWarrior = {
 							order = 8,
 							type = "select",
-							name = L["MAINASSISTANTNBUFFW"],
-							desc = L["MAINASSISTANTNBUFFW_DESC"],
+							name = L["...with Normal..."],
+							desc = L["Select the Normal Blessing you wish to use to over-write the Main Assist: Warriors."],
 							width = 0.9,
 							disabled = function(info)
 								return (not (PallyPower.opt.mainAssist))
@@ -884,8 +884,8 @@ PallyPower.options = {
 						mainassist_GBDruidPaladin = {
 							order = 9,
 							type = "select",
-							name = L["MAINASSISTANTGBUFFDP"],
-							desc = L["MAINASSISTANTGBUFFDP_DESC"],
+							name = L["Override Druids / Paladins..."],
+							desc = L["Select the Greater Blessing assignment you wish to over-write on Main Assist: Druids / Paladins."],
 							width = 1.2,
 							disabled = function(info)
 								return (not (PallyPower.opt.mainAssist))
@@ -910,8 +910,8 @@ PallyPower.options = {
 						mainassist_NBDruidPaladin = {
 							order = 10,
 							type = "select",
-							name = L["MAINASSISTANTNBUFFDP"],
-							desc = L["MAINASSISTANTNBUFFDP_DESC"],
+							name = L["...with Normal..."],
+							desc = L["Select the Normal Blessing you wish to use to over-write the Main Assist: Druids / Paladins."],
 							width = 0.9,
 							disabled = function(info)
 								return (not (PallyPower.opt.mainAssist))
