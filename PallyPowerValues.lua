@@ -3,6 +3,9 @@ local L = LibStub("AceLocale-3.0"):GetLocale("PallyPower")
 PallyPower.commPrefix = "PLPWR"
 C_ChatInfo.RegisterAddonMessagePrefix(PallyPower.commPrefix)
 
+PallyPower.isBCC = (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_BURNING_CRUSADE_CLASSIC)
+PallyPower.petsShareBaseClass = PallyPower.isBCC
+
 PALLYPOWER_MAXCLASSES = PallyPower.isBCC and 9 or 9
 PALLYPOWER_MAXPERCLASS = 15
 PALLYPOWER_NORMALBLESSINGDURATION = PallyPower.isBCC and (10 * 60) or (5 * 60)
@@ -228,27 +231,29 @@ PallyPower.AuraIcons = {
 }
 
 -- XML Aliases
-PALLYPOWER_NAME = "  " .. L["PP_NAME"] .. " (" .. string.trim(GetAddOnMetadata("PallyPower", "Version")) .. ")"
-PALLYPOWER_KEYCAT = L["PP_NAME"]
-PALLYPOWER_CLEAR = L["PP_CLEAR"]
-PALLYPOWER_CLEAR_DESC = L["PP_CLEAR_DESC"]
-PALLYPOWER_REFRESH = L["PP_REFRESH"]
-PALLYPOWER_REFRESH_DESC = L["PP_REFRESH_DESC"]
+do
+    local version = string.trim(GetAddOnMetadata("PallyPower", "Version"))
+    if version == ("@project-".."version@") then -- split string so it doesn't get replaced by packager
+        version = "Development version (Git)"
+    end
+    PALLYPOWER_NAME = "  " .. L["PallyPower Classic"] .. " (" .. version .. ")"
+end
+PALLYPOWER_KEYCAT = L["PallyPower Classic"]
+PALLYPOWER_CLEAR = L["Clear"]
+PALLYPOWER_CLEAR_DESC = L["PP_CLEAR_TOOLTIP"]
+PALLYPOWER_REFRESH = L["Refresh"]
+PALLYPOWER_REFRESH_DESC = L["PP_REFRESH_TOOLTIP"]
 PALLYPOWER_AUTOASSIGN = L["Auto-Assign"]
 PALLYPOWER_AUTOASSIGN_DESC = L["AUTO_ASSIGN_TOOLIP"]
 PALLYPOWER_REPORT = L["Blessings Report"]
 PALLYPOWER_REPORT_DESC = L["BLESSING_REPORT_TOOLTIP"]
 PALLYPOWER_FREEASSIGN = L["Free Assignment"]
 PALLYPOWER_FREEASSIGN_DESC = L["FREE_ASSIGN_TOOLTIP"]
-PALLYPOWER_ASSIGNMENTS1 = L["PP_RAS1"]
-PALLYPOWER_ASSIGNMENTS2 = L["PP_RAS2"]
-PALLYPOWER_ASSIGNMENTS3 = L["PP_RAS3"]
-PALLYPOWER_ASSIGNMENTS4 = L["PP_RAS4"]
 PALLYPOWER_OPTIONS = L["Options"]
 PALLYPOWER_OPTIONS_DESC = L["OPTIONS_BUTTON_TOOLTIP"]
 
 PallyPower.CONFIG_DRAGHANDLE = L["DRAGHANDLE_TOOLTIP"]
-PallyPower.CONFIG_RESIZEGRIP = L["RESIZEGRIP"]
+PallyPower.CONFIG_RESIZEGRIP = L["RESIZEGRIP_TOOLTIP"]
 
 BINDING_NAME_AUTOKEY1 = L["Auto Normal Blessing Key"]
 BINDING_NAME_AUTOKEY2 = L["Auto Greater Blessing Key"]

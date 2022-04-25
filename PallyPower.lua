@@ -5,8 +5,6 @@ local LSM3 = LibStub("LibSharedMedia-3.0")
 local AceGUI = LibStub("AceGUI-3.0")
 local LUIDDM = LibStub("LibUIDropDownMenu-4.0")
 
-PallyPower.isBCC = (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_BURNING_CRUSADE_CLASSIC)
-PallyPower.petsShareBaseClass = PallyPower.isBCC
 local LCD = (not PallyPower.isBCC) and LibStub("LibClassicDurations", true)
 local UnitAura = LCD and LCD.UnitAuraWrapper or UnitAura
 
@@ -142,7 +140,7 @@ function PallyPower:OnInitialize()
 			["icon"] = "Interface\\AddOns\\PallyPower\\Icons\\SummonChampion",
 			["OnTooltipShow"] = function(tooltip)
 				if self.opt.ShowTooltips then
-					tooltip:SetText(L["PP_NAME"] .. " (" .. string.trim(GetAddOnMetadata("PallyPower", "Version")) .. ")")
+					tooltip:SetText(PALLYPOWER_NAME)
 					tooltip:AddLine(L["MINIMAP_ICON_TOOLTIP"])
 					tooltip:Show()
 				end
@@ -784,7 +782,7 @@ function PallyPower:Report(type, chanNum)
 			end
 			if self:CheckLeader(self.player) and type ~= "INSTANCE_CHAT" then
 				if #SyncList > 0 then
-					SendChatMessage(PALLYPOWER_ASSIGNMENTS1, type)
+					SendChatMessage(L["--- Paladin assignments ---"], type)
 					local list = {}
 					for name in pairs(AllPallys) do
 						local blessings
@@ -813,7 +811,7 @@ function PallyPower:Report(type, chanNum)
 						end
 						SendChatMessage(name .. ": " .. blessings, type)
 					end
-					SendChatMessage(PALLYPOWER_ASSIGNMENTS2, type)
+					SendChatMessage(L["--- End of assignments ---"], type)
 				end
 			else
 				if type == "INSTANCE_CHAT" then
@@ -833,7 +831,7 @@ function PallyPower:Report(type, chanNum)
 		end
 	else
 		if ((type and (type ~= "INSTANCE_CHAT" or type ~= "RAID" or type ~= "PARTY")) and chanNum and (IsInRaid() or IsInGroup())) then
-			SendChatMessage(PALLYPOWER_ASSIGNMENTS1, type, nil, chanNum)
+			SendChatMessage(L["--- Paladin assignments ---"], type, nil, chanNum)
 			local list = {}
 			for name in pairs(AllPallys) do
 				local blessings
@@ -862,7 +860,7 @@ function PallyPower:Report(type, chanNum)
 				end
 				SendChatMessage(name .. ": " .. blessings, type, nil, chanNum)
 			end
-			SendChatMessage(PALLYPOWER_ASSIGNMENTS2, type, nil, chanNum)
+			SendChatMessage(L["--- End of assignments ---"], type, nil, chanNum)
 		elseif not IsInGroup() then
 			self:Print(ERR_NOT_IN_GROUP)
 		elseif not IsInRaid() then

@@ -6,20 +6,20 @@ local isPally = select(2, UnitClass("player")) == "PALADIN"
 -- AceConfig
 -------------------------------------------------------------------
 PallyPower.options = {
-	name = "  " .. L["PP_NAME"],
+	name = "  " .. L["PallyPower Classic"],
 	type = "group",
 	childGroups = "tab",
 	args = {
 		settings = {
 			order = 1,
-			name = L["SETTINGS"],
-			desc = L["SETTINGS_DESC"],
+			name = _G.SETTINGS,
+			desc = L["Change global settings"],
 			type = "group",
 			cmdHidden = true,
 			args = {
 				settings_show = {
 					order = 1,
-					name = L["PP_MAIN"],
+					name = L["Main PallyPower Settings"],
 					type = "group",
 					inline = true,
 					args = {
@@ -43,8 +43,8 @@ PallyPower.options = {
 						},
 						showparty = {
 							order = 2,
-							name = L["USEPARTY"],
-							desc = L["USEPARTY_DESC"],
+							name = L["Use in Party"],
+							desc = L["[Enable/Disable] PallyPower in Party"],
 							type = "toggle",
 							width = 1.0,
 							disabled = function(info)
@@ -60,8 +60,8 @@ PallyPower.options = {
 						},
 						showminimapicon = {
 							order = 3,
-							name = L["SHOWMINIMAPICON"],
-							desc = L["SHOWMINIMAPICON_DESC"],
+							name = L["Show Minimap Icon"],
+							desc = L["[Show/Hide] Minimap Icon"],
 							type = "toggle",
 							width = 1.0,
 							get = function(info)
@@ -74,8 +74,8 @@ PallyPower.options = {
 						},
 						showsingle = {
 							order = 4,
-							name = L["USESOLO"],
-							desc = L["USESOLO_DESC"],
+							name = L["Use when Solo"],
+							desc = L["[Enable/Disable] PallyPower while Solo"],
 							type = "toggle",
 							width = 1.0,
 							disabled = function(info)
@@ -91,8 +91,8 @@ PallyPower.options = {
 						},
 						showtooltips = {
 							order = 5,
-							name = L["SHOWTIPS"],
-							desc = L["SHOWTIPS_DESC"],
+							name = L["Show Tooltips"],
+							desc = L["[Show/Hide] The PallyPower Tooltips"],
 							type = "toggle",
 							width = 1.0,
 							disabled = function(info)
@@ -109,8 +109,8 @@ PallyPower.options = {
 						reportchannel = {
 							order = 6,
 							type = "select",
-							name = L["REPORTCHANNEL"],
-							desc = L["REPORTCHANNEL_DESC"],
+							name = L["Blessings Report Channel"],
+							desc = L["REPORT_CHANNEL_OPTION_TOOLTIP"],
 							width = 1.0,
 							values = function()
 								return PallyPower:ReportChannels()
@@ -129,7 +129,7 @@ PallyPower.options = {
 				},
 				settings_buffs = {
 					order = 2,
-					name = L["SETTINGSBUFF"],
+					name = L["What to buff with PallyPower"],
 					type = "group",
 					inline = true,
 					disabled = function(info)
@@ -139,8 +139,8 @@ PallyPower.options = {
 						smart_buff = {
 							order = 1,
 							type = "toggle",
-							name = L["SMARTBUFF"],
-							desc = L["SMARTBUFF_DESC"],
+							name = L["Smart Buffs"],
+							desc = L["If you enable this option, you will not be allowed to assign Blessing of Wisdom to Warriors or Rogues, and Blessing of Might to Mages, Warlocks, or Hunters."],
 							width = 1.0,
 							get = function(info)
 								return PallyPower.opt.SmartBuffs
@@ -153,8 +153,8 @@ PallyPower.options = {
 						showpets_buff = {
 							order = 2,
 							type = "toggle",
-							name = L["SHOWPETS"],
-							desc = L["SHOWPETS_DESC"],
+							name = L["Show Pets"],
+							desc = PallyPower.petsShareBaseClass and L["SHOWPETS_OPTION_TOOLTIP_BCC"] or L["SHOWPETS_OPTION_TOOLTIP_VANILLA"],
 							width = 1.0,
 							get = function(info)
 								return PallyPower.opt.ShowPets
@@ -167,8 +167,8 @@ PallyPower.options = {
 						salvation_incombat = {
 							order = 3,
 							type = "toggle",
-							name = L["SALVCOMBAT"],
-							desc = L["SALVCOMBAT_DESC"],
+							name = L["Salv in Combat"],
+							desc = L["SALVCOMBAT_OPTION_TOOLTIP"],
 							width = 1.0,
 							get = function(info)
 								return PallyPower.opt.SalvInCombat
@@ -182,7 +182,7 @@ PallyPower.options = {
 				},
 				settings_frames = {
 					order = 3,
-					name = L["PP_LOOKS"],
+					name = L["Change the way PallyPower looks"],
 					type = "group",
 					inline = true,
 					args = {
@@ -231,10 +231,10 @@ PallyPower.options = {
 								PallyPower:UpdateRoster()
 							end,
 							values = {
-								["Layout 1"] = L["VERDOWNRIGHT"],
-								["Layout 2"] = L["VERDOWNLEFT"],
-								["Layout 3"] = L["VERUPRIGHT"],
-								["Layout 4"] = L["VERUPLEFT"],
+								["Layout 1"] = L["Vertical Down | Right"],
+								["Layout 2"] = L["Vertical Down | Left"],
+								["Layout 3"] = L["Vertical Up | Right"],
+								["Layout 4"] = L["Vertical Up | Left"],
 								["Layout 5"] = L["Horizontal Right | Down"],
 								["Layout 6"] = L["Horizontal Right | Up"],
 								["Layout 7"] = L["Horizontal Left | Down"],
@@ -243,8 +243,8 @@ PallyPower.options = {
 						},
 						skin = {
 							order = 4,
-							name = L["SKIN"],
-							desc = L["SKIN_DESC"],
+							name = L["Background Textures"],
+							desc = L["Change the Button Background Textures"],
 							type = "select",
 							width = 1.5,
 							dialogControl = "LSM30_Background",
@@ -316,8 +316,8 @@ PallyPower.options = {
 						},
 						reset = {
 							order = 9,
-							name = L["RESET"],
-							desc = L["RESET_DESC"],
+							name = L["Reset Frames"],
+							desc = L["Reset all PallyPower frames back to center"],
 							type = "execute",
 							disabled = function(info)
 								return PallyPower.opt.enabled == false
@@ -331,7 +331,7 @@ PallyPower.options = {
 				},
 				settings_color = {
 					order = 4,
-					name = L["PP_COLOR"],
+					name = L["Change the status colors of the buff buttons"],
 					type = "group",
 					inline = true,
 					disabled = function(info)
@@ -454,7 +454,7 @@ PallyPower.options = {
 				},
 				seal_button = {
 					order = 2,
-					name = L["SEAL"],
+					name = L["Seal Button"],
 					type = "group",
 					inline = true,
 					disabled = function(info)
@@ -464,13 +464,13 @@ PallyPower.options = {
 						seal_desc = {
 							order = 0,
 							type = "description",
-							name = L["SEAL_DESC"]
+							name = L["[|cffffd200Enable|r/|cffffd200Disable|r] The Seal Button, Enable/Disable Righteous Fury or select the Seal you want to track."]
 						},
 						seal_enable = {
 							order = 1,
 							type = "toggle",
-							name = L["SEALBTN"],
-							desc = L["SEALBTN_DESC"],
+							name = L["Seal Button"],
+							desc = L["[Enable/Disable] The Seal Button"],
 							width = 1.1,
 							get = function(info)
 								return PallyPower.opt.rfbuff
@@ -486,8 +486,8 @@ PallyPower.options = {
 						rfury = {
 							order = 2,
 							type = "toggle",
-							name = L["RFM"],
-							desc = L["RFM_DESC"],
+							name = L["Righteous Fury"],
+							desc = L["[Enable/Disable] Righteous Fury"],
 							width = 1.1,
 							disabled = function(info)
 								return PallyPower.opt.rfbuff == false or PallyPower.opt.enabled == false or not isPally
@@ -503,8 +503,8 @@ PallyPower.options = {
 						seal = {
 							order = 3,
 							type = "select",
-							name = L["SEALTRACKER"],
-							desc = L["SEALTRACKER_DESC"],
+							name = L["Seal Tracker"],
+							desc = L["Select the Seal you want to track"],
 							width = .9,
 							get = function(info)
 								return PallyPower.opt.seal
@@ -560,8 +560,8 @@ PallyPower.options = {
 						auto_wait = {
 							order = 2,
 							type = "toggle",
-							name = L["WAIT"],
-							desc = L["WAIT_DESC"],
+							name = L["Wait for Players"],
+							desc = L["If this option is enabled then the Auto Buff Button and the Class Buff Button(s) will not auto buff a Greater Blessing if recipient(s) are not within the Paladins range (100yds). This range check excludes AFK, Dead and Offline players."],
 							get = function(info)
 								return PallyPower.opt.autobuff.waitforpeople
 							end,
@@ -607,8 +607,8 @@ PallyPower.options = {
 						player_enable = {
 							order = 2,
 							type = "toggle",
-							name = L["PLAYERBTNS"],
-							desc = L["PLAYERBTNS_DESC"],
+							name = L["Player Buttons"],
+							desc = L["If this option is disabled then you will no longer see the pop out buttons showing individual players and you will not be able to reapply Normal Blessings while in combat."],
 							disabled = function(info)
 								return PallyPower.opt.display.showClassButtons == false or PallyPower.opt.enabled == false or not isPally
 							end,
@@ -675,8 +675,8 @@ PallyPower.options = {
 		},
 		raids = {
 			order = 3,
-			name = L["RAID"],
-			desc = L["RAID_DESC"],
+			name = _G.RAID,
+			desc = L["Raid only options"],
 			type = "group",
 			cmdHidden = true,
 			disabled = function(info)
@@ -697,8 +697,8 @@ PallyPower.options = {
 						maintank_buff = {
 							order = 1,
 							type = "toggle",
-							name = L["PPMAINTANK"],
-							desc = L["PPMAINTANK_DESC"],
+							name = L["Auto-Buff Main Tank"],
+							desc = L["If you enable this option PallyPower will automatically over-write a Greater Blessing with a Normal Blessing on players marked with the |cffffd200Main Tank|r role in the Blizzard Raid Panel. This is useful to avoid blessing the |cffffd200Main Tank|r role with a Greater Blessing of Salvation."],
 							width = "full",
 							get = function(info)
 								return PallyPower.opt.mainTank
