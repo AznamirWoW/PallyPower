@@ -2023,6 +2023,17 @@ function PallyPower:UpdateRoster()
 				local n = select(3, unitid:find("(%d+)"))
 				tmp.name, tmp.rank, tmp.subgroup = GetRaidRosterInfo(n)
 				tmp.zone = select(7, GetRaidRosterInfo(n))
+				
+				if self.opt.hideHighGroups then
+					local maxPlayerCount = (select(5, GetInstanceInfo()))
+					if maxPlayerCount and (maxPlayerCount > 5) then
+						local numVisibleSubgroups = math.ceil(maxPlayerCount/5)
+						if not (tmp.subgroup <= numVisibleSubgroups) then
+							tmp.class = nil
+						end
+					end
+				end
+				
 				local raidtank = select(10, GetRaidRosterInfo(n))
 				tmp.tank = ((raidtank == "MAINTANK") or (self.opt.mainAssist and (raidtank == "MAINASSIST")))
 				

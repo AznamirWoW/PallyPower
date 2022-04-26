@@ -683,8 +683,30 @@ PallyPower.options = {
 				return PallyPower.opt.enabled == false or not isPally
 			end,
 			args = {
-				mainroles = {
+				visibility = {
 					order = 1,
+					name = L["Visibility Settings"],
+					type = "group",
+					inline = true,
+					args = {
+						hide_high = {
+							order = 1,
+							type = "toggle",
+							name = L["Hide Bench (by Subgroup)"],
+							desc = L["While you are in a Raid dungeon, hide any players outside of the usual subgroups for that dungeon. For example, if you are in a 10-player dungeon, any players in Group 3 or higher will be hidden."],
+							width = "full",
+							get = function()
+								return PallyPower.opt.hideHighGroups
+							end,
+							set = function(info, val)
+								PallyPower.opt.hideHighGroups = val
+								PallyPower:UpdateRoster()
+							end
+						},
+					},
+				},
+				mainroles = {
+					order = 2,
 					name = L["Main Tank / Main Assist Roles"],
 					type = "group",
 					inline = true,
