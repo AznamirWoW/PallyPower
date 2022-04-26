@@ -1974,7 +1974,7 @@ end
 
 function PallyPower:UpdateRoster()
 	--self:Debug("UpdateRoster()")
-	local units, class, raidtank
+	local units
 	for i = 1, PALLYPOWER_MAXCLASSES do
 		classlist[i] = 0
 		classes[i] = {}
@@ -2003,14 +2003,14 @@ function PallyPower:UpdateRoster()
 					end
 					local npcId = (select(6, ("-"):split(UnitGUID(unitid))))
 					if (npcId == "510") or (npcId == "19668") or (npcId == "1863") or (npcId == "185317") then -- 510: Water Elemental, 19668: Shadowfiend, 1863: Succubus, 185317: Incubus
-						tmp.class = ""
+						tmp.class = false
 					else
 						local i = 1
 						local isPhased = false
 						local buffSpellId = select(10, UnitBuff(unitid, i))
 						while buffSpellId do
 							if (buffSpellId == 4511) then -- 4511: Phase Shift (Imp)
-								tmp.class = ""
+								tmp.class = false
 								break
 							end
 							i = i + 1
@@ -2023,9 +2023,10 @@ function PallyPower:UpdateRoster()
 				local n = select(3, unitid:find("(%d+)"))
 				tmp.name, tmp.rank, tmp.subgroup = GetRaidRosterInfo(n)
 				tmp.zone = select(7, GetRaidRosterInfo(n))
-				raidtank = select(10, GetRaidRosterInfo(n))
+				local raidtank = select(10, GetRaidRosterInfo(n))
 				tmp.tank = ((raidtank == "MAINTANK") or (self.opt.mainAssist and (raidtank == "MAINASSIST")))
-				class = self:GetClassID(pclass)
+				
+				local class = self:GetClassID(pclass)
 				-- Warriors
 				if (class == 1) then
 					if (raidmaintanks[tmp.name] == true) then
@@ -2108,7 +2109,7 @@ function PallyPower:UpdateRoster()
 				tmp.rank = UnitIsGroupLeader(unitid) and 2 or 0
 				tmp.subgroup = 1
 			end
-			if pclass == "PALADIN" and (not isPet) then
+			if tmp.class == "PALADIN" and (not isPet) then
 				if AllPallys[tmp.name] then
 					AllPallys[tmp.name].subgroup = tmp.subgroup
 				end
@@ -2122,7 +2123,7 @@ function PallyPower:UpdateRoster()
 					end
 				end
 			end
-			if tmp.subgroup then
+			if tmp.class and tmp.subgroup then
 				tinsert(roster, tmp)
 				for i = 1, PALLYPOWER_MAXCLASSES do
 					if tmp.class == self.ClassID[i] then

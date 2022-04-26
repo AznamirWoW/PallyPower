@@ -232,11 +232,11 @@ PallyPower.AuraIcons = {
 
 -- XML Aliases
 do
-    local version = string.trim(GetAddOnMetadata("PallyPower", "Version"))
-    if version == ("@project-".."version@") then -- split string so it doesn't get replaced by packager
-        version = "Development version (Git)"
-    end
-    PALLYPOWER_NAME = "  " .. L["PallyPower Classic"] .. " (" .. version .. ")"
+	local version = string.trim(GetAddOnMetadata("PallyPower", "Version"))
+	if version == ("@project-".."version@") then -- split string so it doesn't get replaced by packager
+		version = "Development version"
+	end
+	PALLYPOWER_NAME = "  " .. L["PallyPower Classic"] .. " (" .. version .. ")"
 end
 PALLYPOWER_KEYCAT = L["PallyPower Classic"]
 PALLYPOWER_CLEAR = L["Clear"]
