@@ -2229,6 +2229,7 @@ function PallyPower:CreateLayout()
 		for pbNum = 1, PALLYPOWER_MAXPERCLASS do
 			local pButton = CreateFrame("Button", "PallyPowerC" .. cbNum .. "P" .. pbNum, UIParent, "SecureHandlerShowHideTemplate, SecureHandlerEnterLeaveTemplate, SecureActionButtonTemplate, PallyPowerPopupTemplate")
 			pButton:SetParent(cButton)
+			pButton:SetFrameStrata("DIALOG")
 			SecureHandlerSetFrameRef(cButton, "child", pButton)
 			SecureHandlerExecute(cButton, [[
 				local child = self:GetFrameRef("child")
