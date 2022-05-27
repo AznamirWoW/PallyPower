@@ -1300,17 +1300,15 @@ function PallyPower:ScanCooldowns()
 	local CooldownInfo = AllPallys[self.player].CooldownInfo
 	for cd, spells in pairs(self.Cooldowns) do
 		for _, spell in pairs(spells) do
-			if not CooldownInfo[cd] then
-				return
-			end
-			if GetSpellCooldown(spell) then
-				CooldownInfo[cd].start = GetSpellCooldown(spell)
-				CooldownInfo[cd].duration = select(2, GetSpellCooldown(spell))
-				CooldownInfo[cd].remaining = CooldownInfo[cd].start + CooldownInfo[cd].duration - GetTime()
-				if CooldownInfo[cd].remaining < 0 then
-					CooldownInfo[cd].remaining = 0
-				end
-			end
+			if CooldownInfo[cd] then
+                local start, duration = GetSpellCooldown(spell)
+                if start then
+                    CooldownInfo[cd].start = start
+                    CooldownInfo[cd].duration = duration
+                    CooldownInfo[cd].remaining = math.max(start + duration - GetTime(), 0)
+                    break
+                end
+            end
 		end
 	end
 end

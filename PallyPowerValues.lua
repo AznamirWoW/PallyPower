@@ -332,7 +332,7 @@ PallyPower.Auras = {
 }
 
 PallyPower.Cooldowns = {
-	[1] = {633, 2800, 10310, 27154},	-- Improved Lay On Hands
+	[1] = {633, 2800, 10310, 27154},	-- Lay On Hands
 	[2] = {19752},						-- Divine Intervention
 }
 
