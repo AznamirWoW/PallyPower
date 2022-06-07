@@ -1301,14 +1301,14 @@ function PallyPower:ScanCooldowns()
 	for cd, spells in pairs(self.Cooldowns) do
 		for _, spell in pairs(spells) do
 			if CooldownInfo[cd] then
-                local start, duration = GetSpellCooldown(spell)
-                if start then
-                    CooldownInfo[cd].start = start
-                    CooldownInfo[cd].duration = duration
-                    CooldownInfo[cd].remaining = math.max(start + duration - GetTime(), 0)
-                    break
-                end
-            end
+				local start, duration = GetSpellCooldown(spell)
+				if start then
+					CooldownInfo[cd].start = start
+					CooldownInfo[cd].duration = duration
+					CooldownInfo[cd].remaining = math.max(start + duration - GetTime(), 0)
+					break
+				end
+			end
 		end
 	end
 end
