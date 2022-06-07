@@ -206,6 +206,8 @@ function PallyPower:OnDisable()
 	self.autoButton:Hide()
 	PallyPowerAnchor:Hide()
 	self:UnbindKeys()
+	self:UnregisterAllEvents()
+	self:UnregisterAllBuckets()
 end
 
 function PallyPower:OnProfileChanged()
