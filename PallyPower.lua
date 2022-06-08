@@ -175,6 +175,7 @@ function PallyPower:OnEnable()
 	self:ScanCooldowns()
 	self:RegisterEvent("CHAT_MSG_ADDON")
 	self:RegisterEvent("CHAT_MSG_SYSTEM")
+	self:RegisterEvent("CHAT_MSG_WHISPER")
 	self:RegisterEvent("ZONE_CHANGED")
 	self:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 	self:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
@@ -1614,6 +1615,78 @@ function PallyPower:CHAT_MSG_SYSTEM(event, text)
 			end
 		end
 	end
+end
+
+-- set normal bless using whispering e.g. "/w paladin !BOK" will set Bless of King for the player who whisp
+function PallyPower:CHAT_MSG_WHISPER(event, text, a, b, c, wguid)
+    if text then
+        text = string.upper(text)
+        local blessID, blessName
+
+        if sfind(text, "!WISDOM") then
+            blessID = 1
+        elseif sfind(text, "!MIGHT") or sfind(text, "!BOM") then
+            blessID = 2
+        elseif sfind(text, "!KING") or sfind(text, "!BOK") then
+            blessID = 3
+        elseif sfind(text, "!SALVATION") or sfind(text, "!BOS") or sfind(text, "!SALV") then
+            blessID = 4
+        elseif sfind(text, "!LIGHT") or sfind(text, "!BOL") then
+            blessID = 5
+        elseif sfind(text, "!SANCTUARY") or sfind(text, "!SANCT") then
+            blessID = 6
+        elseif sfind(text, "!BLESSINFO") or sfind(text, "!PP") then
+            blessID = 99
+        else
+            blessID = 0
+        end
+
+        blessName = PallyPower.IDToBless[blessID]
+
+        if blessID > 0 then
+            local playerGuid = UnitGUID(wguid)
+            -- self:Print(playerGuid)
+
+            if playerGuid then
+                local localizedClass, englishClass, localizedRace, englishRace, sex, playerName, realm = GetPlayerInfoByGUID(playerGuid)
+
+                if blessID == 99 then
+                    local normalBlessText, normalBlessID
+                    for pally in pairs(AllPallys) do
+
+                        if PallyPower_Assignments[pally][PallyPower.ClassToID[englishClass]] then
+                            -- self:Print(PallyPower_Assignments[pally][PallyPower.ClassToID[englishClass]])
+                            -- self:Print(GetNormalBlessings(pally, PallyPower.ClassToID[englishClass], playerName))
+                            normalBlessID = GetNormalBlessings(pally, PallyPower.ClassToID[englishClass], playerName)
+                            -- self:Print(normalBlessID)
+                            if normalBlessID then
+                                -- self:Print(normalBlessID)
+                                normalBlessText = " (single bless: " .. PallyPower.IDToBless[tonumber(normalBlessID)] .. ") "
+                            else
+                                normalBlessText = ""
+                            end
+
+                            SendChatMessage(pally .. " -> " .. PallyPower.IDToBless[PallyPower_Assignments[pally][PallyPower.ClassToID[englishClass]]] .. normalBlessText, "WHISPER", "Common", playerName)
+                        end
+
+                    end
+                    -- self:Print(PallyPower_Assignments[PallyPower.player][PallyPower.ClassToID[englishClass]])
+                    return false
+                end
+                -- self:Print(text)
+                -- self:Print(PallyPower.player)
+                -- self:Print(englishClass)
+                -- self:Print(PallyPower.ClassToID[englishClass])
+
+                SetNormalBlessings(PallyPower.player, PallyPower.ClassToID[englishClass], playerName, blessID)
+
+                self:Print(playerName .. " has now assigned " .. blessName .. " bless (small)")
+                SendChatMessage("You have now assigned " .. blessName .. " bless (small)", "WHISPER", "Common", playerName)
+            else
+                self:Print("Player not found. Is he/she in your group?")
+            end -- end playerGuid
+        end -- end BlessID > 0
+    end --end text != nil
 end
 
 function PallyPower:UNIT_SPELLCAST_SUCCEEDED(event, unitTarget, castGUID, spellID)
