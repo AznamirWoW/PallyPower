@@ -3,13 +3,15 @@ local L = LibStub("AceLocale-3.0"):GetLocale("PallyPower")
 PallyPower.commPrefix = "PLPWR"
 C_ChatInfo.RegisterAddonMessagePrefix(PallyPower.commPrefix)
 
+PallyPower.isVanilla = (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_CLASSIC)
 PallyPower.isBCC = (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_BURNING_CRUSADE_CLASSIC)
+PallyPower.isWrath = (select(4, GetBuildInfo()) >= 30400 and select(4, GetBuildInfo()) < 40000) -- TODO: Change when there is a project ID
 PallyPower.petsShareBaseClass = PallyPower.isBCC
 
-PALLYPOWER_MAXCLASSES = PallyPower.isBCC and 9 or 9
+PALLYPOWER_MAXCLASSES = PallyPower.isWrath and 10 or 9
 PALLYPOWER_MAXPERCLASS = 15
-PALLYPOWER_NORMALBLESSINGDURATION = PallyPower.isBCC and (10 * 60) or (5 * 60)
-PALLYPOWER_GREATERBLESSINGDURATION = PallyPower.isBCC and (30 * 60) or (15 * 60)
+PALLYPOWER_NORMALBLESSINGDURATION = (PallyPower.isBCC or PallyPower.isWrath) and (10 * 60) or (5 * 60)
+PALLYPOWER_GREATERBLESSINGDURATION = (PallyPower.isBCC or PallyPower.isWrath) and (30 * 60) or (15 * 60)
 PALLYPOWER_MAXAURAS = PallyPower.isBCC and 8 or 7
 
 PALLYPOWER_DEFAULT_VALUES = {
@@ -130,7 +132,18 @@ PALLYPOWER_OTHER_VALUES = {
 
 PallyPower.BuffBarTitle = "Pally Buffs (%d)"
 
-PallyPower.ClassID = PallyPower.isBCC and {
+PallyPower.ClassID = PallyPower.isWrath and {
+	[1] = "WARRIOR",
+	[2] = "ROGUE",
+	[3] = "PRIEST",
+	[4] = "DRUID",
+	[5] = "PALADIN",
+	[6] = "HUNTER",
+	[7] = "MAGE",
+	[8] = "WARLOCK",
+	[9] = "SHAMAN",
+	[10] = "DEATHKNIGHT",
+} or PallyPower.isBCC and {
 	[1] = "WARRIOR",
 	[2] = "ROGUE",
 	[3] = "PRIEST",
@@ -152,7 +165,18 @@ PallyPower.ClassID = PallyPower.isBCC and {
 	[9] = "PET"
 }
 
-PallyPower.ClassToID = PallyPower.isBCC and {
+PallyPower.ClassToID = PallyPower.isWrath and {
+	["WARRIOR"] = 1,
+	["ROGUE"] = 2,
+	["PRIEST"] = 3,
+	["DRUID"] = 4,
+	["PALADIN"] = 5,
+	["HUNTER"] = 6,
+	["MAGE"] = 7,
+	["WARLOCK"] = 8,
+	["SHAMAN"] = 9,
+	["DEATHKNIGHT"] = 10,
+} or PallyPower.isBCC and {
 	["WARRIOR"] = 1,
 	["ROGUE"] = 2,
 	["PRIEST"] = 3,
@@ -174,7 +198,18 @@ PallyPower.ClassToID = PallyPower.isBCC and {
 	["PET"] = 9
 }
 
-PallyPower.ClassIcons = PallyPower.isBCC and {
+PallyPower.ClassIcons = PallyPower.isWrath and {
+	[1] = "Interface\\Icons\\ClassIcon_Warrior",
+	[2] = "Interface\\Icons\\ClassIcon_Rogue",
+	[3] = "Interface\\Icons\\ClassIcon_Priest",
+	[4] = "Interface\\Icons\\ClassIcon_Druid",
+	[5] = "Interface\\Icons\\ClassIcon_Paladin",
+	[6] = "Interface\\Icons\\ClassIcon_Hunter",
+	[7] = "Interface\\Icons\\ClassIcon_Mage",
+	[8] = "Interface\\Icons\\ClassIcon_Warlock",
+	[9] = "Interface\\Icons\\ClassIcon_Shaman",
+	[10] = "Interface\\Icons\\Spell_deathknight_classicon",
+} or PallyPower.isBCC and {
 	[1] = "Interface\\Icons\\ClassIcon_Warrior",
 	[2] = "Interface\\Icons\\ClassIcon_Rogue",
 	[3] = "Interface\\Icons\\ClassIcon_Priest",
@@ -196,7 +231,13 @@ PallyPower.ClassIcons = PallyPower.isBCC and {
 	[9] = "Interface\\Icons\\Ability_Mount_JungleTiger"
 }
 
-PallyPower.BlessingIcons = {
+PallyPower.BlessingIcons = PallyPower.isWrath and {
+	[-1] = "",
+	[1] = "Interface\\Icons\\Spell_Holy_GreaterBlessingofWisdom",
+	[2] = "Interface\\Icons\\Spell_Holy_GreaterBlessingofKings",
+	[3] = "Interface\\Icons\\Spell_Magic_GreaterBlessingofKings",
+	[4] = "Interface\\Icons\\Spell_Holy_GreaterBlessingofSanctuary"
+} or {
 	[-1] = "",
 	[1] = "Interface\\Icons\\Spell_Holy_GreaterBlessingofWisdom",
 	[2] = "Interface\\Icons\\Spell_Holy_GreaterBlessingofKings",
@@ -207,7 +248,13 @@ PallyPower.BlessingIcons = {
 	[7] = "Interface\\Icons\\Spell_Holy_SealOfSacrifice"
 }
 
-PallyPower.NormalBlessingIcons = {
+PallyPower.NormalBlessingIcons = PallyPower.isWrath and {
+	[-1] = "",
+	[1] = "Interface\\Icons\\Spell_Holy_SealOfWisdom",
+	[2] = "Interface\\Icons\\Spell_Holy_FistOfJustice",
+	[3] = "Interface\\Icons\\Spell_Magic_MageArmor",
+	[4] = "Interface\\Icons\\Spell_Nature_LightningShield",
+} or {
 	[-1] = "",
 	[1] = "Interface\\Icons\\Spell_Holy_SealOfWisdom",
 	[2] = "Interface\\Icons\\Spell_Holy_FistOfJustice",
@@ -218,7 +265,16 @@ PallyPower.NormalBlessingIcons = {
 	[7] = "Interface\\Icons\\Spell_Holy_SealOfSacrifice"
 }
 
-PallyPower.AuraIcons = {
+PallyPower.AuraIcons = PallyPower.isWrath and {
+	[-1] = "",
+	[1] = "Interface\\Icons\\Spell_Holy_DevotionAura",
+	[2] = "Interface\\Icons\\Spell_Holy_AuraOfLight",
+	[3] = "Interface\\Icons\\Spell_Holy_MindSooth",
+	[4] = "Interface\\Icons\\Spell_Shadow_SealOfKings",
+	[5] = "Interface\\Icons\\Spell_Frost_WizardMark",
+	[6] = "Interface\\Icons\\Spell_Fire_SealOfFire",
+	[7] = "Interface\\Icons\\Spell_Holy_CrusaderAura"
+} or {
 	[-1] = "",
 	[1] = "Interface\\Icons\\Spell_Holy_DevotionAura",
 	[2] = "Interface\\Icons\\Spell_Holy_AuraOfLight",
@@ -261,7 +317,13 @@ BINDING_NAME_AUTOKEY2 = L["Auto Greater Blessing Key"]
 -------------------------------------------------------------------
 -- Spell Settings
 -------------------------------------------------------------------
-PallyPower.Spells = {
+PallyPower.Spells = PallyPower.isWrath and {
+	[0] = "",
+	[1] = GetSpellInfo(19742),	-- Blessing of Wisdom
+	[2] = GetSpellInfo(19740),	-- Blessing of Might
+	[3] = GetSpellInfo(20217),	-- Blessing of Kings
+	[4] = GetSpellInfo(20911),	-- Blessing of Sanctuary
+} or {
 	[0] = "",
 	[1] = GetSpellInfo(19742),	-- Blessing of Wisdom
 	[2] = GetSpellInfo(19740),	-- Blessing of Might
@@ -272,7 +334,13 @@ PallyPower.Spells = {
 	[7] = GetSpellInfo(6940),	-- Blessing of Sacrifice
 }
 
-PallyPower.GSpells = {
+PallyPower.GSpells = PallyPower.isWrath and {
+	[0] = "",
+	[1] = GetSpellInfo(25894),	-- Greater Blessing of Wisdom (R1:54, R2:60)
+	[2] = GetSpellInfo(25782),	-- Greater Blessing of Might (R1:52, R2:60)
+	[3] = GetSpellInfo(25898),	-- Greater Blessing of Kings
+	[4] = GetSpellInfo(25899),	-- Greater Blessing of Sanctuary
+} or {
 	[0] = "",
 	[1] = GetSpellInfo(25894),	-- Greater Blessing of Wisdom (R1:54, R2:60)
 	[2] = GetSpellInfo(25782),	-- Greater Blessing of Might (R1:52, R2:60)
@@ -283,7 +351,12 @@ PallyPower.GSpells = {
 }
 
 -- Spell Ranks
-PallyPower.NormalBuffs = {
+PallyPower.NormalBuffs = PallyPower.isWrath and {
+	[1] = {{55, 27142}, {50, 25290}, {44, 19854}, {34, 19853}, {24, 19852}, {14, 19850}, {4, 19742}},
+	[2] = {{60, 27140}, {50, 25291}, {42, 19838}, {32, 19837}, {22, 19836}, {12, 19835}, {4, 19834}, {0, 19740}},
+	[3] = {{10, 20217}},
+	[4] = {{20, 20911}},
+} or {
 	[1] = {{55, 27142}, {50, 25290}, {44, 19854}, {34, 19853}, {24, 19852}, {14, 19850}, {4, 19742}},
 	[2] = {{60, 27140}, {50, 25291}, {42, 19838}, {32, 19837}, {22, 19836}, {12, 19835}, {4, 19834}, {0, 19740}},
 	[3] = {{10, 20217}},
@@ -293,7 +366,12 @@ PallyPower.NormalBuffs = {
 	[7] = {{60, 27148}, {52, 27147}, {44, 20729}, {36, 6940}},
 }
 
-PallyPower.GreaterBuffs = {
+PallyPower.GreaterBuffs = PallyPower.isWrath and {
+	[1] = {{67, 48938}, {61, 48937}, {55, 27143}, {50, 25918}, {44, 25894}},
+	[2] = {{69, 48934}, {63, 48933}, {60, 27141}, {50, 25916}, {42, 25782}},
+	[3] = {{50, 25898}},
+	[4] = {{50, 25899}},
+} or {
 	[1] = {{55, 27143}, {50, 25918}, {44, 25894}},
 	[2] = {{60, 27141}, {50, 25916}, {42, 25782}},
 	[3] = {{50, 25898}},
@@ -305,7 +383,18 @@ PallyPower.GreaterBuffs = {
 PallyPower.RFSpell = GetSpellInfo(25780)	-- Righteous Fury
 PallyPower.HLSpell = GetSpellInfo(635)		-- Holy Light
 
-PallyPower.Seals = {
+PallyPower.Seals = PallyPower.isWrath and {
+	[0] = "",
+	[1] = GetSpellInfo(20164),		-- Seal of Justice
+	[2] = GetSpellInfo(20165),		-- Seal of Light
+	[3] = GetSpellInfo(20166),		-- Seal of Wisdom
+	[4] = GetSpellInfo(21084),		-- Seal of Righteousness
+	[5] = GetSpellInfo(20375),		-- Seal of Command
+	[6] = GetSpellInfo(31801),		-- Seal of Vengeance (Alliance)
+	[7] = GetSpellInfo(31892),		-- Seal of Blood (Horde)
+	[8] = GetSpellInfo(348700),		-- Seal of the Martyr (Alliance)
+	[9] = GetSpellInfo(348704),		-- Seal of Corruption (Horde)
+} or {
 	[0] = "",
 	[1] = GetSpellInfo(20164),		-- Seal of Justice
 	[2] = GetSpellInfo(20165),		-- Seal of Light
@@ -319,7 +408,16 @@ PallyPower.Seals = {
 	[10] = GetSpellInfo(348704),	-- Seal of Corruption (Horde)
 }
 
-PallyPower.Auras = {
+PallyPower.Auras = PallyPower.isWrath and {
+	[0] = "",
+	[1] = GetSpellInfo(465),	-- Devotion Aura
+	[2] = GetSpellInfo(7294),	-- Retribution Aura
+	[3] = GetSpellInfo(19746),	-- Concentration Aura
+	[4] = GetSpellInfo(19876),	-- Shadow Resistance Aura
+	[5] = GetSpellInfo(19888),	-- Frost Resistance Aura
+	[6] = GetSpellInfo(19891),	-- Fire Resistance Aura
+	[7] = GetSpellInfo(32223),	-- Crusader Aura
+} or {
 	[0] = "",
 	[1] = GetSpellInfo(465),	-- Devotion Aura
 	[2] = GetSpellInfo(7294),	-- Retribution Aura
@@ -368,6 +466,7 @@ PallyPower.BattleGroundTemplates = {
 		[8] = {3, 1, 6, 5},
 		[9] = {3, 2, 6, 1, 5},
 		[10] = {3, 2, 6, 5},
+		[11] = {3, 2, 6, 5},
 	},
 	[2] = {
 		[1] = {3, 2, 6, 5},
@@ -380,6 +479,7 @@ PallyPower.BattleGroundTemplates = {
 		[8] = {3, 1, 6, 5},
 		[9] = {3, 2, 6, 1, 5},
 		[10] = {3, 2, 6, 5},
+		[11] = {3, 2, 6, 5},
 	},
 	[3] = {
 		[1] = {3, 2, 6, 5},
@@ -392,6 +492,7 @@ PallyPower.BattleGroundTemplates = {
 		[8] = {3, 1, 6, 5},
 		[9] = {3, 2, 6, 1, 5},
 		[10] = {3, 2, 6, 5},
+		[11] = {3, 2, 6, 5},
 	},
 	[4] = {
 		[1] = {3, 2, 6, 5},
@@ -404,6 +505,7 @@ PallyPower.BattleGroundTemplates = {
 		[8] = {3, 1, 6, 5},
 		[9] = {3, 2, 6, 1, 5},
 		[10] = {3, 2, 6, 5},
+		[11] = {3, 2, 6, 5},
 	},
 	[5] = {
 		[1] = {3, 2, 6, 5},
@@ -416,6 +518,7 @@ PallyPower.BattleGroundTemplates = {
 		[8] = {3, 1, 6, 5},
 		[9] = {3, 2, 6, 1, 5},
 		[10] = {3, 2, 6, 5},
+		[11] = {3, 2, 6, 5},
 	},
 	[6] = {
 		[1] = {3, 2, 0, 6, 5},
@@ -428,6 +531,7 @@ PallyPower.BattleGroundTemplates = {
 		[8] = {3, 0, 1, 6, 5},
 		[9] = {3, 2, 1, 6, 5},
 		[10] = {3, 2, 0, 6, 5},
+		[11] = {3, 2, 0, 6, 5},
 	},
 }
 
@@ -444,6 +548,7 @@ PallyPower.RaidTemplates = {
 		[8] = {4, 3, 1},
 		[9] = {4, 3, 1, 2},
 		[10] = {4, 3, 2},
+		[11] = {4, 3, 2},
 	},
 	[2] = {
 		[1] = {4, 3, 2, 6, 5},
@@ -456,6 +561,7 @@ PallyPower.RaidTemplates = {
 		[8] = {4, 3, 1, 6, 5},
 		[9] = {4, 3, 1, 2, 6, 5},
 		[10] = {4, 3, 2, 6, 5},
+		[11] = {4, 3, 2, 6, 5},
 	},
 	[3] = {
 		[1] = {4, 3, 2, 6, 5},
@@ -468,6 +574,7 @@ PallyPower.RaidTemplates = {
 		[8] = {4, 3, 1, 6, 5},
 		[9] = {4, 3, 1, 2, 6, 5},
 		[10] = {4, 3, 2, 6, 5},
+		[11] = {4, 3, 2, 6, 5},
 	},
 	[4] = {
 		[1] = {6, 4, 3, 2, 5},
@@ -480,6 +587,7 @@ PallyPower.RaidTemplates = {
 		[8] = {6, 4, 3, 1, 5},
 		[9] = {6, 4, 3, 1, 2, 5},
 		[10] = {6, 4, 3, 2, 5},
+		[11] = {6, 4, 3, 2, 5},
 	},
 	[5] = {
 		[1] = {6, 4, 3, 2, 5},
@@ -492,6 +600,7 @@ PallyPower.RaidTemplates = {
 		[8] = {6, 4, 3, 1, 5},
 		[9] = {6, 4, 3, 1, 2, 5},
 		[10] = {6, 4, 3, 2, 5},
+		[11] = {6, 4, 3, 2, 5},
 	},
 	[6] = {
 		[1] = {6, 4, 3, 2, 0, 5},
@@ -504,6 +613,7 @@ PallyPower.RaidTemplates = {
 		[8] = {6, 4, 3, 0, 1, 5},
 		[9] = {6, 4, 3, 2, 1, 5},
 		[10] = {6, 4, 3, 2, 0, 5},
+		[11] = {6, 4, 3, 2, 0, 5},
 	},
 }
 -- Normal Paladin Templates
@@ -519,6 +629,7 @@ PallyPower.Templates = {
 		[8] = {3, 1, 4, 5},
 		[9] = {3, 1, 4, 2, 5},
 		[10] = {3, 2, 4, 1, 5},
+		[11] = {3, 2, 4, 1, 5},
 	},
 	[2] = {
 		[1] = {3, 2, 4, 5},
@@ -531,6 +642,7 @@ PallyPower.Templates = {
 		[8] = {3, 1, 4, 5},
 		[9] = {3, 1, 4, 2, 5},
 		[10] = {3, 2, 4, 1, 5},
+		[11] = {3, 2, 4, 1, 5},
 	},
 	[3] = {
 		[1] = {3, 2, 4, 5},
@@ -543,6 +655,7 @@ PallyPower.Templates = {
 		[8] = {3, 1, 4, 5},
 		[9] = {3, 1, 4, 2, 5},
 		[10] = {3, 2, 4, 1, 5},
+		[11] = {3, 2, 4, 1, 5},
 	},
 	[4] = {
 		[1] = {6, 4, 3, 2, 5},
@@ -555,6 +668,7 @@ PallyPower.Templates = {
 		[8] = {6, 4, 3, 1, 5},
 		[9] = {6, 4, 3, 1, 2, 5},
 		[10] = {6, 4, 3, 2, 1, 5},
+		[11] = {6, 4, 3, 2, 1, 5},
 	},
 	[5] = {
 		[1] = {6, 4, 3, 2, 5},
@@ -567,6 +681,7 @@ PallyPower.Templates = {
 		[8] = {6, 4, 3, 1, 5},
 		[9] = {6, 4, 3, 1, 2, 5},
 		[10] = {6, 4, 3, 2, 1, 5},
+		[11] = {6, 4, 3, 2, 1, 5},
 	},
 	[6] = {
 		[1] = {6, 4, 3, 2, 0, 5},
@@ -579,6 +694,7 @@ PallyPower.Templates = {
 		[8] = {6, 4, 3, 0, 1, 5},
 		[9] = {6, 4, 3, 2, 1, 5},
 		[10] = {6, 4, 3, 2, 0, 5},
+		[11] = {6, 4, 3, 2, 0, 5},
 	},
 }
 

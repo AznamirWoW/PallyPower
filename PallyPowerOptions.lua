@@ -173,10 +173,11 @@ PallyPower.options = {
 							get = function(info)
 								return PallyPower.opt.SalvInCombat
 							end,
-							set = function(info, val)
+							set = function(_, val)
 								PallyPower.opt.SalvInCombat = val
 								PallyPower:UpdateRoster()
-							end
+							end,
+							hidden = PallyPower.isWrath
 						}
 					}
 				},
@@ -438,7 +439,16 @@ PallyPower.options = {
 							set = function(info, val)
 								PallyPower_AuraAssignments[PallyPower.player] = val
 							end,
-							values = {
+							values = PallyPower.isWrath and {
+								[0] = L["None"],
+								[1] = PallyPower.Auras[1], -- Devotion Aura
+								[2] = PallyPower.Auras[2], -- Retribution Aura
+								[3] = PallyPower.Auras[3], -- Concentration Aura
+								[4] = PallyPower.Auras[4], -- Shadow Resistance Aura
+								[5] = PallyPower.Auras[5], -- Frost Resistance Aura
+								[6] = PallyPower.Auras[6], -- Fire Resistance Aura
+								[7] = PallyPower.Auras[8] -- Crusader Aura
+							} or {
 								[0] = L["None"],
 								[1] = PallyPower.Auras[1], -- Devotion Aura
 								[2] = PallyPower.Auras[2], -- Retribution Aura
@@ -513,7 +523,18 @@ PallyPower.options = {
 								PallyPower.opt.seal = val
 								PallyPower:SealAssign(PallyPower.opt.seal)
 							end,
-							values = {
+							values = PallyPower.isWrath and {
+								[0] = L["None"],
+								[1] = PallyPower.Seals[1], -- Seal of Justice
+								[2] = PallyPower.Seals[2], -- Seal of Light
+								[3] = PallyPower.Seals[3], -- Seal of Wisdom
+								[4] = PallyPower.Seals[4], -- Seal of Righteousness
+								[5] = PallyPower.Seals[6], -- Seal of Command
+								[6] = PallyPower.Seals[7], -- Seal of Vengeance (Alliance)
+								[7] = PallyPower.Seals[8], -- Seal of Blood (Horde)
+								[8] = PallyPower.Seals[9], -- Seal of the Martyr (Alliance)
+								[9] = PallyPower.Seals[10] -- Seal of Corruption (Horde)
+							} or {
 								[0] = L["None"],
 								[1] = PallyPower.Seals[1], -- Seal of Justice
 								[2] = PallyPower.Seals[2], -- Seal of Light
@@ -746,7 +767,13 @@ PallyPower.options = {
 								PallyPower.opt.mainTankGSpellsW = val
 								PallyPower:UpdateRoster()
 							end,
-							values = {
+							values = PallyPower.isWrath and {
+								[0] = L["None"],
+								[1] = PallyPower.GSpells[1], -- Greater Blessing of Wisdom
+								[2] = PallyPower.GSpells[2], -- Greater Blessing of Might
+								[3] = PallyPower.GSpells[3], -- Greater Blessing of Kings
+								[4] = PallyPower.GSpells[4] -- Greater Blessing of Sanctuary
+							} or {
 								[0] = L["None"],
 								[1] = PallyPower.GSpells[1], -- Greater Blessing of Wisdom
 								[2] = PallyPower.GSpells[2], -- Greater Blessing of Might
@@ -772,7 +799,13 @@ PallyPower.options = {
 								PallyPower.opt.mainTankSpellsW = val
 								PallyPower:UpdateRoster()
 							end,
-							values = {
+							values = PallyPower.isWrath and {
+								[0] = L["None"],
+								[1] = PallyPower.Spells[1], -- Blessing of Wisdom
+								[2] = PallyPower.Spells[2], -- Blessing of Might
+								[3] = PallyPower.Spells[3], -- Blessing of Kings
+								[4] = PallyPower.Spells[4] -- Blessing of Sanctuary
+							} or {
 								[0] = L["None"],
 								[1] = PallyPower.Spells[1], -- Blessing of Wisdom
 								[2] = PallyPower.Spells[2], -- Blessing of Might
@@ -799,7 +832,13 @@ PallyPower.options = {
 								PallyPower.opt.mainTankGSpellsDP = val
 								PallyPower:UpdateRoster()
 							end,
-							values = {
+							values = PallyPower.isWrath and {
+								[0] = L["None"],
+								[1] = PallyPower.GSpells[1], -- Greater Blessing of Wisdom
+								[2] = PallyPower.GSpells[2], -- Greater Blessing of Might
+								[3] = PallyPower.GSpells[3], -- Greater Blessing of Kings
+								[4] = PallyPower.GSpells[4] -- Greater Blessing of Sanctuary
+							} or {
 								[0] = L["None"],
 								[1] = PallyPower.GSpells[1], -- Greater Blessing of Wisdom
 								[2] = PallyPower.GSpells[2], -- Greater Blessing of Might
@@ -825,7 +864,13 @@ PallyPower.options = {
 								PallyPower.opt.mainTankSpellsDP = val
 								PallyPower:UpdateRoster()
 							end,
-							values = {
+							values = PallyPower.isWrath and {
+								[0] = L["None"],
+								[1] = PallyPower.Spells[1], -- Blessing of Wisdom
+								[2] = PallyPower.Spells[2], -- Blessing of Might
+								[3] = PallyPower.Spells[3], -- Blessing of Kings
+								[4] = PallyPower.Spells[4] -- Blessing of Sanctuary
+							} or {
 								[0] = L["None"],
 								[1] = PallyPower.Spells[1], -- Blessing of Wisdom
 								[2] = PallyPower.Spells[2], -- Blessing of Might
@@ -866,7 +911,13 @@ PallyPower.options = {
 								PallyPower.opt.mainAssistGSpellsW = val
 								PallyPower:UpdateRoster()
 							end,
-							values = {
+							values = PallyPower.isWrath and {
+								[0] = L["None"],
+								[1] = PallyPower.GSpells[1], -- Greater Blessing of Wisdom
+								[2] = PallyPower.GSpells[2], -- Greater Blessing of Might
+								[3] = PallyPower.GSpells[3], -- Greater Blessing of Kings
+								[4] = PallyPower.GSpells[4] -- Greater Blessing of Sanctuary
+							} or {
 								[0] = L["None"],
 								[1] = PallyPower.GSpells[1], -- Greater Blessing of Wisdom
 								[2] = PallyPower.GSpells[2], -- Greater Blessing of Might
@@ -892,7 +943,13 @@ PallyPower.options = {
 								PallyPower.opt.mainAssistSpellsW = val
 								PallyPower:UpdateRoster()
 							end,
-							values = {
+							values = PallyPower.isWrath and {
+								[0] = L["None"],
+								[1] = PallyPower.Spells[1], -- Blessing of Wisdom
+								[2] = PallyPower.Spells[2], -- Blessing of Might
+								[3] = PallyPower.Spells[3], -- Blessing of Kings
+								[4] = PallyPower.Spells[4] -- Blessing of Sanctuary
+							} or {
 								[0] = L["None"],
 								[1] = PallyPower.Spells[1], -- Blessing of Wisdom
 								[2] = PallyPower.Spells[2], -- Blessing of Might
@@ -919,7 +976,13 @@ PallyPower.options = {
 								PallyPower.opt.mainAssistGSpellsDP = val
 								PallyPower:UpdateRoster()
 							end,
-							values = {
+							values = PallyPower.isWrath and {
+								[0] = L["None"],
+								[1] = PallyPower.GSpells[1], -- Greater Blessing of Wisdom
+								[2] = PallyPower.GSpells[2], -- Greater Blessing of Might
+								[3] = PallyPower.GSpells[3], -- Greater Blessing of Kings
+								[4] = PallyPower.GSpells[4] -- Greater Blessing of Sanctuary
+							} or {
 								[0] = L["None"],
 								[1] = PallyPower.GSpells[1], -- Greater Blessing of Wisdom
 								[2] = PallyPower.GSpells[2], -- Greater Blessing of Might
@@ -945,7 +1008,13 @@ PallyPower.options = {
 								PallyPower.opt.mainAssistSpellsDP = val
 								PallyPower:UpdateRoster()
 							end,
-							values = {
+							values = PallyPower.isWrath and {
+								[0] = L["None"],
+								[1] = PallyPower.Spells[1], -- Blessing of Wisdom
+								[2] = PallyPower.Spells[2], -- Blessing of Might
+								[3] = PallyPower.Spells[3], -- Blessing of Kings
+								[4] = PallyPower.Spells[4] -- Blessing of Sanctuary
+							} or {
 								[0] = L["None"],
 								[1] = PallyPower.Spells[1], -- Blessing of Wisdom
 								[2] = PallyPower.Spells[2], -- Blessing of Might
