@@ -593,7 +593,7 @@ function PallyPowerBlessingsGrid_Update(self, elapsed)
 			end
 			_G[fname .. "Symbols"]:SetText(SkillInfo.symbols)
 			_G[fname .. "Symbols"]:SetTextColor(1, 1, 0.5)
-			for id = 1, 6 do
+			for id = 1, PallyPower.isWrath and 4 or 6 do
 				if SkillInfo[id] then
 					_G[fname .. "Icon" .. id]:Show()
 					_G[fname .. "Skill" .. id]:Show()
@@ -789,7 +789,7 @@ function PallyPower:Report(type, chanNum)
 					local list = {}
 					for name in pairs(AllPallys) do
 						local blessings
-						for i = 1, 6 do
+						for i = 1, self.isWrath and 4 or 6 do
 							list[i] = 0
 						end
 						for id = 1, PALLYPOWER_MAXCLASSES do
@@ -798,7 +798,7 @@ function PallyPower:Report(type, chanNum)
 								list[bid] = list[bid] + 1
 							end
 						end
-						for id = 1, 6 do
+						for id = 1, self.isWrath and 4 or 6 do
 							if (list[id] > 0) then
 								if (blessings) then
 									blessings = blessings .. ", "
@@ -838,7 +838,7 @@ function PallyPower:Report(type, chanNum)
 			local list = {}
 			for name in pairs(AllPallys) do
 				local blessings
-				for i = 1, 6 do
+				for i = 1, self.isWrath and 4 or 6 do
 					list[i] = 0
 				end
 				for id = 1, PALLYPOWER_MAXCLASSES do
@@ -847,7 +847,7 @@ function PallyPower:Report(type, chanNum)
 						list[bid] = list[bid] + 1
 					end
 				end
-				for id = 1, 6 do
+				for id = 1, self.isWrath and 4 or 6 do
 					if (list[id] > 0) then
 						if (blessings) then
 							blessings = blessings .. ", "
@@ -1116,7 +1116,7 @@ function PallyPower:CanBuffBlessing(spellId, gspellId, unitId)
 		local normSpell, greatSpell
 		if UnitLevel(unitId) >= 60 then
 			if spellId > 0 then
-				if self.isWrath and spellId == 7 and GetUnitName(unitId, false) == self.player then
+				if not self.isWrath and spellId == 7 and GetUnitName(unitId, false) == self.player then
 					normSpell = nil
 				else
 					normSpell = self.Spells[spellId]
@@ -1144,7 +1144,7 @@ function PallyPower:CanBuffBlessing(spellId, gspellId, unitId)
 								normSpell = spellName .. "(" .. spellRank .. ")"
 							end
 						end
-						if spellId == 7 and GetUnitName(unitId, false) == self.player then
+						if not self.isWrath and spellId == 7 and GetUnitName(unitId, false) == self.player then
 							normSpell = nil
 						end
 						break
@@ -1252,6 +1252,9 @@ function PallyPower:ScanSpells()
 					else
 						talent = talent + select(5, GetTalentInfo(2, 12)) -- Blessing of Sanctuary
 					end
+				elseif i == 4 and self.isWrath then
+					-- TODO: GetTalentInfo bugged on beta right now so column/rows are "correct" but incorrect
+					talent = talent + select(5, GetTalentInfo(2, 8)) -- Blessing of Sanctuary
 				end
 				RankInfo[i].talent = talent
 				RankInfo[i].rank = tonumber(select(3, strfind(spellRank, "(%d+)")))
@@ -1704,7 +1707,7 @@ function PallyPower:ParseMessage(sender, msg)
 		AllPallys[sender] = {}
 		self:SyncAdd(sender)
 		local _, _, numbers, assign = strfind(msg, "SELF ([0-9n]*)@([0-9n]*)")
-		for i = 1, 6 do
+		for i = 1, self.isWrath and 4 or 6 do
 			local rank = strsub(numbers, (i - 1) * 2 + 1, (i - 1) * 2 + 1)
 			local talent = strsub(numbers, (i - 1) * 2 + 2, (i - 1) * 2 + 2)
 			if rank ~= "n" then
