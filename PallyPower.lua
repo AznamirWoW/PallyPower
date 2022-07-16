@@ -1233,6 +1233,7 @@ function PallyPower:ScanSpells()
 				if i == 1 then
 					if self.isWrath then
 						-- TODO: GetTalentInfo bugged on beta right now so column/rows are "correct" but incorrect
+						-- talent = talent + select(5, GetTalentInfo(1, 6)) -- Improved Blessing of Wisdom
 						talent = talent + select(5, GetTalentInfo(1, 6)) -- Improved Blessing of Wisdom
 					else
 						talent = talent + select(5, GetTalentInfo(1, 10)) -- Improved Blessing of Wisdom
@@ -1240,6 +1241,7 @@ function PallyPower:ScanSpells()
 				elseif i == 2 then
 					if self.isWrath then
 						-- TODO: GetTalentInfo bugged on beta right now so column/rows are "correct" but incorrect
+						-- talent = talent + select(5, GetTalentInfo(3, 5)) -- Improved Blessing of Might
 						talent = talent + select(5, GetTalentInfo(3, 1)) -- Improved Blessing of Might
 					else
 						talent = talent + select(5, GetTalentInfo(3, 1)) -- Improved Blessing of Might
@@ -1254,6 +1256,7 @@ function PallyPower:ScanSpells()
 					end
 				elseif i == 4 and self.isWrath then
 					-- TODO: GetTalentInfo bugged on beta right now so column/rows are "correct" but incorrect
+					-- talent = talent + select(5, GetTalentInfo(2, 12)) -- Blessing of Sanctuary
 					talent = talent + select(5, GetTalentInfo(2, 8)) -- Blessing of Sanctuary
 				end
 				RankInfo[i].talent = talent
@@ -1275,6 +1278,7 @@ function PallyPower:ScanSpells()
 				if i == 1 then
 					if self.isWrath then
 						-- TODO: GetTalentInfo bugged on beta right now so column/rows are "correct" but incorrect
+						-- talent = talent + select(5, GetTalentInfo(2, 11)) -- Improved Devotion Aura
 						talent = talent + select(5, GetTalentInfo(2, 2)) -- Improved Devotion Aura
 					else
 						talent = talent + select(5, GetTalentInfo(2, 1)) -- Improved Devotion Aura
@@ -1282,6 +1286,7 @@ function PallyPower:ScanSpells()
 				elseif i == 2 then
 					if self.isWrath then
 						-- TODO: GetTalentInfo bugged on beta right now so column/rows are "correct" but incorrect
+						-- talent = talent + select(5, GetTalentInfo(3, 14)) -- Sanctified Retribution
 						talent = talent + select(5, GetTalentInfo(3, 15)) -- Sanctified Retribution
 					else
 						talent = talent + select(5, GetTalentInfo(3, 11)) -- Improved Retribution Aura
@@ -1289,6 +1294,7 @@ function PallyPower:ScanSpells()
 				elseif i == 3 then
 					if self.isWrath then
 						-- TODO: GetTalentInfo bugged on beta right now so column/rows are "correct" but incorrect
+						-- talent = talent + select(5, GetTalentInfo(1, 9)) -- Improved Concentration Aura
 						talent = talent + select(5, GetTalentInfo(1, 8)) -- Improved Concentration Aura
 					elseif self.isBCC then
 						talent = talent + select(5, GetTalentInfo(2, 12)) -- Improved Concentration Aura
