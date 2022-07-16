@@ -1707,7 +1707,7 @@ function PallyPower:ParseMessage(sender, msg)
 		AllPallys[sender] = {}
 		self:SyncAdd(sender)
 		local _, _, numbers, assign = strfind(msg, "SELF ([0-9n]*)@([0-9n]*)")
-		for i = 1, self.isWrath and 4 or 6 do
+		for i = 1, 6 do
 			local rank = strsub(numbers, (i - 1) * 2 + 1, (i - 1) * 2 + 1)
 			local talent = strsub(numbers, (i - 1) * 2 + 2, (i - 1) * 2 + 2)
 			if rank ~= "n" then
