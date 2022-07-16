@@ -1279,8 +1279,13 @@ function PallyPower:ScanSpells()
 					else
 						talent = talent + select(5, GetTalentInfo(2, 1)) -- Improved Devotion Aura
 					end
-				elseif i == 2 and not self.isWrath then
-					talent = talent + select(5, GetTalentInfo(3, 11)) -- Improved Retribution Aura
+				elseif i == 2 then
+					if self.isWrath then
+						-- TODO: GetTalentInfo bugged on beta right now so column/rows are "correct" but incorrect
+						talent = talent + select(5, GetTalentInfo(3, 15)) -- Sanctified Retribution
+					else
+						talent = talent + select(5, GetTalentInfo(3, 11)) -- Improved Retribution Aura
+					end
 				elseif i == 3 then
 					if self.isWrath then
 						-- TODO: GetTalentInfo bugged on beta right now so column/rows are "correct" but incorrect
