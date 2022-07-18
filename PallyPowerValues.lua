@@ -429,9 +429,12 @@ PallyPower.Auras = PallyPower.isWrath and {
 	[8] = GetSpellInfo(32223),	-- Crusader Aura
 }
 
-PallyPower.Cooldowns = {
-	[1] = {633, 2800, 10310, 27154},	-- Lay On Hands
-	[2] = {19752},						-- Divine Intervention
+PallyPower.Cooldowns = PallyPower.isWrath and {
+	[1] = {633, 2800, 10310, 27154, 48788},	-- Lay On Hands
+	[2] = {19752},							-- Divine Intervention
+} or {
+	[1] = {633, 2800, 10310, 27154},		-- Lay On Hands
+	[2] = {19752},							-- Divine Intervention
 }
 
 -------------------------------------------------------------------
