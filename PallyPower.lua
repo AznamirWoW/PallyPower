@@ -50,26 +50,26 @@ local lastMsg = ""
 local prevBuffDuration
 
 do
-	table.insert(party_units, "player")
-	table.insert(party_units, "pet")
+	tinsert(party_units, "player")
+	tinsert(party_units, "pet")
 
 	for i = 1, MAX_PARTY_MEMBERS do
-		table.insert(party_units, ("party%d"):format(i))
+		tinsert(party_units, ("party%d"):format(i))
 	end
 	for i = 1, MAX_PARTY_MEMBERS do
-		table.insert(party_units, ("partypet%d"):format(i))
+		tinsert(party_units, ("partypet%d"):format(i))
 	end
 
 	for i = 1, MAX_RAID_MEMBERS do
-		table.insert(raid_units, ("raid%d"):format(i))
+		tinsert(raid_units, ("raid%d"):format(i))
 	end
 	for i = 1, MAX_RAID_MEMBERS do
-		table.insert(raid_units, ("raidpet%d"):format(i))
+		tinsert(raid_units, ("raidpet%d"):format(i))
 	end
 end
 
 PallyPower.Credits1 = "PallyPower - by Aznamir (Lightbringer US)"
-PallyPower.Credits2 = "Updated for Classic by Dyaxler, Es, and gallantron"
+PallyPower.Credits2 = "Updated for Classic by Dyaxler, Es, gallantron and irregularly by Zid"
 
 function PallyPower:Debug(s)
 	if (PP_DebugEnabled) then
@@ -174,7 +174,7 @@ function PallyPower:OnEnable()
 	self:ScanSpells()
 	self:ScanCooldowns()
 	self:RegisterEvent("CHAT_MSG_ADDON")
-	self:RegisterEvent("CHAT_MSG_SYSTEM")
+	-- self:RegisterEvent("CHAT_MSG_SYSTEM") -- Zid: reworked to UpdateAllPallys and no longer needed
 	self:RegisterEvent("ZONE_CHANGED")
 	self:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 	self:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
@@ -186,6 +186,7 @@ function PallyPower:OnEnable()
 	self:RegisterBucketEvent("SPELLS_CHANGED", 1, "SPELLS_CHANGED")
 	self:RegisterBucketEvent("PLAYER_ENTERING_WORLD", 2, "PLAYER_ENTERING_WORLD")
 	self:RegisterBucketEvent({"GROUP_ROSTER_UPDATE", "PLAYER_REGEN_ENABLED", "UNIT_PET", "UNIT_AURA"}, 1, "UpdateRoster")
+	self:RegisterBucketEvent({"GROUP_ROSTER_UPDATE"}, 1, "UpdateAllPallys")
 	if isPally then
 		self:ScheduleRepeatingTimer(self.ScanInventory, 60, self)
 		self.ButtonsUpdate(self)
@@ -1613,42 +1614,48 @@ function PallyPower:GROUP_LEFT(event)
 	self:UpdateRoster()
 end
 
-function PallyPower:CHAT_MSG_SYSTEM(event, text)
+function PallyPower:UpdateAllPallys()
 	if not initialized then
 		return
 	end
-	if text then
-		if strfind(text, "leaves the party.") or strfind(text, "has left the raid group") or strfind(text, "has left the instance group.") then
-			local _, _, pname = strfind(text, "(.+) leaves the party.")
-			local _, _, rname = strfind(text, "(.+) has left the raid group")
-			local _, _, bgname = strfind(text, "(.+) has left the instance group.")
-			local playerName
-			if pname then
-				playerName = pname
-			elseif rname then
-				playerName = rname
-			elseif bgname then
-				playerName = bgname
-			end
-			for name in pairs(AllPallys) do
-				if name == playerName then
-					C_Timer.After(
-						2.0,
-						function()
-							AllPallys = {}
-							SyncList = {}
-							self:ScanSpells()
-							self:ScanCooldowns()
-							self:ScanInventory()
-							self:SendSelf()
-							self:SendMessage("REQ")
-							self:UpdateLayout()
-							self:UpdateRoster()
-						end
-					)
-				end
+	local units
+	local current_units = {}
+	if IsInRaid() then
+		units = raid_units
+	else
+		units = party_units
+	end
+	for _, unitid in pairs(units) do
+		if unitid and UnitExists(unitid) then
+			tinsert(current_units, GetUnitName(unitid, true))
+		end
+	end
+	local found = 0
+	local countAllPallys = 0
+	for _ in pairs(AllPallys) do countAllPallys = countAllPallys + 1 end
+	for _, unitname in pairs(current_units) do
+		for name in pairs(AllPallys) do
+			if name == unitname then
+				found = found + 1 
 			end
 		end
+		if found < countAllPallys then -- Zid: if AllPallys count is reduced do a fresh setup
+			C_Timer.After(
+				2.0,
+				function()
+					AllPallys = {}
+					SyncList = {}
+					self:ScanSpells()
+					self:ScanCooldowns()
+					self:ScanInventory()
+					self:SendSelf()
+					self:SendMessage("REQ")
+					self:UpdateLayout()
+					self:UpdateRoster()
+				end
+			)
+		end
+		
 	end
 end
 
