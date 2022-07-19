@@ -1633,28 +1633,25 @@ function PallyPower:UpdateAllPallys()
 	local countAllPallys = 0
 	for _ in pairs(AllPallys) do countAllPallys = countAllPallys + 1 end
 	for _, unitname in pairs(current_units) do
-		for name in pairs(AllPallys) do
-			if name == unitname then
-				found = found + 1 
+		if AllPallys[unitname] then
+			found = found + 1 
+		end
+	end
+	if found < countAllPallys then -- Zid: if AllPallys count is reduced do a fresh setup
+		C_Timer.After(
+			2.0,
+			function()
+				AllPallys = {}
+				SyncList = {}
+				self:ScanSpells()
+				self:ScanCooldowns()
+				self:ScanInventory()
+				self:SendSelf()
+				self:SendMessage("REQ")
+				self:UpdateLayout()
+				self:UpdateRoster()
 			end
-		end
-		if found < countAllPallys then -- Zid: if AllPallys count is reduced do a fresh setup
-			C_Timer.After(
-				2.0,
-				function()
-					AllPallys = {}
-					SyncList = {}
-					self:ScanSpells()
-					self:ScanCooldowns()
-					self:ScanInventory()
-					self:SendSelf()
-					self:SendMessage("REQ")
-					self:UpdateLayout()
-					self:UpdateRoster()
-				end
-			)
-		end
-		
+		)
 	end
 end
 
