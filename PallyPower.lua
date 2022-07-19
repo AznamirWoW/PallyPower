@@ -50,21 +50,21 @@ local lastMsg = ""
 local prevBuffDuration
 
 do
-	tinsert(party_units, "player")
-	tinsert(party_units, "pet")
+	table.insert(party_units, "player")
+	table.insert(party_units, "pet")
 
 	for i = 1, MAX_PARTY_MEMBERS do
-		tinsert(party_units, ("party%d"):format(i))
+		table.insert(party_units, ("party%d"):format(i))
 	end
 	for i = 1, MAX_PARTY_MEMBERS do
-		tinsert(party_units, ("partypet%d"):format(i))
+		table.insert(party_units, ("partypet%d"):format(i))
 	end
 
 	for i = 1, MAX_RAID_MEMBERS do
-		tinsert(raid_units, ("raid%d"):format(i))
+		table.insert(raid_units, ("raid%d"):format(i))
 	end
 	for i = 1, MAX_RAID_MEMBERS do
-		tinsert(raid_units, ("raidpet%d"):format(i))
+		table.insert(raid_units, ("raidpet%d"):format(i))
 	end
 end
 
@@ -174,7 +174,6 @@ function PallyPower:OnEnable()
 	self:ScanSpells()
 	self:ScanCooldowns()
 	self:RegisterEvent("CHAT_MSG_ADDON")
-	-- self:RegisterEvent("CHAT_MSG_SYSTEM") -- Zid: reworked to UpdateAllPallys and no longer needed
 	self:RegisterEvent("ZONE_CHANGED")
 	self:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 	self:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
