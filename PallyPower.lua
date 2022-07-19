@@ -1639,7 +1639,7 @@ function PallyPower:UpdateAllPallys()
 	end
 	if found < countAllPallys then -- Zid: if AllPallys count is reduced do a fresh setup
 		C_Timer.After(
-			2.0,
+			0.5,
 			function()
 				AllPallys = {}
 				SyncList = {}
