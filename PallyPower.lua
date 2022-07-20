@@ -1617,26 +1617,24 @@ function PallyPower:UpdateAllPallys()
 	if not initialized then
 		return
 	end
+
 	local units
-	local current_units = {}
 	if IsInRaid() then
 		units = raid_units
 	else
 		units = party_units
 	end
-	for _, unitid in pairs(units) do
-		if unitid and UnitExists(unitid) then
-			tinsert(current_units, GetUnitName(unitid, true))
-		end
-	end
-	local found = 0
+
 	local countAllPallys = 0
 	for _ in pairs(AllPallys) do countAllPallys = countAllPallys + 1 end
-	for _, unitname in pairs(current_units) do
-		if AllPallys[unitname] then
-			found = found + 1 
+
+	local found = 0
+	for _, unitid in pairs(units) do
+		if unitid and (not unitid:find("pet")) and UnitExists(unitid) then
+			if AllPallys[GetUnitName(unitid, true)] then found = found + 1 end
 		end
 	end
+
 	if found < countAllPallys then -- Zid: if AllPallys count is reduced do a fresh setup
 		C_Timer.After(
 			0.5,
