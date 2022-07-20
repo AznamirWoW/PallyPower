@@ -329,10 +329,13 @@ function PallyPowerBlessings_Preset(shift)
 	else -- load preset and publish to other pallys if possible
 		PallyPower:ClearAssignments(PallyPower.player)
 		PallyPower:SendMessage("CLEAR")
-		PallyPower_Assignments = tablecopy(PallyPower_SavedPresets["PallyPower_Assignments"][0])
-		PallyPower_NormalAssignments = tablecopy(PallyPower_SavedPresets["PallyPower_NormalAssignments"][0])
+		local PallyPower_Assignments_Temp = tablecopy(PallyPower_SavedPresets["PallyPower_Assignments"][0])
+		local PallyPower_NormalAssignments_Temp = tablecopy(PallyPower_SavedPresets["PallyPower_NormalAssignments"][0])
 
-		if PallyPower:CheckLeader(PallyPower.player) or PP_Leader == false then
+		-- if leader, sync/push preset to all pallys
+		if PallyPower:CheckLeader(PallyPower.player) then
+			PallyPower_Assignments = PallyPower_Assignments_Temp
+			PallyPower_NormalAssignments = PallyPower_NormalAssignments_Temp
 			C_Timer.After(
 				0.25,
 				function() -- send Class-Assignments
@@ -381,7 +384,9 @@ function PallyPowerBlessings_Preset(shift)
 					)
 				end
 			)
-		else
+		else -- prevent overwriting local Assignments of other Pallys if not leader
+			PallyPower_Assignments[PallyPower.player] = PallyPower_Assignments_Temp[PallyPower.player] 
+			PallyPower_NormalAssignments[PallyPower.player] = PallyPower_NormalAssignments_Temp[PallyPower.player]
 			C_Timer.After(
 				0.25,
 				function()
@@ -2583,6 +2588,18 @@ function PallyPower:UpdateLayout()
 			pButton:Hide()
 		end
 	end
+
+	-- Preset Button handling: show/hide if leader
+	local presetButton = $parentPreset
+	local reportButton = $parentreport
+	if self:CheckLeader(self.player) then
+		presetButton:Show();
+		reportButton:SetAttribute("relativeTo","$parentPreset")
+	else
+		presetButton:Hide();
+		reportButton:SetAttribute("relativeTo","$parentAutoAssign")
+	end
+
 	self:ButtonsUpdate()
 	self:UpdateAnchor(displayedButtons)
 end
@@ -3056,6 +3073,7 @@ function PallyPower:ButtonsUpdate()
 		self:CancelTimer(self.buttonUpdate)
 		self.buttonUpdate = nil
 	end
+
 end
 
 function PallyPower:UpdateAnchor(displayedButtons)
