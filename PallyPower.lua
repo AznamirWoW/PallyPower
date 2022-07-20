@@ -280,7 +280,7 @@ function PallyPower:OpenConfigWindow()
 	end
 end
 
-function tablecopy(tbl)
+local function tablecopy(tbl)
 	if type(tbl) ~= "table" then return tbl end
 	local t = {}
 	for i,v in pairs(tbl) do
