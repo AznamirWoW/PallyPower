@@ -322,7 +322,7 @@ function PallyPowerBlessings_Refresh()
 	PallyPower:UpdateRoster()
 end
 
-function PallyPowerBlessings_Preset(shift)
+function PallyPowerBlessings_Preset(shift = false)
 	if shift then --save current Assignments to preset
 		PallyPower_SavedPresets["PallyPower_Assignments"][0] = tablecopy(PallyPower_Assignments)
 		PallyPower_SavedPresets["PallyPower_NormalAssignments"][0] = tablecopy(PallyPower_NormalAssignments)
@@ -351,22 +351,20 @@ function PallyPowerBlessings_Preset(shift)
 						end
 						PallyPower:SendMessage("PASSIGN " .. name .. "@" .. s)
 					end
-					
 					C_Timer.After(
 						0.25,
 						function() -- send Single-Assignments
+
 							for pname in pairs(PallyPower_NormalAssignments) do
-								if (PallyPower_NormalAssignments[pName]) then
-									for class in pairs(PallyPower_NormalAssignments[pName]) do
-										if PallyPower_NormalAssignments[pName][class] then 
-											for tname in pairs(PallyPower_NormalAssignments[pName][class]) do
-												if PallyPower_NormalAssignments[pName][class][tname] and AllPallys[pname] and PallyPower:GetUnitIdByName(tname) then
-													if PallyPower_NormalAssignments[pname][class][tname] == nil  or not AllPallys[pname][value] then
-														value = 0
-													else
-														value = PallyPower_NormalAssignments[pname][class][tname]
+								if (PallyPower_NormalAssignments[pname]) then
+									for class in pairs(PallyPower_NormalAssignments[pname]) do
+										if PallyPower_NormalAssignments[pname][class] then 
+											for tname in pairs(PallyPower_NormalAssignments[pname][class]) do
+												if PallyPower_NormalAssignments[pname][class][tname] and AllPallys[pname] and PallyPower:GetUnitIdByName(pname) then
+													if PallyPower_NormalAssignments[pname][class][tname] == nil or (not AllPallys[pname][PallyPower_NormalAssignments[pname][class][tname]]) then
+														PallyPower_NormalAssignments[pname][class][tname] = 0
 													end
-													PallyPower:SendMessage("NASSIGN " .. pname .. " " .. class .. " " .. tname .. " " .. value)
+													PallyPower:SendMessage("NASSIGN " .. pname .. " " .. class .. " " .. tname .. " " .. PallyPower_NormalAssignments[pname][class][tname])
 												end
 											end
 										end
@@ -2590,14 +2588,15 @@ function PallyPower:UpdateLayout()
 	end
 
 	-- Preset Button handling: show/hide if leader
-	local presetButton = $parentPreset
-	local reportButton = $parentreport
+	local presetButton = _G["PallyPowerBlessingsFramePreset"]
+	local reportButton = _G["PallyPowerBlessingsFrameReport"]
+	local autoassignButton = _G["PallyPowerBlessingsAutoAssign"]
 	if self:CheckLeader(self.player) then
-		presetButton:Show();
-		reportButton:SetAttribute("relativeTo","$parentPreset")
+		presetButton:Show()
+		reportButton:SetPoint("BOTTOMRIGHT", presetButton, "BOTTOMLEFT", -7, 0)
 	else
-		presetButton:Hide();
-		reportButton:SetAttribute("relativeTo","$parentAutoAssign")
+		presetButton:Hide()
+		reportButton:SetPoint("BOTTOMRIGHT", autoassignButton, "BOTTOMLEFT", -7, 0)
 	end
 
 	self:ButtonsUpdate()
