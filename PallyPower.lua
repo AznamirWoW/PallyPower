@@ -322,8 +322,6 @@ function PallyPowerBlessings_Refresh()
 	PallyPower:UpdateRoster()
 end
 
-
-
 function PallyPowerBlessings_Toggle()
 	if PallyPower.configFrame and PallyPower.configFrame:IsShown() then
 		PallyPower.configFrame:Hide()
