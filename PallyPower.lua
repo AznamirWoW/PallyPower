@@ -322,7 +322,7 @@ function PallyPowerBlessings_Refresh()
 	PallyPower:UpdateRoster()
 end
 
-function PallyPowerBlessings_Preset(shift = false)
+function PallyPowerBlessings_Preset(shift)
 	if shift then --save current Assignments to preset
 		PallyPower_SavedPresets["PallyPower_Assignments"][0] = tablecopy(PallyPower_Assignments)
 		PallyPower_SavedPresets["PallyPower_NormalAssignments"][0] = tablecopy(PallyPower_NormalAssignments)
@@ -354,7 +354,6 @@ function PallyPowerBlessings_Preset(shift = false)
 					C_Timer.After(
 						0.25,
 						function() -- send Single-Assignments
-
 							for pname in pairs(PallyPower_NormalAssignments) do
 								if (PallyPower_NormalAssignments[pname]) then
 									for class in pairs(PallyPower_NormalAssignments[pname]) do
@@ -382,7 +381,7 @@ function PallyPowerBlessings_Preset(shift = false)
 					)
 				end
 			)
-		else -- prevent overwriting local Assignments of other Pallys if not leader
+		else -- prevent overwriting local Assignments of other Pallys if not leader (if function was bound to a Macro/WA)
 			PallyPower_Assignments[PallyPower.player] = PallyPower_Assignments_Temp[PallyPower.player] 
 			PallyPower_NormalAssignments[PallyPower.player] = PallyPower_NormalAssignments_Temp[PallyPower.player]
 			C_Timer.After(
