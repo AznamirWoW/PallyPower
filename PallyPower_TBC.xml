@@ -1866,7 +1866,12 @@
 				</Anchors>
 				<Scripts>
 					<OnClick>
-						PallyPower:Preset();
+						if InCombatLockdown() then return end
+						if IsShiftKeyDown() then
+							PallyPower:StorePreset()
+						else
+							PallyPower:LoadPreset()
+						end
 					</OnClick>
 					<OnEnter>
 						if PallyPower.opt.ShowTooltips then

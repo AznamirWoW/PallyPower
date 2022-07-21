@@ -322,68 +322,7 @@ function PallyPowerBlessings_Refresh()
 	PallyPower:UpdateRoster()
 end
 
-function PallyPowerBlessings_Preset(shift)
-	if shift then --save current Assignments to preset
-		PallyPower_SavedPresets["PallyPower_Assignments"][0] = tablecopy(PallyPower_Assignments)
-		PallyPower_SavedPresets["PallyPower_NormalAssignments"][0] = tablecopy(PallyPower_NormalAssignments)
-	else -- load preset and publish to other pallys if possible
-		PallyPower:ClearAssignments(PallyPower.player)
-		PallyPower:SendMessage("CLEAR")
-		local PallyPower_Assignments_Temp = tablecopy(PallyPower_SavedPresets["PallyPower_Assignments"][0])
-		local PallyPower_NormalAssignments_Temp = tablecopy(PallyPower_SavedPresets["PallyPower_NormalAssignments"][0])
 
-		-- if leader, sync/push preset to all pallys
-		if PallyPower:CheckLeader(PallyPower.player) then
-			PallyPower_Assignments = PallyPower_Assignments_Temp
-			PallyPower_NormalAssignments = PallyPower_NormalAssignments_Temp
-			C_Timer.After(
-				0.25,
-				function() -- send Class-Assignments
-					for name in pairs(AllPallys) do
-						local s = ""
-						local BuffInfo = PallyPower_Assignments[name]
-						for i = 1, PALLYPOWER_MAXCLASSES do
-							if not BuffInfo[i] or BuffInfo[i] == 0 then
-								s = s .. "n"
-							else
-								s = s .. BuffInfo[i]
-							end
-						end
-						PallyPower:SendMessage("PASSIGN " .. name .. "@" .. s)
-					end
-					C_Timer.After(
-						0.25,
-						function() -- send Single-Assignments
-							for pname in pairs(PallyPower_NormalAssignments) do
-								if (PallyPower_NormalAssignments[pname]) then
-									for class in pairs(PallyPower_NormalAssignments[pname]) do
-										if PallyPower_NormalAssignments[pname][class] then 
-											for tname in pairs(PallyPower_NormalAssignments[pname][class]) do
-												if PallyPower_NormalAssignments[pname][class][tname] and AllPallys[pname] and PallyPower:GetUnitIdByName(pname) then
-													if PallyPower_NormalAssignments[pname][class][tname] == nil or (not AllPallys[pname][PallyPower_NormalAssignments[pname][class][tname]]) then
-														PallyPower_NormalAssignments[pname][class][tname] = 0
-													end
-													PallyPower:SendMessage("NASSIGN " .. pname .. " " .. class .. " " .. tname .. " " .. PallyPower_NormalAssignments[pname][class][tname])
-												end
-											end
-										end
-									end
-								end
-							end
-							C_Timer.After(
-								0.25,
-								function()
-									PallyPower:UpdateLayout()
-									PallyPower:UpdateRoster()
-								end
-							)
-						end
-					)
-				end
-			)
-		end
-	end
-end
 
 function PallyPowerBlessings_Toggle()
 	if PallyPower.configFrame and PallyPower.configFrame:IsShown() then
@@ -460,12 +399,16 @@ function SetNormalBlessings(pname, class, tname, value)
 				else
 					value = PallyPower_NormalAssignments[pname][class][tname]
 				end
-				PallyPower:SendMessage("NASSIGN " .. pname .. " " .. class .. " " .. tname .. " " .. value)
+				PallyPower:SendNormalBlessings(pname, class, tname, value)
 				PallyPower:UpdateLayout()
 				msgQueue:Cancel()
 			end
 		end
 	)
+end
+
+function PallyPower:SendNormalBlessings(pname, class, tname, value)
+	self:SendMessage("NASSIGN " .. pname .. " " .. class .. " " .. tname .. " " .. value)
 end
 
 function PallyPowerGrid_NormalBlessingMenu(btn, mouseBtn, pname, class)
@@ -536,7 +479,7 @@ function PallyPowerGrid_NormalBlessingMenu(btn, mouseBtn, pname, class)
 			if PallyPower_NormalAssignments[pally] and PallyPower_NormalAssignments[pally][class] and PallyPower_NormalAssignments[pally][class][pname] then
 				PallyPower_NormalAssignments[pally][class][pname] = nil
 			end
-			PallyPower:SendMessage("NASSIGN " .. pally .. " " .. class .. " " .. pname .. " 0")
+			PallyPower:SendNormalBlessings(pname, class, tname, 0)
 			PallyPower:UpdateLayout()
 		end
 	end
@@ -3061,7 +3004,6 @@ function PallyPower:ButtonsUpdate()
 		self:CancelTimer(self.buttonUpdate)
 		self.buttonUpdate = nil
 	end
-
 end
 
 function PallyPower:UpdateAnchor(displayedButtons)
@@ -3869,13 +3811,65 @@ function PallyPower:AutoAssign()
 	end
 end
 
-function PallyPower:Preset()
-	if InCombatLockdown() then return end
+function PallyPower:StorePreset()
+	--save current Assignments to preset
+	PallyPower_SavedPresets["PallyPower_Assignments"][0] = tablecopy(PallyPower_Assignments)
+	PallyPower_SavedPresets["PallyPower_NormalAssignments"][0] = tablecopy(PallyPower_NormalAssignments)
+end
 
-	local shift = (IsShiftKeyDown() and PallyPowerBlessingsFrame:IsMouseOver())
-	PallyPowerBlessings_Preset(shift)
-
-	
+function PallyPower:LoadPreset()
+	-- if leader, load preset and publish to other pallys if possible
+	if PallyPower:CheckLeader(PallyPower.player) then
+		PallyPower:ClearAssignments(PallyPower.player)
+		PallyPower:SendMessage("CLEAR")
+		PallyPower_Assignments = tablecopy(PallyPower_SavedPresets["PallyPower_Assignments"][0])
+		PallyPower_NormalAssignments = tablecopy(PallyPower_SavedPresets["PallyPower_NormalAssignments"][0])
+		C_Timer.After(
+			0.25,
+			function() -- send Class-Assignments
+				for name in pairs(AllPallys) do
+					local s = ""
+					local BuffInfo = PallyPower_Assignments[name]
+					for i = 1, PALLYPOWER_MAXCLASSES do
+						if not BuffInfo[i] or BuffInfo[i] == 0 then
+							s = s .. "n"
+						else
+							s = s .. BuffInfo[i]
+						end
+					end
+					PallyPower:SendMessage("PASSIGN " .. name .. "@" .. s)
+				end
+				C_Timer.After(
+					0.25,
+					function() -- send Single-Assignments
+						for pname in pairs(PallyPower_NormalAssignments) do
+							if (PallyPower_NormalAssignments[pname]) then
+								for class in pairs(PallyPower_NormalAssignments[pname]) do
+									if PallyPower_NormalAssignments[pname][class] then 
+										for tname in pairs(PallyPower_NormalAssignments[pname][class]) do
+											if PallyPower_NormalAssignments[pname][class][tname] and AllPallys[pname] and PallyPower:GetUnitIdByName(pname) then
+												if PallyPower_NormalAssignments[pname][class][tname] == nil or (not AllPallys[pname][PallyPower_NormalAssignments[pname][class][tname]]) then
+													PallyPower_NormalAssignments[pname][class][tname] = 0
+												end
+												PallyPower:SendNormalBlessings(pname, class, tname, PallyPower_NormalAssignments[pname][class][tname])
+											end
+										end
+									end
+								end
+							end
+						end
+						C_Timer.After(
+							0.25,
+							function()
+								PallyPower:UpdateLayout()
+								PallyPower:UpdateRoster()
+							end
+						)
+					end
+				)
+			end
+		)
+	end
 end
 
 function PallyPower:CalcSkillRanks(name)
