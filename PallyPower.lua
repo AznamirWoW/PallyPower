@@ -381,16 +381,6 @@ function PallyPowerBlessings_Preset(shift)
 					)
 				end
 			)
-		else -- prevent overwriting local Assignments of other Pallys if not leader (if function was bound to a Macro/WA)
-			PallyPower_Assignments[PallyPower.player] = PallyPower_Assignments_Temp[PallyPower.player] 
-			PallyPower_NormalAssignments[PallyPower.player] = PallyPower_NormalAssignments_Temp[PallyPower.player]
-			C_Timer.After(
-				0.25,
-				function()
-					PallyPower:UpdateLayout()
-					PallyPower:UpdateRoster()
-				end
-			)
 		end
 	end
 end
