@@ -1863,9 +1863,9 @@ function PallyPower:ParseMessage(sender, msg)
 
 	if strfind(msg, "^CLEAR") then
 		if leader then
-			self:ClearAssignments(sender)
+			self:ClearAssignments(sender, strfind(msg, "SKIP"))
 		elseif self.opt.freeassign then
-			self:ClearAssignments(self.player)
+			self:ClearAssignments(self.player, strfind(msg, "SKIP"))
 		end
 	end
 
@@ -1946,7 +1946,7 @@ function PallyPower:CheckMainAssists(nick)
 	return raidmainassists[nick]
 end
 
-function PallyPower:ClearAssignments(sender)
+function PallyPower:ClearAssignments(sender, skipAuras)
 	local leader = self:CheckLeader(sender)
 	for name in pairs(PallyPower_Assignments) do
 		if leader or name == self.player then
@@ -1964,6 +1964,7 @@ function PallyPower:ClearAssignments(sender)
 			end
 		end
 	end
+	if skipAuras then return end
 	for name in pairs(PallyPower_AuraAssignments) do
 		if leader or name == self.player then
 			PallyPower_AuraAssignments[name] = 0
@@ -3818,8 +3819,8 @@ end
 function PallyPower:LoadPreset()
 	-- if leader, load preset and publish to other pallys if possible
 	if PallyPower:CheckLeader(PallyPower.player) then
-		PallyPower:ClearAssignments(PallyPower.player)
-		PallyPower:SendMessage("CLEAR")
+		PallyPower:ClearAssignments(PallyPower.player, true)
+		PallyPower:SendMessage("CLEAR SKIP")
 		PallyPower_Assignments = tablecopy(PallyPower_SavedPresets["PallyPower_Assignments"][0])
 		PallyPower_NormalAssignments = tablecopy(PallyPower_SavedPresets["PallyPower_NormalAssignments"][0])
 		C_Timer.After(
