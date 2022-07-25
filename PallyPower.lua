@@ -392,11 +392,6 @@ function SetNormalBlessings(pname, class, tname, value)
 		2.0,
 		function()
 			if PallyPower_NormalAssignments and PallyPower_NormalAssignments[pname] and PallyPower_NormalAssignments[pname][class] and PallyPower_NormalAssignments[pname][class][tname] then
-				if PallyPower_NormalAssignments[pname][class][tname] == nil then
-					value = 0
-				else
-					value = PallyPower_NormalAssignments[pname][class][tname]
-				end
 				PallyPower:SendNormalBlessings(pname, class, tname, value)
 				PallyPower:UpdateLayout()
 				msgQueue:Cancel()
@@ -406,6 +401,9 @@ function SetNormalBlessings(pname, class, tname, value)
 end
 
 function PallyPower:SendNormalBlessings(pname, class, tname, value)
+	if value == nil then
+		value = 0
+	end
 	self:SendMessage("NASSIGN " .. pname .. " " .. class .. " " .. tname .. " " .. value)
 end
 
@@ -3818,57 +3816,52 @@ end
 
 function PallyPower:LoadPreset()
 	-- if leader, load preset and publish to other pallys if possible
-	if PallyPower:CheckLeader(PallyPower.player) then
-		PallyPower:ClearAssignments(PallyPower.player, true)
-		PallyPower:SendMessage("CLEAR SKIP")
-		PallyPower_Assignments = tablecopy(PallyPower_SavedPresets["PallyPower_Assignments"][0])
-		PallyPower_NormalAssignments = tablecopy(PallyPower_SavedPresets["PallyPower_NormalAssignments"][0])
-		C_Timer.After(
-			0.25,
-			function() -- send Class-Assignments
-				for name in pairs(AllPallys) do
-					local s = ""
-					local BuffInfo = PallyPower_Assignments[name]
-					for i = 1, PALLYPOWER_MAXCLASSES do
-						if not BuffInfo[i] or BuffInfo[i] == 0 then
-							s = s .. "n"
-						else
-							s = s .. BuffInfo[i]
-						end
+	if not PallyPower:CheckLeader(PallyPower.player) then return end
+
+	PallyPower:ClearAssignments(PallyPower.player, true)
+	PallyPower:SendMessage("CLEAR SKIP")
+	PallyPower_Assignments = tablecopy(PallyPower_SavedPresets["PallyPower_Assignments"][0])
+	PallyPower_NormalAssignments = tablecopy(PallyPower_SavedPresets["PallyPower_NormalAssignments"][0])
+	C_Timer.After(
+		0.25,
+		function() -- send Class-Assignments
+			for name in pairs(AllPallys) do
+				local s = ""
+				local BuffInfo = PallyPower_Assignments[name]
+				for i = 1, PALLYPOWER_MAXCLASSES do
+					if not BuffInfo[i] or BuffInfo[i] == 0 then
+						s = s .. "n"
+					else
+						s = s .. BuffInfo[i]
 					end
-					PallyPower:SendMessage("PASSIGN " .. name .. "@" .. s)
 				end
-				C_Timer.After(
-					0.25,
-					function() -- send Single-Assignments
-						for pname in pairs(PallyPower_NormalAssignments) do
-							if (PallyPower_NormalAssignments[pname]) then
-								for class in pairs(PallyPower_NormalAssignments[pname]) do
-									if PallyPower_NormalAssignments[pname][class] then 
-										for tname in pairs(PallyPower_NormalAssignments[pname][class]) do
-											if PallyPower_NormalAssignments[pname][class][tname] and AllPallys[pname] and PallyPower:GetUnitIdByName(pname) then
-												if PallyPower_NormalAssignments[pname][class][tname] == nil or (not AllPallys[pname][PallyPower_NormalAssignments[pname][class][tname]]) then
-													PallyPower_NormalAssignments[pname][class][tname] = 0
-												end
-												PallyPower:SendNormalBlessings(pname, class, tname, PallyPower_NormalAssignments[pname][class][tname])
-											end
-										end
+				PallyPower:SendMessage("PASSIGN " .. name .. "@" .. s)
+			end
+			C_Timer.After(
+				0.25,
+				function() -- send Single-Assignments
+					for pname, passignments in pairs(PallyPower_NormalAssignments) do
+						if (AllPallys[pname] and PallyPower:GetUnitIdByName(pname) and passignments) then
+							for class, cassignments in pairs(passignments) do
+								if cassignments then 
+									for tname, value in pairs(cassignments) do
+										PallyPower:SendNormalBlessings(pname, class, tname, value)
 									end
 								end
 							end
 						end
-						C_Timer.After(
-							0.25,
-							function()
-								PallyPower:UpdateLayout()
-								PallyPower:UpdateRoster()
-							end
-						)
 					end
-				)
-			end
-		)
-	end
+					C_Timer.After(
+						0.25,
+						function()
+							PallyPower:UpdateLayout()
+							PallyPower:UpdateRoster()
+						end
+					)
+				end
+			)
+		end
+	)
 end
 
 function PallyPower:CalcSkillRanks(name)
