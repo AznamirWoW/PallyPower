@@ -92,6 +92,12 @@ function PallyPower:OnInitialize()
 	self.db.RegisterCallback(self, "OnProfileCopied", "OnProfileChanged")
 	self.db.RegisterCallback(self, "OnProfileReset", "OnProfileChanged")
 
+	if not PallyPower_SavedPresets or PallyPower_SavedPresets == nil then
+		PallyPower_SavedPresets = {}
+		PallyPower_SavedPresets["PallyPower_Assignments"] = {[0] = {}}
+		PallyPower_SavedPresets["PallyPower_NormalAssignments"] = {[0] = {}}
+	end
+
 	self.opt = self.db.profile
 	self.options.args.profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db)
 
@@ -274,6 +280,19 @@ function PallyPower:OpenConfigWindow()
 	end
 end
 
+local function tablecopy(tbl)
+	if type(tbl) ~= "table" then return tbl end
+	local t = {}
+	for i,v in pairs(tbl) do
+	  t[i] = tablecopy(v)
+	end
+	return t
+  end
+
+local function safeget(t,k) -- always return nil or t[k] if at least t is a table / Treeston
+	return t and t[k]    
+end
+
 function PallyPowerBlessings_Clear()
 	if InCombatLockdown() then return end
 
@@ -377,17 +396,19 @@ function SetNormalBlessings(pname, class, tname, value)
 		2.0,
 		function()
 			if PallyPower_NormalAssignments and PallyPower_NormalAssignments[pname] and PallyPower_NormalAssignments[pname][class] and PallyPower_NormalAssignments[pname][class][tname] then
-				if PallyPower_NormalAssignments[pname][class][tname] == nil then
-					value = 0
-				else
-					value = PallyPower_NormalAssignments[pname][class][tname]
-				end
-				PallyPower:SendMessage("NASSIGN " .. pname .. " " .. class .. " " .. tname .. " " .. value)
+				PallyPower:SendNormalBlessings(pname, class, tname)
 				PallyPower:UpdateLayout()
 				msgQueue:Cancel()
 			end
 		end
 	)
+end
+
+-- sends blessing to tname as previously set in PallyPower_NormalAssignments[pname]...
+function PallyPower:SendNormalBlessings(pname, class, tname)
+	local value = safeget(safeget(safeget(PallyPower_NormalAssignments, pname), class), tname)
+	if value == nil then value = 0 end
+	self:SendMessage("NASSIGN " .. pname .. " " .. class .. " " .. tname .. " " .. value)
 end
 
 function PallyPowerGrid_NormalBlessingMenu(btn, mouseBtn, pname, class)
@@ -458,7 +479,7 @@ function PallyPowerGrid_NormalBlessingMenu(btn, mouseBtn, pname, class)
 			if PallyPower_NormalAssignments[pally] and PallyPower_NormalAssignments[pally][class] and PallyPower_NormalAssignments[pally][class][pname] then
 				PallyPower_NormalAssignments[pally][class][pname] = nil
 			end
-			PallyPower:SendMessage("NASSIGN " .. pally .. " " .. class .. " " .. pname .. " 0")
+			PallyPower:SendNormalBlessings(pname, class, tname)
 			PallyPower:UpdateLayout()
 		end
 	end
@@ -1845,9 +1866,9 @@ function PallyPower:ParseMessage(sender, msg)
 
 	if strfind(msg, "^CLEAR") then
 		if leader then
-			self:ClearAssignments(sender)
+			self:ClearAssignments(sender, strfind(msg, "SKIP"))
 		elseif self.opt.freeassign then
-			self:ClearAssignments(self.player)
+			self:ClearAssignments(self.player, strfind(msg, "SKIP"))
 		end
 	end
 
@@ -1928,7 +1949,7 @@ function PallyPower:CheckMainAssists(nick)
 	return raidmainassists[nick]
 end
 
-function PallyPower:ClearAssignments(sender)
+function PallyPower:ClearAssignments(sender, skipAuras)
 	local leader = self:CheckLeader(sender)
 	for name in pairs(PallyPower_Assignments) do
 		if leader or name == self.player then
@@ -1946,6 +1967,7 @@ function PallyPower:ClearAssignments(sender)
 			end
 		end
 	end
+	if skipAuras then return end
 	for name in pairs(PallyPower_AuraAssignments) do
 		if leader or name == self.player then
 			PallyPower_AuraAssignments[name] = 0
@@ -2498,6 +2520,19 @@ function PallyPower:UpdateLayout()
 			pButton:Hide()
 		end
 	end
+
+	-- Preset Button handling: show/hide if leader
+	local presetButton = _G["PallyPowerBlessingsFramePreset"]
+	local reportButton = _G["PallyPowerBlessingsFrameReport"]
+	local autoassignButton = _G["PallyPowerBlessingsAutoAssign"]
+	if self:CheckLeader(self.player) then
+		presetButton:Show()
+		reportButton:SetPoint("BOTTOMRIGHT", presetButton, "BOTTOMLEFT", -7, 0)
+	else
+		presetButton:Hide()
+		reportButton:SetPoint("BOTTOMRIGHT", autoassignButton, "BOTTOMLEFT", -7, 0)
+	end
+
 	self:ButtonsUpdate()
 	self:UpdateAnchor(displayedButtons)
 end
@@ -3776,6 +3811,62 @@ function PallyPower:AutoAssign()
 			end
 		)
 	end
+end
+
+function PallyPower:StorePreset()
+	--save current Assignments to preset
+	PallyPower_SavedPresets["PallyPower_Assignments"][0] = tablecopy(PallyPower_Assignments)
+	PallyPower_SavedPresets["PallyPower_NormalAssignments"][0] = tablecopy(PallyPower_NormalAssignments)
+end
+
+function PallyPower:LoadPreset()
+	-- if leader, load preset and publish to other pallys if possible
+	if not PallyPower:CheckLeader(PallyPower.player) then return end
+
+	PallyPower:ClearAssignments(PallyPower.player, true)
+	PallyPower:SendMessage("CLEAR SKIP")
+	PallyPower_Assignments = tablecopy(PallyPower_SavedPresets["PallyPower_Assignments"][0])
+	PallyPower_NormalAssignments = tablecopy(PallyPower_SavedPresets["PallyPower_NormalAssignments"][0])
+	C_Timer.After(
+		0.25,
+		function() -- send Class-Assignments
+			for name in pairs(AllPallys) do
+				local s = ""
+				local BuffInfo = PallyPower_Assignments[name]
+				for i = 1, PALLYPOWER_MAXCLASSES do
+					if not BuffInfo[i] or BuffInfo[i] == 0 then
+						s = s .. "n"
+					else
+						s = s .. BuffInfo[i]
+					end
+				end
+				PallyPower:SendMessage("PASSIGN " .. name .. "@" .. s)
+			end
+			C_Timer.After(
+				0.25,
+				function() -- send Single-Assignments
+					for pname, passignments in pairs(PallyPower_NormalAssignments) do
+						if (AllPallys[pname] and PallyPower:GetUnitIdByName(pname) and passignments) then
+							for class, cassignments in pairs(passignments) do
+								if cassignments then 
+									for tname, value in pairs(cassignments) do
+										PallyPower:SendNormalBlessings(pname, class, tname)
+									end
+								end
+							end
+						end
+					end
+					C_Timer.After(
+						0.25,
+						function()
+							PallyPower:UpdateLayout()
+							PallyPower:UpdateRoster()
+						end
+					)
+				end
+			)
+		end
+	)
 end
 
 function PallyPower:CalcSkillRanks(name)
