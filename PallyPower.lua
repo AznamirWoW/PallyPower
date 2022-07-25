@@ -289,6 +289,10 @@ local function tablecopy(tbl)
 	return t
   end
 
+local function safeget(t,k) -- always return nil or t[k] if at least t is a table / Treeston
+	return t and t[k]    
+end
+
 function PallyPowerBlessings_Clear()
 	if InCombatLockdown() then return end
 
@@ -392,7 +396,7 @@ function SetNormalBlessings(pname, class, tname, value)
 		2.0,
 		function()
 			if PallyPower_NormalAssignments and PallyPower_NormalAssignments[pname] and PallyPower_NormalAssignments[pname][class] and PallyPower_NormalAssignments[pname][class][tname] then
-				PallyPower:SendNormalBlessings(pname, class, tname, value)
+				PallyPower:SendNormalBlessings(pname, class, tname)
 				PallyPower:UpdateLayout()
 				msgQueue:Cancel()
 			end
@@ -400,10 +404,10 @@ function SetNormalBlessings(pname, class, tname, value)
 	)
 end
 
-function PallyPower:SendNormalBlessings(pname, class, tname, value)
-	if value == nil then
-		value = 0
-	end
+-- sends blessing to tname as previously set in PallyPower_NormalAssignments[pname]...
+function PallyPower:SendNormalBlessings(pname, class, tname)
+	local value = safeget(safeget(safeget(PallyPower_NormalAssignments, pname), class), tname)
+	if value == nil then value = 0 end
 	self:SendMessage("NASSIGN " .. pname .. " " .. class .. " " .. tname .. " " .. value)
 end
 
@@ -475,7 +479,7 @@ function PallyPowerGrid_NormalBlessingMenu(btn, mouseBtn, pname, class)
 			if PallyPower_NormalAssignments[pally] and PallyPower_NormalAssignments[pally][class] and PallyPower_NormalAssignments[pally][class][pname] then
 				PallyPower_NormalAssignments[pally][class][pname] = nil
 			end
-			PallyPower:SendNormalBlessings(pname, class, tname, 0)
+			PallyPower:SendNormalBlessings(pname, class, tname)
 			PallyPower:UpdateLayout()
 		end
 	end
@@ -3845,7 +3849,7 @@ function PallyPower:LoadPreset()
 							for class, cassignments in pairs(passignments) do
 								if cassignments then 
 									for tname, value in pairs(cassignments) do
-										PallyPower:SendNormalBlessings(pname, class, tname, value)
+										PallyPower:SendNormalBlessings(pname, class, tname)
 									end
 								end
 							end
