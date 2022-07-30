@@ -1054,7 +1054,7 @@
 						</Anchor>
 					</Anchors>
 				</Texture>
-				<Texture file = "Interface\Icons\Spell_Holy_SealOfSalvation" name = "$parentIcon4">
+				<Texture file = "Interface\Icons\Spell_Nature_LightningShield" name = "$parentIcon4">
 					<Size>
 						<AbsDimension x = "16" y = "16"/>
 					</Size>
@@ -1062,30 +1062,6 @@
 						<Anchor point = "TOPLEFT">
 							<Offset>
 								<AbsDimension x = "0" y = "-36"/>
-							</Offset>
-						</Anchor>
-					</Anchors>
-				</Texture>
-				<Texture file = "Interface\Icons\Spell_Holy_PrayerOfHealing02" name = "$parentIcon5">
-					<Size>
-						<AbsDimension x = "16" y = "16"/>
-					</Size>
-					<Anchors>
-						<Anchor point = "TOPLEFT" relativeTo = "$parentIcon4">
-							<Offset>
-								<AbsDimension x = "48" y = "-0"/>
-							</Offset>
-						</Anchor>
-					</Anchors>
-				</Texture>
-				<Texture file = "Interface\Icons\Spell_Nature_LightningShield" name = "$parentIcon6">
-					<Size>
-						<AbsDimension x = "16" y = "16"/>
-					</Size>
-					<Anchors>
-						<Anchor point = "TOPLEFT" relativeTo = "$parentIcon5">
-							<Offset>
-								<AbsDimension x = "48" y = "0"/>
 							</Offset>
 						</Anchor>
 					</Anchors>
@@ -1336,30 +1312,6 @@
 					</Size>
 					<Anchors>
 						<Anchor point = "TOPLEFT" relativeTo = "$parentIcon4" relativePoint = "TOPRIGHT">
-							<Offset>
-								<AbsDimension x = "2" y = "0"/>
-							</Offset>
-						</Anchor>
-					</Anchors>
-				</FontString>
-				<FontString name = "$parentSkill5" inherits = "GameFontNormalSmall" text = "0/0" justifyH = "LEFT">
-					<Size>
-						<AbsDimension x = "30" y = "16"/>
-					</Size>
-					<Anchors>
-						<Anchor point = "TOPLEFT" relativeTo = "$parentIcon5" relativePoint = "TOPRIGHT">
-							<Offset>
-								<AbsDimension x = "2" y = "0"/>
-							</Offset>
-						</Anchor>
-					</Anchors>
-				</FontString>
-				<FontString name = "$parentSkill6" inherits = "GameFontNormalSmall" text = "0/0" justifyH = "LEFT">
-					<Size>
-						<AbsDimension x = "30" y = "16"/>
-					</Size>
-					<Anchors>
-						<Anchor point = "TOPLEFT" relativeTo = "$parentIcon6" relativePoint = "TOPRIGHT">
 							<Offset>
 								<AbsDimension x = "2" y = "0"/>
 							</Offset>
