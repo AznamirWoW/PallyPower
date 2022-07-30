@@ -1275,10 +1275,6 @@ function PallyPower:ScanSpells()
 					else
 						talent = talent + select(5, GetTalentInfo(2, 12)) -- Blessing of Sanctuary
 					end
-				elseif i == 4 and self.isWrath then
-					-- TODO: GetTalentInfo bugged on beta right now so column/rows are "correct" but incorrect
-					-- talent = talent + select(5, GetTalentInfo(2, 12)) -- Blessing of Sanctuary
-					talent = talent + select(5, GetTalentInfo(2, 8)) -- Blessing of Sanctuary
 				end
 				RankInfo[i].talent = talent
 				RankInfo[i].rank = tonumber(select(3, strfind(spellRank, "(%d+)")))
