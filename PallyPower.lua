@@ -909,7 +909,7 @@ function PallyPower:PerformCycle(name, class, skipzero)
 		cur = PallyPower_Assignments[name][class]
 	end
 	PallyPower_Assignments[name][class] = 0
-	for testB = cur + 1, self.isWrath and 4 or 7 do
+	for testB = cur + 1, self.isWrath and 5 or 7 do
 		cur = testB
 		if self:CanBuff(name, testB) and (self:NeedsBuff(class, testB) or shift or control) then
 			do
@@ -917,7 +917,7 @@ function PallyPower:PerformCycle(name, class, skipzero)
 			end
 		end
 	end
-	if (self.isWrath and cur == 4) or (not self.isWrath and cur == 7) then
+	if (self.isWrath and cur == 5) or (not self.isWrath and cur == 7) then
 		if skipzero then
 			if self:CanBuff(name, 1) then
 				if self.opt.SmartBuffs and (class == 1 or class == 2 or (self.isWrath and class == 10)) then
@@ -976,7 +976,7 @@ function PallyPower:PerformCycleBackwards(name, class, skipzero)
 		PallyPower_Assignments[name] = {}
 	end
 	if not PallyPower_Assignments[name][class] then
-		cur = self.isWrath and 4 or 7
+		cur = self.isWrath and 5 or 7
 	else
 		cur = PallyPower_Assignments[name][class]
 		local testB
@@ -996,7 +996,7 @@ function PallyPower:PerformCycleBackwards(name, class, skipzero)
 			testB = 0
 		end
 		if cur == 0 or skipzero and cur == testB then
-			cur = self.isWrath and 4 or 7
+			cur = self.isWrath and 5 or 7
 		end
 	end
 	PallyPower_Assignments[name][class] = 0
