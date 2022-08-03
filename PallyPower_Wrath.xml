@@ -766,7 +766,7 @@
 
 	<Button name = "BuffGridButtonTemplate" hidden = "false" enableMouse = "true" virtual = "true">
 		<Size>
-			<AbsDimension x = "84" y = "100"/>
+			<AbsDimension x = "84" y = "112"/>
 		</Size>
 		<Layers>
 			<Layer level = "ARTWORK">
@@ -946,7 +946,7 @@
 
 	<Button name = "AuraGridButtonTemplate" hidden = "false" enableMouse = "true" virtual = "true">
 		<Size>
-			<AbsDimension x = "84" y = "100"/>
+			<AbsDimension x = "84" y = "112"/>
 		</Size>
 		<Layers>
 			<Layer level = "ARTWORK">
@@ -1133,7 +1133,7 @@
 					<Anchors>
 						<Anchor point = "BOTTOMLEFT" relativePoint = "BOTTOMLEFT">
 							<Offset>
-								<AbsDimension x = "0" y = "22"/>
+								<AbsDimension x = "0" y = "23"/>
 							</Offset>
 						</Anchor>
 					</Anchors>
@@ -1145,7 +1145,7 @@
 					<Anchors>
 						<Anchor point = "BOTTOMLEFT" relativePoint = "BOTTOMLEFT">
 							<Offset>
-								<AbsDimension x = "82" y = "22"/>
+								<AbsDimension x = "82" y = "23"/>
 							</Offset>
 						</Anchor>
 					</Anchors>
@@ -1164,7 +1164,7 @@
 				</Texture>
 				<Texture name = "$parentLine2" file = "Interface\Tooltips\UI-Tooltip-Background" hidden = "false">
 					<Size>
-						<AbsDimension x = "2" y = "98"/>
+						<AbsDimension x = "2" y = "110"/>
 					</Size>
 					<Anchors>
 						<Anchor point = "TOPLEFT">
@@ -1176,7 +1176,7 @@
 				</Texture>
 				<Texture name = "$parentLine3" file = "Interface\Tooltips\UI-Tooltip-Background" hidden = "false">
 					<Size>
-						<AbsDimension x = "2" y = "98"/>
+						<AbsDimension x = "2" y = "110"/>
 					</Size>
 					<Anchors>
 						<Anchor point = "TOPLEFT" relativeTo = "$parentLine2">
@@ -1188,7 +1188,7 @@
 				</Texture>
 				<Texture name = "$parentLine4" file = "Interface\Tooltips\UI-Tooltip-Background" hidden = "false">
 					<Size>
-						<AbsDimension x = "2" y = "98"/>
+						<AbsDimension x = "2" y = "110"/>
 					</Size>
 					<Anchors>
 						<Anchor point = "TOPLEFT" relativeTo = "$parentLine3">
@@ -1200,7 +1200,7 @@
 				</Texture>
 				<Texture name = "$parentLine5" file = "Interface\Tooltips\UI-Tooltip-Background" hidden = "false">
 					<Size>
-						<AbsDimension x = "2" y = "98"/>
+						<AbsDimension x = "2" y = "110"/>
 					</Size>
 					<Anchors>
 						<Anchor point = "TOPLEFT" relativeTo = "$parentLine4">
@@ -1212,7 +1212,7 @@
 				</Texture>
 				<Texture name = "$parentLine6" file = "Interface\Tooltips\UI-Tooltip-Background" hidden = "false">
 					<Size>
-						<AbsDimension x = "2" y = "98"/>
+						<AbsDimension x = "2" y = "110"/>
 					</Size>
 					<Anchors>
 						<Anchor point = "TOPLEFT" relativeTo = "$parentLine5">
@@ -1224,7 +1224,7 @@
 				</Texture>
 				<Texture name = "$parentLine7" file = "Interface\Tooltips\UI-Tooltip-Background" hidden = "false">
 					<Size>
-						<AbsDimension x = "2" y = "98"/>
+						<AbsDimension x = "2" y = "110"/>
 					</Size>
 					<Anchors>
 						<Anchor point = "TOPLEFT" relativeTo = "$parentLine6">
@@ -1236,7 +1236,7 @@
 				</Texture>
 				<Texture name = "$parentLine8" file = "Interface\Tooltips\UI-Tooltip-Background" hidden = "false">
 					<Size>
-						<AbsDimension x = "2" y = "98"/>
+						<AbsDimension x = "2" y = "110"/>
 					</Size>
 					<Anchors>
 						<Anchor point = "TOPLEFT" relativeTo = "$parentLine7">
@@ -1248,7 +1248,7 @@
 				</Texture>
 				<Texture name = "$parentLine9" file = "Interface\Tooltips\UI-Tooltip-Background" hidden = "false">
 					<Size>
-						<AbsDimension x = "2" y = "98"/>
+						<AbsDimension x = "2" y = "110"/>
 					</Size>
 					<Anchors>
 						<Anchor point = "TOPLEFT" relativeTo = "$parentLine8">
@@ -1260,7 +1260,7 @@
 				</Texture>
 				<Texture name = "$parentLine10" file = "Interface\Tooltips\UI-Tooltip-Background" hidden = "false">
 					<Size>
-						<AbsDimension x = "2" y = "98"/>
+						<AbsDimension x = "2" y = "110"/>
 					</Size>
 					<Anchors>
 						<Anchor point = "TOPLEFT" relativeTo = "$parentLine9">
@@ -1272,7 +1272,7 @@
 				</Texture>
 				<Texture name = "$parentLine11" file = "Interface\Tooltips\UI-Tooltip-Background" hidden = "false">
 					<Size>
-						<AbsDimension x = "2" y = "98"/>
+						<AbsDimension x = "2" y = "110"/>
 					</Size>
 					<Anchors>
 						<Anchor point = "TOPLEFT" relativeTo = "$parentLine10">
@@ -1284,7 +1284,7 @@
 				</Texture>
 				<Texture name = "$parentLine12" file = "Interface\Tooltips\UI-Tooltip-Background" hidden = "false">
 					<Size>
-						<AbsDimension x = "2" y = "98"/>
+						<AbsDimension x = "2" y = "110"/>
 					</Size>
 					<Anchors>
 						<Anchor point = "TOPLEFT" relativeTo = "$parentLine11">
@@ -1409,7 +1409,7 @@
 					<Anchors>
 						<Anchor point = "BOTTOMLEFT" relativePoint = "BOTTOMLEFT">>
 							<Offset>
-								<AbsDimension x = "20" y = "22"/>
+								<AbsDimension x = "20" y = "23"/>
 							</Offset>
 						</Anchor>
 					</Anchors>
@@ -1421,7 +1421,7 @@
 					<Anchors>
 						<Anchor point = "BOTTOMLEFT" relativePoint = "BOTTOMLEFT">
 							<Offset>
-								<AbsDimension x = "102" y = "22"/>
+								<AbsDimension x = "102" y = "23"/>
 							</Offset>
 						</Anchor>
 					</Anchors>
