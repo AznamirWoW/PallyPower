@@ -1372,7 +1372,7 @@ function PallyPower:ScanCooldowns()
 					if cd == 1 then -- improved Lay on Hands
 						CooldownInfo[cd].improved = select(5, GetTalentInfo(1, self.isWrath and 8 or 7))
 					end
-					if (cd == 2) and self.isWrath then -- improved Divine Guardian
+					if (cd == 3) and self.isWrath then -- improved Divine Guardian
 						CooldownInfo[cd].improved = select(5, GetTalentInfo(2, 9))
 					end
 					break
@@ -1856,43 +1856,31 @@ function PallyPower:ParseMessage(sender, msg)
 	end
 
 	if strfind(msg, "COOLDOWNS") then
-		local _, duration1, remaining1, improved1, duration2, remaining2, improved2, duration3, remaining3, improved3, duration4, remaining4, improved4 = strsplit(":", msg)
+		local senderCooldownList = strsplittable(":", msg)
+		local isOldPP = (#senderCooldownList % 3) > 0 -- if data is sent from older PP only use 2 params
+		local dataSize = isOldPP and 3 or 2
+		local senderCooldownTable = {
+			duration = {},
+			remaining = {},
+			improved = {}
+		}
+		for i = 1, #senderCooldownList, i + (dataSize) do 
+			local cdIndex = math.ceil(i / dataSize)
+			senderCooldownTable.duration[cdIndex] = tonumber(senderCooldownList[i])
+			senderCooldownTable.remaining[cdIndex] = tonumber(senderCooldownList[i+1])
+			senderCooldownTable.improved[cdIndex] = (not isOldPP) and tonumber(senderCooldownList[i+2]) or 0
+		end
 		if AllPallys[sender] then
 			if not AllPallys[sender].CooldownInfo then
 				AllPallys[sender].CooldownInfo = {}
 			end
-			if not AllPallys[sender].CooldownInfo[1] and remaining1 ~= "n" then
-				AllPallys[sender].CooldownInfo[1] = {}
-				duration1 = tonumber(duration1)
-				remaining1 = tonumber(remaining1)
-				improved1 = tonumber(improved1)
-				AllPallys[sender].CooldownInfo[1].start = GetTime() - (duration1 - remaining1)
-				AllPallys[sender].CooldownInfo[1].duration = duration1
-				AllPallys[sender].CooldownInfo[1].improved = improved1
-			end
-			if not AllPallys[sender].CooldownInfo[2] and remaining2 ~= "n" then
-				AllPallys[sender].CooldownInfo[2] = {}
-				duration2 = tonumber(duration2)
-				remaining2 = tonumber(remaining2)
-				AllPallys[sender].CooldownInfo[2].start = GetTime() - (duration2 - remaining2)
-				AllPallys[sender].CooldownInfo[2].duration = duration2
-				AllPallys[sender].CooldownInfo[2].improved = improved2
-			end
-			if not AllPallys[sender].CooldownInfo[3] and remaining3 ~= "n" then
-				AllPallys[sender].CooldownInfo[3] = {}
-				duration3 = tonumber(duration3)
-				remaining3 = tonumber(remaining3)
-				AllPallys[sender].CooldownInfo[3].start = GetTime() - (duration3 - remaining3)
-				AllPallys[sender].CooldownInfo[3].duration = duration3
-				AllPallys[sender].CooldownInfo[3].improved = improved3
-			end
-			if not AllPallys[sender].CooldownInfo[4] and remaining4 ~= "n" then
-				AllPallys[sender].CooldownInfo[4] = {}
-				duration4 = tonumber(duration4)
-				remaining4 = tonumber(remaining4)
-				AllPallys[sender].CooldownInfo[4].start = GetTime() - (duration4 - remaining4)
-				AllPallys[sender].CooldownInfo[4].duration = duration4
-				AllPallys[sender].CooldownInfo[4].improved = improved4
+			for i=1, #self.Cooldowns do 
+				if not AllPallys[sender].CooldownInfo[i] and senderCooldownTable.remaining[i] ~= nil then
+					AllPallys[sender].CooldownInfo[i] = {}
+					AllPallys[sender].CooldownInfo[i].duration = senderCooldownTable.duration[i]
+					AllPallys[sender].CooldownInfo[i].start = GetTime() - (senderCooldownTable.duration[i] - senderCooldownTable.remaining[i])
+					AllPallys[sender].CooldownInfo[i].improved = senderCooldownTable.improved[i] or 0
+				end
 			end
 		end
 	end
