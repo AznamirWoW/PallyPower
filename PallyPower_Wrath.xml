@@ -994,7 +994,7 @@
 
 	<Frame name = "UserTemplate" hidden = "false" virtual = "true">
 		<Size>
-			<AbsDimension x = "995" y = "100"/>
+			<AbsDimension x = "995" y = "112"/>
 		</Size>
 		<Layers>
 			<Layer level = "OVERLAY">
@@ -1061,7 +1061,7 @@
 					<Anchors>
 						<Anchor point = "TOPLEFT">
 							<Offset>
-								<AbsDimension x = "0" y = "-36"/>
+								<AbsDimension x = "0" y = "-35"/>
 							</Offset>
 						</Anchor>
 					</Anchors>
@@ -1073,7 +1073,7 @@
 					<Anchors>
 						<Anchor point = "TOPLEFT">
 							<Offset>
-								<AbsDimension x = "0" y = "-56"/>
+								<AbsDimension x = "0" y = "-54"/>
 							</Offset>
 						</Anchor>
 					</Anchors>
@@ -1109,7 +1109,7 @@
 					<Anchors>
 						<Anchor point = "BOTTOMLEFT" relativePoint = "BOTTOMLEFT">
 							<Offset>
-								<AbsDimension x = "0" y = "8"/>
+								<AbsDimension x = "0" y = "4"/>
 							</Offset>
 						</Anchor>
 					</Anchors>
@@ -1121,7 +1121,7 @@
 					<Anchors>
 						<Anchor point = "BOTTOMLEFT" relativePoint = "BOTTOMLEFT">
 							<Offset>
-								<AbsDimension x = "82" y = "8"/>
+								<AbsDimension x = "82" y = "4"/>
 							</Offset>
 						</Anchor>
 					</Anchors>
@@ -1133,7 +1133,7 @@
 					<Anchors>
 						<Anchor point = "BOTTOMLEFT" relativePoint = "BOTTOMLEFT">
 							<Offset>
-								<AbsDimension x = "164" y = "8"/>
+								<AbsDimension x = "0" y = "22"/>
 							</Offset>
 						</Anchor>
 					</Anchors>
@@ -1145,7 +1145,7 @@
 					<Anchors>
 						<Anchor point = "BOTTOMLEFT" relativePoint = "BOTTOMLEFT">
 							<Offset>
-								<AbsDimension x = "246" y = "8"/>
+								<AbsDimension x = "82" y = "22"/>
 							</Offset>
 						</Anchor>
 					</Anchors>
@@ -1301,7 +1301,7 @@
 					<Anchors>
 						<Anchor point = "TOPLEFT" relativeTo = "$parentIcon1" relativePoint = "TOPRIGHT">
 							<Offset>
-								<AbsDimension x = "2" y = "0"/>
+								<AbsDimension x = "4" y = "0"/>
 							</Offset>
 						</Anchor>
 					</Anchors>
@@ -1313,7 +1313,7 @@
 					<Anchors>
 						<Anchor point = "TOPLEFT" relativeTo = "$parentIcon2" relativePoint = "TOPRIGHT">
 							<Offset>
-								<AbsDimension x = "2" y = "0"/>
+								<AbsDimension x = "4" y = "0"/>
 							</Offset>
 						</Anchor>
 					</Anchors>
@@ -1325,7 +1325,7 @@
 					<Anchors>
 						<Anchor point = "TOPLEFT" relativeTo = "$parentIcon3" relativePoint = "TOPRIGHT">
 							<Offset>
-								<AbsDimension x = "2" y = "0"/>
+								<AbsDimension x = "4" y = "0"/>
 							</Offset>
 						</Anchor>
 					</Anchors>
@@ -1337,7 +1337,7 @@
 					<Anchors>
 						<Anchor point = "TOPLEFT" relativeTo = "$parentIcon4" relativePoint = "TOPRIGHT">
 							<Offset>
-								<AbsDimension x = "2" y = "0"/>
+								<AbsDimension x = "4" y = "0"/>
 							</Offset>
 						</Anchor>
 					</Anchors>
@@ -1349,7 +1349,7 @@
 					<Anchors>
 						<Anchor point = "TOPLEFT" relativeTo = "$parentAIcon1" relativePoint = "TOPRIGHT">
 							<Offset>
-								<AbsDimension x = "2" y = "0"/>
+								<AbsDimension x = "4" y = "0"/>
 							</Offset>
 						</Anchor>
 					</Anchors>
@@ -1361,7 +1361,7 @@
 					<Anchors>
 						<Anchor point = "TOPLEFT" relativeTo = "$parentAIcon2" relativePoint = "TOPRIGHT">
 							<Offset>
-								<AbsDimension x = "2" y = "0"/>
+								<AbsDimension x = "4" y = "0"/>
 							</Offset>
 						</Anchor>
 					</Anchors>
@@ -1373,7 +1373,7 @@
 					<Anchors>
 						<Anchor point = "TOPLEFT" relativeTo = "$parentAIcon3" relativePoint = "TOPRIGHT">
 							<Offset>
-								<AbsDimension x = "2" y = "0"/>
+								<AbsDimension x = "4" y = "0"/>
 							</Offset>
 						</Anchor>
 					</Anchors>
@@ -1385,7 +1385,7 @@
 					<Anchors>
 						<Anchor point = "BOTTOMLEFT" relativePoint = "BOTTOMLEFT">>
 							<Offset>
-								<AbsDimension x = "20" y = "8"/>
+								<AbsDimension x = "20" y = "4"/>
 							</Offset>
 						</Anchor>
 					</Anchors>
@@ -1397,7 +1397,31 @@
 					<Anchors>
 						<Anchor point = "BOTTOMLEFT" relativePoint = "BOTTOMLEFT">
 							<Offset>
-								<AbsDimension x = "102" y = "8"/>
+								<AbsDimension x = "102" y = "4"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+				</FontString>
+				<FontString name = "$parentCSkill3" inherits = "GameFontNormalSmall" text = "0:00" justifyH = "LEFT">
+					<Size>
+						<AbsDimension x = "60" y = "16"/>
+					</Size>
+					<Anchors>
+						<Anchor point = "BOTTOMLEFT" relativePoint = "BOTTOMLEFT">>
+							<Offset>
+								<AbsDimension x = "20" y = "22"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+				</FontString>
+				<FontString name = "$parentCSkill4" inherits = "GameFontNormalSmall" text = "0:00" justifyH = "LEFT">
+					<Size>
+						<AbsDimension x = "60" y = "16"/>
+					</Size>
+					<Anchors>
+						<Anchor point = "BOTTOMLEFT" relativePoint = "BOTTOMLEFT">
+							<Offset>
+								<AbsDimension x = "102" y = "22"/>
 							</Offset>
 						</Anchor>
 					</Anchors>
