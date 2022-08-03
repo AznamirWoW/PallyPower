@@ -656,8 +656,15 @@ function PallyPowerBlessingsGrid_Update(self, elapsed)
 				AllPallys[name].CooldownInfo = {}
 			end
 			local CooldownInfo = AllPallys[name].CooldownInfo
-			for id = 1, 2 do
+			
+			for id = 1, self.isWrath and 4 or 2 do
 				if CooldownInfo[id] then
+					-- use extra icon to show weather LoH is improved or not
+					if (id == 1) and (CooldownInfo[id].improved > 0) then
+						_G[fname .. "CIcon1"]:SetAttribute("file", "Interface\\AddOns\\PallyPower\\Icons\\Spell_Holy_LayOnHands_Improved")
+					else
+						_G[fname .. "CIcon1"]:SetAttribute("file", "Interface\\Icons\\Spell_Holy_LayOnHands")
+					end
 					_G[fname .. "CIcon" .. id]:Show()
 					_G[fname .. "CSkill" .. id]:Show()
 					if CooldownInfo[id].start ~= 0 and CooldownInfo[id].duration ~= 0 then
@@ -1362,6 +1369,12 @@ function PallyPower:ScanCooldowns()
 					CooldownInfo[cd].start = start
 					CooldownInfo[cd].duration = duration
 					CooldownInfo[cd].remaining = math.max(start + duration - GetTime(), 0)
+					if cd == 1 then -- improved Lay on Hands
+						CooldownInfo[cd].improved = select(5, GetTalentInfo(1, self.isWrath and 8 or 7))
+					end
+					if (cd == 2) and self.isWrath then -- improved Divine Guardian
+						CooldownInfo[cd].improved = select(5, GetTalentInfo(2, 9))
+					end
 					break
 				end
 			end
@@ -1470,7 +1483,7 @@ function PallyPower:SendSelf(sender)
 		if #AllPallys[self.player].CooldownInfo > 0 then
 			local s = ""
 			CooldownInfo = AllPallys[self.player].CooldownInfo
-			for i = 1, 2 do
+			for i = 1, self.isWrath and 4 or 2 do
 				if CooldownInfo[i] then
 					if not CooldownInfo[i].duration then
 						s = s .. ":n"
@@ -1482,8 +1495,13 @@ function PallyPower:SendSelf(sender)
 					else
 						s = s .. ":" .. CooldownInfo[i].remaining
 					end
+					if not CooldownInfo[i].improved then
+						s = s .. ":n"
+					else
+						s = s .. ":" .. CooldownInfo[i].improved
+					end
 				else
-					s = s .. ":n:n"
+					s = s .. ":n:n:n"
 				end
 				Cooldowns = s
 			end
@@ -1838,7 +1856,7 @@ function PallyPower:ParseMessage(sender, msg)
 	end
 
 	if strfind(msg, "COOLDOWNS") then
-		local _, duration1, remaining1, duration2, remaining2 = strsplit(":", msg)
+		local _, duration1, remaining1, improved1, duration2, remaining2, improved2, duration3, remaining3, improved3, duration4, remaining4, improved4 = strsplit(":", msg)
 		if AllPallys[sender] then
 			if not AllPallys[sender].CooldownInfo then
 				AllPallys[sender].CooldownInfo = {}
@@ -1847,8 +1865,10 @@ function PallyPower:ParseMessage(sender, msg)
 				AllPallys[sender].CooldownInfo[1] = {}
 				duration1 = tonumber(duration1)
 				remaining1 = tonumber(remaining1)
+				improved1 = tonumber(improved1)
 				AllPallys[sender].CooldownInfo[1].start = GetTime() - (duration1 - remaining1)
 				AllPallys[sender].CooldownInfo[1].duration = duration1
+				AllPallys[sender].CooldownInfo[1].improved = improved1
 			end
 			if not AllPallys[sender].CooldownInfo[2] and remaining2 ~= "n" then
 				AllPallys[sender].CooldownInfo[2] = {}
@@ -1856,6 +1876,23 @@ function PallyPower:ParseMessage(sender, msg)
 				remaining2 = tonumber(remaining2)
 				AllPallys[sender].CooldownInfo[2].start = GetTime() - (duration2 - remaining2)
 				AllPallys[sender].CooldownInfo[2].duration = duration2
+				AllPallys[sender].CooldownInfo[2].improved = improved2
+			end
+			if not AllPallys[sender].CooldownInfo[3] and remaining3 ~= "n" then
+				AllPallys[sender].CooldownInfo[3] = {}
+				duration3 = tonumber(duration3)
+				remaining3 = tonumber(remaining3)
+				AllPallys[sender].CooldownInfo[3].start = GetTime() - (duration3 - remaining3)
+				AllPallys[sender].CooldownInfo[3].duration = duration3
+				AllPallys[sender].CooldownInfo[3].improved = improved3
+			end
+			if not AllPallys[sender].CooldownInfo[4] and remaining4 ~= "n" then
+				AllPallys[sender].CooldownInfo[4] = {}
+				duration4 = tonumber(duration4)
+				remaining4 = tonumber(remaining4)
+				AllPallys[sender].CooldownInfo[4].start = GetTime() - (duration4 - remaining4)
+				AllPallys[sender].CooldownInfo[4].duration = duration4
+				AllPallys[sender].CooldownInfo[4].improved = improved4
 			end
 		end
 	end

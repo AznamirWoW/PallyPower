@@ -434,6 +434,8 @@ PallyPower.Auras = PallyPower.isWrath and {
 PallyPower.Cooldowns = {
 	[1] = {633, 2800, 10310, 27154, 48788},	-- Lay On Hands
 	[2] = {19752},							-- Divine Intervention
+	[3] = {633, 53527, 53530},					-- Divine Guardian
+	[4] = {633, 31821}							-- Aura Mastery
 }
 
 -------------------------------------------------------------------

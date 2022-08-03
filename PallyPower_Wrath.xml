@@ -1113,7 +1113,7 @@
 							</Offset>
 						</Anchor>
 					</Anchors>
-				</Texture>
+				</Texture>			
 				<Texture file = "Interface\Icons\Spell_Nature_Timestop" name = "$parentCIcon2">
 					<Size>
 						<AbsDimension x = "16" y = "16"/>
@@ -1122,6 +1122,30 @@
 						<Anchor point = "BOTTOMLEFT" relativePoint = "BOTTOMLEFT">
 							<Offset>
 								<AbsDimension x = "82" y = "8"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+				</Texture>
+				<Texture file = "Interface\Icons\Spell_Holy_Powerwordbarrier" name = "$parentCIcon3">
+					<Size>
+						<AbsDimension x = "16" y = "16"/>
+					</Size>
+					<Anchors>
+						<Anchor point = "BOTTOMLEFT" relativePoint = "BOTTOMLEFT">
+							<Offset>
+								<AbsDimension x = "164" y = "8"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+				</Texture>
+				<Texture file = "Interface\Icons\Spell_Holy_Auramastery" name = "$parentCIcon4">
+					<Size>
+						<AbsDimension x = "16" y = "16"/>
+					</Size>
+					<Anchors>
+						<Anchor point = "BOTTOMLEFT" relativePoint = "BOTTOMLEFT">
+							<Offset>
+								<AbsDimension x = "246" y = "8"/>
 							</Offset>
 						</Anchor>
 					</Anchors>
