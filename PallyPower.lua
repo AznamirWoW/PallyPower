@@ -657,13 +657,15 @@ function PallyPowerBlessingsGrid_Update(self, elapsed)
 			end
 			local CooldownInfo = AllPallys[name].CooldownInfo
 			
-			for id = 1, self.isWrath and 4 or 2 do
+			for id = 1, 4 do
 				if CooldownInfo[id] then
 					-- use extra icon to show weather LoH is improved or not
-					if (id == 1) and (CooldownInfo[id].improved > 0) then
-						_G[fname .. "CIcon1"]:SetAttribute("file", "Interface\\AddOns\\PallyPower\\Icons\\Spell_Holy_LayOnHands_Improved")
-					else
-						_G[fname .. "CIcon1"]:SetAttribute("file", "Interface\\Icons\\Spell_Holy_LayOnHands")
+					if (id == 1) then
+						if (CooldownInfo[id].improved > 0) then
+							_G[fname .. "CIcon" .. id]:SetTexture("Interface\\AddOns\\PallyPower\\Icons\\Spell_Holy_LayOnHands_Improved")
+						else
+							_G[fname .. "CIcon" .. id]:SetTexture("Interface\\Icons\\Spell_Holy_LayOnHands")
+						end
 					end
 					_G[fname .. "CIcon" .. id]:Show()
 					_G[fname .. "CSkill" .. id]:Show()
@@ -1370,10 +1372,10 @@ function PallyPower:ScanCooldowns()
 					CooldownInfo[cd].duration = duration
 					CooldownInfo[cd].remaining = math.max(start + duration - GetTime(), 0)
 					if cd == 1 then -- improved Lay on Hands
-						CooldownInfo[cd].improved = select(5, GetTalentInfo(1, self.isWrath and 8 or 7))
+						CooldownInfo[cd].improved = select(5, GetTalentInfo(1, self.isWrath and 4 or 7))
 					end
 					if (cd == 3) and self.isWrath then -- improved Divine Guardian
-						CooldownInfo[cd].improved = select(5, GetTalentInfo(2, 9))
+						CooldownInfo[cd].improved = select(5, GetTalentInfo(2, 25))
 					end
 					break
 				end
