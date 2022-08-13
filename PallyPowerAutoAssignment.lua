@@ -10,7 +10,6 @@ PallyPowerAutoAssignmentBuffs = PallyPower.isWrath and {
   salv = 4,
   light = 5,
   sanc = 6,
-  sac = 7,
 }
 
 local kings = PallyPowerAutoAssignmentBuffs.kings
