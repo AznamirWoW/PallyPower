@@ -103,3 +103,102 @@ available_buffers[kings] = {{pallyname = "ret", skill = 1}}
 assignments = PallyPowerAutoAssignments(pallys, {kings, sanc}, available_buffers)
 assert(assignments[kings] == "ret")
 assert(assignments[sanc] == "prot")
+
+pallys = {"prot", "ret"}
+available_buffers = {
+  [wisdom] = {
+    {pallyname = "prot", skill = 7},
+    {pallyname = "ret", skill = 7},
+  },
+  [might] = {
+    {pallyname = "prot", skill = 13},
+    {pallyname = "ret", skill = 8},
+  },
+  [kings] = {
+    {pallyname = "prot", skill = 1},
+  },
+  [salv] = {
+    {pallyname = "prot", skill = 1},
+    {pallyname = "ret", skill = 1},
+  },
+  [light] = {
+    {pallyname = "prot", skill = 1},
+    {pallyname = "ret", skill = 1},
+  },
+  [sanc] = {
+    {pallyname = "prot", skill = 1},
+  },
+}
+
+assignments = PallyPowerAutoAssignments(pallys, {wisdom, might}, available_buffers)
+assert(assignments[might] == "prot")
+assert(assignments[wisdom] == "ret")
+-- different order, same outcome
+assignments = PallyPowerAutoAssignments(pallys, {might, wisdom}, available_buffers)
+assert(assignments[might] == "prot")
+assert(assignments[wisdom] == "ret")
+
+available_buffers[kings] = {}
+assignments = PallyPowerAutoAssignments(pallys, {might, kings, sanc}, available_buffers)
+assert(assignments[might] == "ret")
+assert(assignments[sanc] == "prot")
+
+pallys = {"holy1", "holy2", "prot1", "prot2", "ret"}
+available_buffers = {
+  [wisdom] = {
+    {pallyname = "holy1", skill = 9},
+    {pallyname = "holy2", skill = 9},
+    {pallyname = "prot1", skill = 7},
+    {pallyname = "prot2", skill = 7},
+    {pallyname = "ret", skill = 7},
+  },
+  [might] = {
+    {pallyname = "holy1", skill = 13},
+    {pallyname = "holy2", skill = 12},
+    {pallyname = "prot1", skill = 8},
+    {pallyname = "prot2", skill = 9},
+    {pallyname = "ret", skill = 8},
+  },
+  [kings] = {
+    {pallyname = "holy1", skill = 1},
+    {pallyname = "prot1", skill = 1},
+    {pallyname = "ret", skill = 1}
+  },
+  [salv] = {
+    {pallyname = "holy1", skill = 1},
+    {pallyname = "holy2", skill = 1},
+    {pallyname = "prot1", skill = 1},
+    {pallyname = "prot2", skill = 1},
+    {pallyname = "ret", skill = 1},
+  },
+  [light] = {
+    {pallyname = "holy1", skill = 1},
+    {pallyname = "holy2", skill = 1},
+    {pallyname = "prot1", skill = 1},
+    {pallyname = "prot2", skill = 1},
+    {pallyname = "ret", skill = 1},
+  },
+  [sanc] = {
+    {pallyname = "prot1", skill = 1},
+  }
+}
+assignments = PallyPowerAutoAssignments(pallys, {salv, kings, wisdom, might, sanc, light}, available_buffers)
+assert(assignments[salv] == "prot2")
+assert(assignments[kings] == "ret")
+assert(assignments[wisdom] == "holy2")
+assert(assignments[might] == "holy1")
+assert(assignments[sanc] == "prot1")
+
+available_buffers[sanc][1].pallyname = "prot2"
+assignments = PallyPowerAutoAssignments(pallys, {salv, kings, wisdom, might, sanc, light}, available_buffers)
+assert((assignments[salv] == "prot1" and assignments[kings] == "ret") or (assignments[salv] == "ret" and assignments[kings] == "prot1"))
+assert(assignments[wisdom] == "holy2")
+assert(assignments[might] == "holy1")
+assert(assignments[sanc] == "prot2")
+
+-- different order, same outcome
+assignments = PallyPowerAutoAssignments(pallys, {sanc, salv, might, wisdom, kings, light}, available_buffers)
+assert((assignments[salv] == "prot1" and assignments[kings] == "ret") or (assignments[salv] == "ret" and assignments[kings] == "prot1"))
+assert(assignments[wisdom] == "holy2")
+assert(assignments[might] == "holy1")
+assert(assignments[sanc] == "prot2")
