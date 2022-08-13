@@ -292,5 +292,15 @@ function PallyPowerAutoAssignments(pallys, preferred_buffs, orig_buffers)
     assignments[buff] = buffer
   end
 
+  -- make sure a pally is assigned to only one buff, return nil otherwise
+  local verify = {}
+  for _, buffer  in pairs(assignments) do
+    if table_contains(verify, buffer) then
+      return nil
+    end
+
+    table.insert(verify, buffer)
+  end
+
   return assignments
 end
