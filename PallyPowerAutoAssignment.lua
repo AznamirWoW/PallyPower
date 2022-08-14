@@ -170,7 +170,6 @@ local function get_most_skilled_buffer(buffers, buff, assignments)
   for _, candidate in ipairs(buffers[buff]) do
     if not is_talented_buff(get_assigned_buff(candidate.pallyname, assignments)) then
       table.insert(candidates, candidate)
-      most_skilled = candidate
     end
   end
 
@@ -184,7 +183,7 @@ local function get_most_skilled_buffer(buffers, buff, assignments)
   table.sort(candidates, function(a, b) return a.skill > b.skill  end)
   local most_skilled = candidates[1]
 
-  -- swapping only works assuming both players can do both buffs
+  -- swapping only works assuming both players can do both buffs. true because we only do this for untalented buffs
   if is_improvable_buff(buff) and table_contains(assignments, most_skilled.pallyname) then
     local current = get_assigned_buff(most_skilled.pallyname, assignments)
     local skill_at_current = get_buffer_skill(most_skilled.pallyname, buffers[current])
