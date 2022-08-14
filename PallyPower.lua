@@ -4049,6 +4049,9 @@ function PallyPower:BuffSelectionOptimized(pallys, class, prioritylist)
 	end
 
 	for buff, buffer in pairs(assignments) do
+		if PallyPower_Assignments[buffer] == nil then
+			PallyPower_Assignments[buffer] = {}
+		end
 		PallyPower_Assignments[buffer][class] = buff
 		self:TankNormalBlessingOverride(buff, class, buffer)
 	end
