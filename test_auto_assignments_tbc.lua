@@ -1,13 +1,12 @@
 PallyPower = {isWrath = false}
-
 dofile ("./PallyPowerAutoAssignment.lua")
 
-local kings = PallyPowerAutoAssignmentBuffs.kings
-local sanc = PallyPowerAutoAssignmentBuffs.sanc
-local wisdom = PallyPowerAutoAssignmentBuffs.wisdom
-local might = PallyPowerAutoAssignmentBuffs.might
-local salv = PallyPowerAutoAssignmentBuffs.salv
-local light = PallyPowerAutoAssignmentBuffs.light
+local wisdom = 1
+local might = 2
+local kings = 3
+local salv = 4
+local light = 5
+local sanc = 6
 
 local pallys = {"holy", "prot", "ret"}
 local available_buffers = {
@@ -202,3 +201,31 @@ assert((assignments[salv] == "prot1" and assignments[kings] == "ret") or (assign
 assert(assignments[wisdom] == "holy2")
 assert(assignments[might] == "holy1")
 assert(assignments[sanc] == "prot2")
+
+pallys = {"holy", "prot"}
+available_buffers = {
+  [wisdom] = {
+    {pallyname = "holy", skill = 9},
+    {pallyname = "prot", skill = 7},
+  },
+  [might] = {
+    {pallyname = "holy", skill = 13},
+    {pallyname = "prot", skill = 8},
+  },
+  [kings] = {},
+  [salv] = {
+    {pallyname = "holy", skill = 1},
+    {pallyname = "prot", skill = 1},
+  },
+  [light] = {
+    {pallyname = "holy", skill = 1},
+    {pallyname = "prot", skill = 1},
+  },
+  [sanc] = {},
+}
+assignments = PallyPowerAutoAssignments(pallys, {sanc, kings, might, wisdom, light}, available_buffers)
+assert(assignments[might] == "holy")
+assert(assignments[wisdom] == "prot")
+assignments = PallyPowerAutoAssignments(pallys, {wisdom, kings, sanc, might, light, salv}, available_buffers)
+assert(assignments[wisdom] == "holy")
+assert(assignments[might] == "prot")

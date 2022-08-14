@@ -1,21 +1,19 @@
-PallyPowerAutoAssignmentBuffs = PallyPower.isWrath and {
-  wisdom = 1,
-  might = 2,
-  kings = 3,
-  sanc = 4,
-} or {
-  wisdom = 1,
-  might = 2,
-  kings = 3,
-  salv = 4,
-  light = 5,
-  sanc = 6,
-}
+local function is_wrath()
+  return PallyPower.isWrath
+end
 
-local kings = PallyPowerAutoAssignmentBuffs.kings
-local sanc = PallyPowerAutoAssignmentBuffs.sanc
-local wisdom = PallyPowerAutoAssignmentBuffs.wisdom
-local might = PallyPowerAutoAssignmentBuffs.might
+local wisdom = 1
+local might = 2
+local kings = 3
+local salv = 4
+local light = 5
+local sanc = 6
+
+if is_wrath() then
+  sanc = 4
+  salv = nil
+  light = nil
+end
 
 local function table_contains(t, val)
   for _, v in pairs(t) do
@@ -27,11 +25,19 @@ local function table_contains(t, val)
 end
 
 local function is_talented_buff(buff)
+  if is_wrath() then
+    return buff == sanc
+  end
+
   return table_contains({kings, sanc}, buff)
 end
 
 local function is_improvable_buff(buff)
   return table_contains({might, wisdom}, buff)
+end
+
+local function should_reset_skill(buff)
+  return not is_wrath() and (buff == salv or buff == light)
 end
 
 local function get_preferred_imp_buff(buff_prio)
@@ -90,7 +96,7 @@ local function recalc_buff_skills(pallys, orig_buffers)
     for _, buffer in ipairs(buffers) do
       if table_contains(pallys, buffer.pallyname) then
         local effective_skill = buffer.skill
-        if buff == PallyPowerAutoAssignmentBuffs.salv or buff == PallyPowerAutoAssignmentBuffs.light then
+        if should_reset_skill(buff) then
           effective_skill = 1
         end
         table.insert(new_buffers[buff], {pallyname = buffer.pallyname, skill = effective_skill})
@@ -132,7 +138,7 @@ end
 local function remove_talented(buff_prio)
   local untalented = {}
   for _, buff in ipairs(buff_prio) do
-    if buff ~= kings and buff ~= sanc then
+    if not is_talented_buff(buff) then
       table.insert(untalented, buff)
     end
   end
@@ -228,9 +234,15 @@ end
 
 local function assign_talented_buffers(buff_prio, buffers, num_pallys, imp_buffers)
   -- talented buffs, so if they are needed they will get special treatment
-  local needs_kings = will_get_buff(kings, buff_prio, num_pallys)
-  local needs_sanc = will_get_buff(sanc, buff_prio, num_pallys)
   local assignments = {}
+  local needs_sanc = will_get_buff(sanc, buff_prio, num_pallys)
+
+  -- in wrath everyone gets kings, so the only talented buff is sanc
+  if is_wrath() and needs_sanc then
+    return {[sanc] = get_least_skilled_imp_buffer(buffers[sanc], imp_buffers, assignments)}
+  end
+
+  local needs_kings = will_get_buff(kings, buff_prio, num_pallys)
 
   if needs_kings and needs_sanc then
     if #buffers[kings] == 1 and #buffers[sanc] == 1 then
@@ -291,9 +303,12 @@ function PallyPowerAutoAssignments(pallys, preferred_buffs, orig_buffers)
     assignments[buff] = buffer
   end
 
-  -- make sure a pally is assigned to only one buff, return nil otherwise
+  -- make sure a pally is assigned to only one buff, and some nil checks, otherwise return nil
   local verify = {}
-  for _, buffer  in pairs(assignments) do
+  for buff, buffer  in pairs(assignments) do
+    if buff == nil or buffer == nil then
+      return nil
+    end
     if table_contains(verify, buffer) then
       return nil
     end
