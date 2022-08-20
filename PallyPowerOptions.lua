@@ -611,17 +611,13 @@ PallyPower.options = {
 							order = 1,
 							type = "toggle",
 							name = L["Class Buttons"],
-							desc = L["If this option is disabled it will also disable the Player Buttons and you will only be able to buff using the Auto Buff button."],
+							desc = L["[Enable/Disable] Class Buttons"],
 							width = 1.1,
 							get = function(info)
 								return PallyPower.opt.display.showClassButtons
 							end,
 							set = function(info, val)
 								PallyPower.opt.display.showClassButtons = val
-								if not PallyPower.opt.display.showClassButtons then
-									PallyPower.opt.display.showPlayerButtons = false
-									PallyPower.opt.display.buffDuration = false
-								end
 								PallyPower:UpdateRoster()
 							end
 						},
@@ -631,16 +627,13 @@ PallyPower.options = {
 							name = L["Player Buttons"],
 							desc = L["If this option is disabled then you will no longer see the pop out buttons showing individual players and you will not be able to reapply Normal Blessings while in combat."],
 							disabled = function(info)
-								return PallyPower.opt.display.showClassButtons == false or PallyPower.opt.enabled == false or not isPally
+								return PallyPower.opt.enabled == false or not isPally
 							end,
 							get = function(info)
 								return PallyPower.opt.display.showPlayerButtons
 							end,
 							set = function(info, val)
 								PallyPower.opt.display.showPlayerButtons = val
-								if not PallyPower.opt.display.showClassButtons then
-									PallyPower.opt.display.showPlayerButtons = false
-								end
 								PallyPower:UpdateRoster()
 							end
 						},
@@ -650,7 +643,7 @@ PallyPower.options = {
 							name = L["Buff Duration"],
 							desc = L["If this option is disabled then Class and Player buttons will ignore buffs' duration, allowing buffs to be reapplied at will. This is especially useful for Protection Paladins when they spam Greater Blessings to generate more threat."],
 							disabled = function(info)
-								return PallyPower.opt.display.showClassButtons == false or PallyPower.opt.enabled == false or not isPally
+								return PallyPower.opt.enabled == false or not isPally
 							end,
 							get = function(info)
 								return PallyPower.opt.display.buffDuration

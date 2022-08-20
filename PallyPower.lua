@@ -2436,6 +2436,41 @@ function PallyPower:UpdateLayout()
 		if (classlist[classIndex] and classlist[classIndex] ~= 0 and (gspellID ~= 0 or self:NormalBlessingCount(classIndex) > 0)) then
 			cbNum = cbNum + 1
 			local cButton = self.classButtons[cbNum]
+			if cbNum == 1 then
+				if self.opt.display.showClassButtons then
+					self.autoButton:SetAttribute("_onenter", [[
+						for _, child in ipairs(childs) do
+							if child:GetAttribute("Display") == 1 then
+								child:Show()
+							end
+						end
+					]])
+					cButton:SetAttribute("_onhide", nil)
+				else
+					self.autoButton:SetAttribute("_onenter", [[
+						local leadChild
+						for _, child in ipairs(childs) do
+							if child:GetAttribute("Display") == 1 then
+								child:Show()
+								if (leadChild) then
+									leadChild:AddToAutoHide(child)
+								else
+									leadChild = child
+									leadChild:RegisterAutoHide(5)
+								end
+							end
+						end
+						if (leadChild) then
+							leadChild:AddToAutoHide(self)
+						end
+					]])
+					cButton:SetAttribute("_onhide", [[
+						for _, other in ipairs(others) do
+							other:Hide()
+						end
+					]])
+				end
+			end
 			if isPally and self.opt.enabled and self.opt.display.showClassButtons and ((GetNumGroupMembers() == 0 and self.opt.ShowWhenSolo) or (GetNumGroupMembers() > 0 and self.opt.ShowInParty)) then
 				cButton:Show()
 			else
