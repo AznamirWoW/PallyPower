@@ -140,7 +140,7 @@ PallyPower.options = {
 							order = 1,
 							type = "toggle",
 							name = L["Smart Buffs"],
-							desc = L["If you enable this option, you will not be allowed to assign Blessing of Wisdom to Warriors or Rogues, and Blessing of Might to Mages, Warlocks, or Hunters."],
+							desc = PallyPower.isWrath and L["If you enable this option, you will not be allowed to assign Blessing of Wisdom to Warriors, Rogues, or Death Knights and Blessing of Might to Mages, Warlocks, or Hunters."] or L["If you enable this option, you will not be allowed to assign Blessing of Wisdom to Warriors or Rogues, and Blessing of Might to Mages, Warlocks, or Hunters."],
 							width = 1.0,
 							get = function(info)
 								return PallyPower.opt.SmartBuffs
@@ -728,13 +728,13 @@ PallyPower.options = {
 						mainroles_desc = {
 							order = 0,
 							type = "description",
-							name = L["MAIN_ROLES_DESCRIPTION"]
+							name = PallyPower.isWrath and L["MAIN_ROLES_DESCRIPTION_WRATH"] or L["MAIN_ROLES_DESCRIPTION"]
 						},
 						maintank_buff = {
 							order = 1,
 							type = "toggle",
 							name = L["Auto-Buff Main Tank"],
-							desc = L["If you enable this option PallyPower will automatically over-write a Greater Blessing with a Normal Blessing on players marked with the |cffffd200Main Tank|r role in the Blizzard Raid Panel. This is useful to avoid blessing the |cffffd200Main Tank|r role with a Greater Blessing of Salvation."],
+							desc = PallyPower.isWrath and L["If you enable this option PallyPower will automatically over-write a Greater Blessing with a Normal Blessing on players marked with the |cffffd200Main Tank|r role in the Blizzard Raid Panel. This is useful for spot buffing the |cffffd200Main Tank|r role with Blessing of Sanctuary."] or L["If you enable this option PallyPower will automatically over-write a Greater Blessing with a Normal Blessing on players marked with the |cffffd200Main Tank|r role in the Blizzard Raid Panel. This is useful to avoid blessing the |cffffd200Main Tank|r role with a Greater Blessing of Salvation."],
 							width = "full",
 							get = function(info)
 								return PallyPower.opt.mainTank
@@ -744,11 +744,11 @@ PallyPower.options = {
 								PallyPower:UpdateRoster()
 							end
 						},
-						maintank_GBWarrior = {
+						maintank_GBWarriorPDeathKnight = {
 							order = 2,
 							type = "select",
-							name = L["Override Warriors..."],
-							desc = L["Select the Greater Blessing assignment you wish to over-write on Main Tank: Warriors."],
+							name = PallyPower.isWrath and L["Override Warriors / Death Knights..."] or L["Override Warriors..."],
+							desc = PallyPower.isWrath and L["Select the Greater Blessing assignment you wish to over-write on Main Tank: Warriors / Death Knights."] or L["Select the Greater Blessing assignment you wish to over-write on Main Tank: Warriors."],
 							width = 1.2,
 							disabled = function(info)
 								return (not (PallyPower.opt.mainTank))
@@ -776,11 +776,11 @@ PallyPower.options = {
 								[6] = PallyPower.GSpells[6] -- Greater Blessing of Sanctuary
 							}
 						},
-						maintank_NBWarrior = {
+						maintank_NBWarriorPDeathKnight = {
 							order = 3,
 							type = "select",
 							name = L["...with Normal..."],
-							desc = L["Select the Normal Blessing you wish to use to over-write the Main Tank: Warriors."],
+							desc = PallyPower.isWrath and L["Select the Normal Blessing you wish to use to over-write the Main Tank: Warriors / Death Knights."] or L["Select the Normal Blessing you wish to use to over-write the Main Tank: Warriors."],
 							width = 0.9,
 							disabled = function(info)
 								return (not (PallyPower.opt.mainTank))
@@ -878,7 +878,7 @@ PallyPower.options = {
 							order = 6,
 							type = "toggle",
 							name = L["Auto-Buff Main Assistant"],
-							desc = L["If you enable this option PallyPower will automatically over-write a Greater Blessing with a Normal Blessing on players marked with the |cffffd200Main Assistant|r role in the Blizzard Raid Panel. This is useful to avoid blessing the |cffffd200Main Assistant|r role with a Greater Blessing of Salvation."],
+							desc = PallyPower.isWrath and L["If you enable this option PallyPower will automatically over-write a Greater Blessing with a Normal Blessing on players marked with the |cffffd200Main Assistant|r role in the Blizzard Raid Panel. This is useful for spot buffing the |cffffd200Main Assistant|r role with Blessing of Sanctuary."] or L["If you enable this option PallyPower will automatically over-write a Greater Blessing with a Normal Blessing on players marked with the |cffffd200Main Assistant|r role in the Blizzard Raid Panel. This is useful to avoid blessing the |cffffd200Main Assistant|r role with a Greater Blessing of Salvation."],
 							width = "full",
 							get = function(info)
 								return PallyPower.opt.mainAssist
@@ -888,11 +888,11 @@ PallyPower.options = {
 								PallyPower:UpdateRoster()
 							end
 						},
-						mainassist_GBWarrior = {
+						mainassist_GBWarriorPDeathKnight = {
 							order = 7,
 							type = "select",
-							name = L["Override Warriors..."],
-							desc = L["Select the Greater Blessing assignment you wish to over-write on Main Assist: Warriors."],
+							name = PallyPower.isWrath and L["Override Warriors / Death Knights..."] or L["Override Warriors..."],
+							desc = PallyPower.isWrath and L["Select the Greater Blessing assignment you wish to over-write on Main Assist: Warriors / Death Knights."] or L["Select the Greater Blessing assignment you wish to over-write on Main Assist: Warriors."],
 							width = 1.2,
 							disabled = function(info)
 								return (not (PallyPower.opt.mainAssist))
@@ -920,11 +920,11 @@ PallyPower.options = {
 								[6] = PallyPower.GSpells[6] -- Greater Blessing of Sanctuary
 							}
 						},
-						mainassist_NBWarrior = {
+						mainassist_NBWarriorPDeathKnight = {
 							order = 8,
 							type = "select",
 							name = L["...with Normal..."],
-							desc = L["Select the Normal Blessing you wish to use to over-write the Main Assist: Warriors."],
+							desc = PallyPower.isWrath and L["Select the Normal Blessing you wish to use to over-write the Main Assist: Warriors / Death Knights."] or L["Select the Normal Blessing you wish to use to over-write the Main Assist: Warriors."],
 							width = 0.9,
 							disabled = function(info)
 								return (not (PallyPower.opt.mainAssist))
