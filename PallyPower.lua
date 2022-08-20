@@ -2881,9 +2881,9 @@ function PallyPower:UpdatePButton(button, baseName, classID, playerID, mousebutt
 						end
 					end
 				end
-				-- Greater Blessing of Salvation [enabed for non-tanks]
+				-- Greater Blessing of Salvation [enabled for non-tanks]
 				button:SetAttribute("spell1", gSpell)
-				-- Normal Blessing of Salvation [enabed for non-tanks]
+				-- Normal Blessing of Salvation [enabled for non-tanks]
 				button:SetAttribute("spell2", nSpell)
 			else
 				-- Greater Blessings [enabled]
