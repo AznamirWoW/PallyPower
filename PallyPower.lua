@@ -620,7 +620,11 @@ function PallyPowerBlessingsGrid_Update(self, elapsed)
 					_G[fname .. "Skill" .. id]:Show()
 					local txt = SkillInfo[id].rank
 					if SkillInfo[id].talent and (SkillInfo[id].talent + 0 > 0) then
-						txt = txt .. "+" .. SkillInfo[id].talent
+						if PallyPower.isWrath and id > 2 then
+							txt = SkillInfo[id].talent
+						else
+							txt = txt .. "+" .. SkillInfo[id].talent
+						end
 					end
 					_G[fname .. "Skill" .. id]:SetText(txt)
 				else
