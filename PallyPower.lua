@@ -2056,8 +2056,8 @@ function PallyPower:UpdateRoster()
 					if not PallyPower.petsShareBaseClass then
 						tmp.class = "PET"
 					end
-					local npcId = (select(6, ("-"):split(UnitGUID(unitid))))
-					if (npcId == "510") or (npcId == "19668") or (npcId == "1863") or (npcId == "26125") or (npcId == "185317") then -- 510: Water Elemental, 19668: Shadowfiend, 1863: Succubus, 26125: Risen Ghoul, 185317: Incubus
+					local unitType, _, _, _, _, npcId = string.split("-", UnitGUID(unitid))
+					if (npcId == "510") or (npcId == "19668") or (npcId == "1863") or (unitType ~= "Pet" and npcId == "26125") or (npcId == "185317") then -- 510: Water Elemental, 19668: Shadowfiend, 1863: Succubus, 26125: Risen Ghoul, 185317: Incubus
 						tmp.class = false
 					else
 						local i = 1
