@@ -1401,7 +1401,7 @@ function PallyPower:SendSelf(sender)
 		if not SkillInfo[i] then
 			s = s .. "nn"
 		else
-			s = s .. SkillInfo[i].rank .. SkillInfo[i].talent
+			s = s .. format("%x%x", SkillInfo[i].rank, SkillInfo[i].talent)
 		end
 	end
 	s = s .. "@"
@@ -1735,7 +1735,7 @@ function PallyPower:ParseMessage(sender, msg)
 		PallyPower_Assignments[sender] = {}
 		AllPallys[sender] = {}
 		self:SyncAdd(sender)
-		local _, _, numbers, assign = strfind(msg, "SELF ([0-9n]*)@([0-9n]*)")
+		local _, _, numbers, assign = strfind(msg, "SELF ([0-9a-fn]*)@([0-9n]*)")
 		for i = 1, 6 do
 			local rank = strsub(numbers, (i - 1) * 2 + 1, (i - 1) * 2 + 1)
 			local talent = strsub(numbers, (i - 1) * 2 + 2, (i - 1) * 2 + 2)
@@ -2056,7 +2056,7 @@ function PallyPower:UpdateRoster()
 					if not PallyPower.petsShareBaseClass then
 						tmp.class = "PET"
 					end
-					local unitType, _, _, _, _, npcId = string.split("-", UnitGUID(unitid))
+					local unitType, _, _, _, _, npcId = strsplit("-", UnitGUID(unitid))
 					if (npcId == "510") or (npcId == "19668") or (npcId == "1863") or (unitType ~= "Pet" and npcId == "26125") or (npcId == "185317") then -- 510: Water Elemental, 19668: Shadowfiend, 1863: Succubus, 26125: Risen Ghoul, 185317: Incubus
 						tmp.class = false
 					else
