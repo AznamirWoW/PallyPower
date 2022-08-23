@@ -4008,28 +4008,6 @@ function PallyPower:SelectBuffsByClass(pallycount, class, prioritylist)
 		end
 	end
 
-	if not self:BuffSelectionOptimized(pallys, class, prioritylist) then
-		local bufftable = prioritylist
-		if pallycount > 0 then
-			local pallycounter = 1
-			for _, nextspell in pairs(bufftable) do
-				if pallycounter <= pallycount then
-					local buffer = self:BuffSelections(nextspell, class, pallys)
-					for i in pairs(pallys) do
-						if buffer == pallys[i] then
-							tremove(pallys, i)
-						end
-					end
-					if buffer ~= "" then
-						pallycounter = pallycounter + 1
-					end
-				end
-			end
-		end
-	end
-end
-
-function PallyPower:BuffSelectionOptimized(pallys, class, prioritylist)
 	local buffers = self.isWrath and {
 		[1] = WisdomPallys,
 		[2] = MightPallys,
@@ -4043,73 +4021,17 @@ function PallyPower:BuffSelectionOptimized(pallys, class, prioritylist)
 		[5] = LightPallys,
 		[6] = SancPallys,
 	}
+
 	local assignments = PallyPowerAutoAssignments(pallys, prioritylist, buffers)
-	if assignments == nil then
-		return false
-	end
-
-	for buff, buffer in pairs(assignments) do
-		if PallyPower_Assignments[buffer] == nil then
-			PallyPower_Assignments[buffer] = {}
-		end
-		PallyPower_Assignments[buffer][class] = buff
-		self:TankNormalBlessingOverride(buff, class, buffer)
-	end
-
-	return true
-end
-
-function PallyPower:BuffSelections(buff, class, pallys)
-	local t = {}
-	if buff == 1 then
-		t = WisdomPallys
-	end
-	if buff == 2 then
-		t = MightPallys
-	end
-	if buff == 3 then
-		t = KingsPallys
-	end
-	if not self.isWrath and buff == 4 then
-		t = SalvPallys
-	end
-	if not self.isWrath and buff == 5 then
-		t = LightPallys
-	end
-	if not self.isWrath and buff == 6 then
-		t = SancPallys
-	end
-	if self.isWrath and buff == 4 then
-		t = SancPallys
-	end
-	local Buffer = ""
-	tsort(
-		t,
-		function(a, b)
-			return a.skill > b.skill
-		end
-	)
-	for _, v in pairs(t) do
-		if self:PallyAvailable(v.pallyname, pallys) then --removed check if v.skill / Zid
-			Buffer = v.pallyname
-			break
-		end
-	end
-	if Buffer ~= "" then
-		if (IsInRaid() and buff > 2) then
-			for pclass = 1, PALLYPOWER_MAXCLASSES do
-				PallyPower_Assignments[Buffer][pclass] = buff
+	if assignments ~= nil then
+		for buff, buffer in pairs(assignments) do
+			if PallyPower_Assignments[buffer] == nil then
+				PallyPower_Assignments[buffer] = {}
 			end
-		elseif PallyPower_Assignments and not PallyPower_Assignments[Buffer] then
-			PallyPower_Assignments[Buffer] = {}
-			PallyPower_Assignments[Buffer][class] = buff
-		else
-			PallyPower_Assignments[Buffer][class] = buff
+			PallyPower_Assignments[buffer][class] = buff
+			self:TankNormalBlessingOverride(buff, class, buffer)
 		end
-		self:TankNormalBlessingOverride(buff, class, Buffer)
-	else
 	end
-	return Buffer
 end
 
 function PallyPower:TankNormalBlessingOverride(buff, class, Buffer)
@@ -4153,16 +4075,6 @@ function PallyPower:TankNormalBlessingOverride(buff, class, Buffer)
 			end
 		end
 	end
-end
-
-function PallyPower:PallyAvailable(pally, pallys)
-	local available = false
-	for i in pairs(pallys) do
-		if pallys[i] == pally then
-			available = true
-		end
-	end
-	return available
 end
 
 function PallyPowerAuraButton_OnClick(btn, mouseBtn)
