@@ -661,10 +661,18 @@ function PallyPowerBlessingsGrid_Update(self, elapsed)
 				if CooldownInfo[id] then
 					-- use extra icon to show weather LoH is improved or not
 					if (id == 1) then
-						if (CooldownInfo[id].improved > 0) then
+						if (CooldownInfo[id].improved and CooldownInfo[id].improved > 0) then
 							_G[fname .. "CIcon" .. id]:SetTexture("Interface\\AddOns\\PallyPower\\Icons\\Spell_Holy_LayOnHands_Improved")
 						else
 							_G[fname .. "CIcon" .. id]:SetTexture("Interface\\Icons\\Spell_Holy_LayOnHands")
+						end
+					end
+					-- use extra icon to show weather Divine Guardian or not
+					if (id == 3) then
+						if (CooldownInfo[id].improved and CooldownInfo[id].improved > 0) then
+							_G[fname .. "CIcon" .. id]:SetTexture("Interface\\AddOns\\PallyPower\\Icons\\Spell_Holy_Powerwordbarrier_improved")
+						else
+							_G[fname .. "CIcon" .. id]:SetTexture("Interface\\Icons\\Spell_Holy_Powerwordbarrier")
 						end
 					end
 					_G[fname .. "CIcon" .. id]:Show()
@@ -697,7 +705,7 @@ function PallyPowerBlessingsGrid_Update(self, elapsed)
 			i = i + 1
 			numPallys = numPallys + 1
 		end
-		PallyPowerBlessingsFrame:SetHeight(14 + 24 + 56 + (numPallys * 100) + 22 + 13 * numMaxClass)
+		PallyPowerBlessingsFrame:SetHeight(14 + 24 + 56 + (numPallys * 112) + 22 + 13 * numMaxClass)
 		_G["PallyPowerBlessingsFramePlayer1"]:SetPoint("TOPLEFT", 8, -80 - 13 * numMaxClass)
 		for i = 1, PALLYPOWER_MAXCLASSES do
 			_G["PallyPowerBlessingsFrameClassGroup" .. i .. "Line"]:SetHeight(56 + 13 * numMaxClass)
@@ -1858,19 +1866,24 @@ function PallyPower:ParseMessage(sender, msg)
 	end
 
 	if strfind(msg, "COOLDOWNS") then
-		local senderCooldownList = strsplittable(":", msg)
+		local senderCooldownList = {strsplit(":", msg)}
+		tremove(senderCooldownList, 1) -- remove the overhead
+	
 		local isOldPP = (#senderCooldownList % 3) > 0 -- if data is sent from older PP only use 2 params
-		local dataSize = isOldPP and 3 or 2
+		local dataSize = isOldPP and 2 or 3
+
 		local senderCooldownTable = {
 			duration = {},
 			remaining = {},
 			improved = {}
 		}
-		for i = 1, #senderCooldownList, i + (dataSize) do 
-			local cdIndex = math.ceil(i / dataSize)
-			senderCooldownTable.duration[cdIndex] = tonumber(senderCooldownList[i])
-			senderCooldownTable.remaining[cdIndex] = tonumber(senderCooldownList[i+1])
-			senderCooldownTable.improved[cdIndex] = (not isOldPP) and tonumber(senderCooldownList[i+2]) or 0
+		local cooldownIteratorOffset = 1
+		for i = 1, (#senderCooldownList/dataSize) do 
+			-- print(i, cooldownIteratorOffset, senderCooldownList[cooldownIteratorOffset], senderCooldownList[cooldownIteratorOffset+1], senderCooldownList[cooldownIteratorOffset+2])
+			senderCooldownTable.duration[i] = tonumber(senderCooldownList[cooldownIteratorOffset])
+			senderCooldownTable.remaining[i] = tonumber(senderCooldownList[cooldownIteratorOffset+1])
+			senderCooldownTable.improved[i] = (not isOldPP) and tonumber(senderCooldownList[cooldownIteratorOffset+2]) or 0
+			cooldownIteratorOffset = (dataSize * i)+1
 		end
 		if AllPallys[sender] then
 			if not AllPallys[sender].CooldownInfo then
@@ -1879,8 +1892,9 @@ function PallyPower:ParseMessage(sender, msg)
 			for i=1, #self.Cooldowns do 
 				if not AllPallys[sender].CooldownInfo[i] and senderCooldownTable.remaining[i] ~= nil then
 					AllPallys[sender].CooldownInfo[i] = {}
-					AllPallys[sender].CooldownInfo[i].duration = senderCooldownTable.duration[i]
-					AllPallys[sender].CooldownInfo[i].start = GetTime() - (senderCooldownTable.duration[i] - senderCooldownTable.remaining[i])
+					AllPallys[sender].CooldownInfo[i].duration = senderCooldownTable.duration[i] or 0
+
+					AllPallys[sender].CooldownInfo[i].start = GetTime() - (AllPallys[sender].CooldownInfo[i].duration - senderCooldownTable.remaining[i])
 					AllPallys[sender].CooldownInfo[i].improved = senderCooldownTable.improved[i] or 0
 				end
 			end
