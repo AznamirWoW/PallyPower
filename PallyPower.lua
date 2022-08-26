@@ -69,7 +69,7 @@ do
 end
 
 PallyPower.Credits1 = "PallyPower - by Aznamir (Lightbringer US)"
-PallyPower.Credits2 = "Updated for Classic by Dyaxler, Es, gallantron and irregularly by Zid"
+PallyPower.Credits2 = "Updated for Classic by Dyaxler, Es, gallantron, and Zid"
 
 function PallyPower:Debug(s)
 	if (PP_DebugEnabled) then
