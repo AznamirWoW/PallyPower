@@ -3,9 +3,6 @@ local L = LibStub("AceLocale-3.0"):GetLocale("PallyPower")
 PallyPower.commPrefix = "PLPWR"
 C_ChatInfo.RegisterAddonMessagePrefix(PallyPower.commPrefix)
 
-PallyPower.isVanilla = (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_CLASSIC)
-PallyPower.isBCC = ((_G.WOW_PROJECT_ID == _G.WOW_PROJECT_BURNING_CRUSADE_CLASSIC) and select(4, GetBuildInfo()) < 30000)
-PallyPower.isWrath = (select(4, GetBuildInfo()) >= 30400 and select(4, GetBuildInfo()) < 40000) -- TODO: Change when there is a project ID
 PallyPower.petsShareBaseClass = PallyPower.isBCC or PallyPower.isWrath
 
 PALLYPOWER_MAXCLASSES = PallyPower.isWrath and 10 or 9
