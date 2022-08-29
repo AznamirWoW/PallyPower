@@ -1,4 +1,13 @@
 PallyPower = {isWrath = false}
+function tContains(t, val)
+  for _, v in pairs(t) do
+    if v == val then
+      return true
+    end
+  end
+  return false
+end
+
 dofile ("./PallyPowerAutoAssignment.lua")
 
 local wisdom = 1

@@ -15,25 +15,16 @@ if is_wrath() then
   light = nil
 end
 
-local function table_contains(t, val)
-  for _, v in pairs(t) do
-    if v == val then
-      return true
-    end
-  end
-  return false
-end
-
 local function is_talented_buff(buff)
   if is_wrath() then
     return buff == sanc
   end
 
-  return table_contains({kings, sanc}, buff)
+  return tContains({ kings, sanc}, buff)
 end
 
 local function is_improvable_buff(buff)
-  return table_contains({might, wisdom}, buff)
+  return tContains({ might, wisdom}, buff)
 end
 
 local function should_reset_skill(buff)
@@ -60,7 +51,7 @@ local function get_remaining_buffs(pallys, preferred_buffs, assignments)
   end
 
   for _, buff in ipairs(preferred_buffs) do
-    if num_assignments < #pallys and not table_contains(assigned_buffs, buff) then
+    if num_assignments < #pallys and not tContains(assigned_buffs, buff) then
       table.insert(remaining_buffs, buff)
       num_assignments = num_assignments + 1
     end
@@ -94,7 +85,7 @@ local function recalc_buff_skills(pallys, orig_buffers)
   for buff, buffers in ipairs(orig_buffers) do
     new_buffers[buff] = {}
     for _, buffer in ipairs(buffers) do
-      if table_contains(pallys, buffer.pallyname) then
+      if tContains(pallys, buffer.pallyname) then
         local effective_skill = buffer.skill
         if should_reset_skill(buff) then
           effective_skill = 1
@@ -184,14 +175,14 @@ local function get_most_skilled_buffer(buffers, buff, assignments)
   local most_skilled = candidates[1]
 
   -- swapping only works assuming both players can do both buffs. true because we only do this for untalented buffs
-  if is_improvable_buff(buff) and table_contains(assignments, most_skilled.pallyname) then
+  if is_improvable_buff(buff) and tContains(assignments, most_skilled.pallyname) then
     local current = get_assigned_buff(most_skilled.pallyname, assignments)
     local skill_at_current = get_buffer_skill(most_skilled.pallyname, buffers[current])
 
     -- find someone unassigned that has the same skill at the current buff
     local backup_buffer
     for _, candidate in ipairs(buffers[current]) do
-      if not table_contains(assignments, candidate.pallyname) and candidate.skill == skill_at_current then
+      if not tContains(assignments, candidate.pallyname) and candidate.skill == skill_at_current then
         backup_buffer = candidate
       end
     end
@@ -203,7 +194,7 @@ local function get_most_skilled_buffer(buffers, buff, assignments)
 
     local next_available_most_skilled
     for i = 2, #candidates, 1 do
-      if next_available_most_skilled == nil and not table_contains(assignments, candidates[i].pallyname) then
+      if next_available_most_skilled == nil and not tContains(assignments, candidates[i].pallyname) then
         next_available_most_skilled = candidates[i]
       end
     end
@@ -221,7 +212,7 @@ end
 local function get_least_skilled_imp_buffer(buff_buffers, imp_buffers, current_assignments)
   local least_skilled
   for _, candidate in ipairs(buff_buffers) do
-    if not table_contains(current_assignments, candidate.pallyname) then
+    if not tContains(current_assignments, candidate.pallyname) then
       if least_skilled == nil or imp_buffers[candidate.pallyname] < imp_buffers[least_skilled] then
         least_skilled = candidate.pallyname
       end
@@ -308,7 +299,7 @@ function PallyPowerAutoAssignments(pallys, preferred_buffs, orig_buffers)
     if buff == nil or buffer == nil then
       return nil
     end
-    if table_contains(verify, buffer) then
+    if tContains(verify, buffer) then
       return nil
     end
 
