@@ -1,8 +1,8 @@
 PallyPower = LibStub("AceAddon-3.0"):NewAddon("PallyPower", "AceConsole-3.0", "AceEvent-3.0", "AceBucket-3.0", "AceTimer-3.0")
 
 PallyPower.isVanilla = (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_CLASSIC)
-PallyPower.isBCC = ((_G.WOW_PROJECT_ID == _G.WOW_PROJECT_BURNING_CRUSADE_CLASSIC) and select(4, GetBuildInfo()) < 30000)
-PallyPower.isWrath = (select(4, GetBuildInfo()) >= 30400 and select(4, GetBuildInfo()) < 40000) -- TODO: Change when there is a project ID
+PallyPower.isBCC = (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_BURNING_CRUSADE_CLASSIC)
+PallyPower.isWrath = (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_WRATH_CLASSIC)
 
 local L = LibStub("AceLocale-3.0"):GetLocale("PallyPower")
 local LSM3 = LibStub("LibSharedMedia-3.0")
