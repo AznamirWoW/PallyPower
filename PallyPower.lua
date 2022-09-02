@@ -250,6 +250,8 @@ function PallyPower:Purge()
 	PallyPower_Assignments = {}
 	PallyPower_NormalAssignments = {}
 	PallyPower_AuraAssignments = {}
+
+	PallyPower_SavedPresets = nil
 end
 
 function PallyPower:Reset()
@@ -3856,6 +3858,7 @@ function PallyPower:StorePreset()
 	--save current Assignments to preset
 	PallyPower_SavedPresets["PallyPower_Assignments"][0] = tablecopy(PallyPower_Assignments)
 	PallyPower_SavedPresets["PallyPower_NormalAssignments"][0] = tablecopy(PallyPower_NormalAssignments)
+	PallyPower_SavedPresets["PallyPower_AuraAssignments"][0] = tablecopy(PallyPower_AuraAssignments)
 end
 
 function PallyPower:LoadPreset()
@@ -3866,6 +3869,7 @@ function PallyPower:LoadPreset()
 	PallyPower:SendMessage("CLEAR SKIP")
 	PallyPower_Assignments = tablecopy(PallyPower_SavedPresets["PallyPower_Assignments"][0])
 	PallyPower_NormalAssignments = tablecopy(PallyPower_SavedPresets["PallyPower_NormalAssignments"][0])
+	PallyPower_AuraAssignments = tablecopy(PallyPower_SavedPresets["PallyPower_AuraAssignments"][0])
 	C_Timer.After(
 		0.25,
 		function() -- send Class-Assignments
