@@ -3740,7 +3740,7 @@ function PallyPower:SealCycle()
 			self.opt.seal = 0
 		end
 		local cur = self.opt.seal
-		for test = cur + 1, self.isWrath and 9 or 10 do
+		for test = cur + 1, self.isWrath and 10 or 11 do
 			cur = test
 			if GetSpellInfo(self.Seals[cur]) then
 				do
@@ -3748,7 +3748,7 @@ function PallyPower:SealCycle()
 				end
 			end
 		end
-		if (self.isWrath and cur == 9) or (not self.isWrath and cur == 10) then
+		if (self.isWrath and cur == 10) or (not self.isWrath and cur == 11) then
 			cur = 0
 		end
 		self:SealAssign(cur)
@@ -3767,7 +3767,7 @@ function PallyPower:SealCycleBackward()
 		end
 		local cur = self.opt.seal
 		if cur == 0 then
-			cur = self.isWrath and 9 or 10
+			cur = self.isWrath and 10 or 11
 		end
 		for test = cur - 1, 0, -1 do
 			cur = test
