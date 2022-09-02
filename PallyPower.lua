@@ -96,12 +96,6 @@ function PallyPower:OnInitialize()
 	self.db.RegisterCallback(self, "OnProfileCopied", "OnProfileChanged")
 	self.db.RegisterCallback(self, "OnProfileReset", "OnProfileChanged")
 
-	if not PallyPower_SavedPresets or PallyPower_SavedPresets == nil then
-		PallyPower_SavedPresets = {}
-		PallyPower_SavedPresets["PallyPower_Assignments"] = {[0] = {}}
-		PallyPower_SavedPresets["PallyPower_NormalAssignments"] = {[0] = {}}
-	end
-
 	self.opt = self.db.profile
 	self.options.args.profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db)
 
@@ -174,6 +168,19 @@ function PallyPower:OnInitialize()
 
 	if self.isVanilla then
 		LCD:Register("PallyPower")
+	end
+
+	-- the transition from TBC Classic to Wrath Classic has caused some errors for players with SavedVariables values intended for the 2.5.4 clients and earlier
+	if self.isWrath and not self.opt.WrathTransition then
+		PallyPower:Purge()
+
+		self.opt.WrathTransition = true
+	end
+
+	if not PallyPower_SavedPresets or PallyPower_SavedPresets == nil then
+		PallyPower_SavedPresets = {}
+		PallyPower_SavedPresets["PallyPower_Assignments"] = {[0] = {}}
+		PallyPower_SavedPresets["PallyPower_NormalAssignments"] = {[0] = {}}
 	end
 end
 

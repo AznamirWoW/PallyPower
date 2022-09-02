@@ -65,7 +65,8 @@ PALLYPOWER_DEFAULT_VALUES = {
 		ShowTooltips = true,
 		ShowWhenSolo = true,
 		skin = "Smooth",
-		SmartBuffs = true
+		SmartBuffs = true,
+		WrathTransition = false,
 	}
 }
 
@@ -123,7 +124,8 @@ PALLYPOWER_OTHER_VALUES = {
 		ShowTooltips = true,
 		ShowWhenSolo = true,
 		skin = "Smooth",
-		SmartBuffs = false
+		SmartBuffs = false,
+		WrathTransition = false,
 	}
 }
 
