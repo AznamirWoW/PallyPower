@@ -529,11 +529,11 @@ PallyPower.options = {
 								[2] = PallyPower.Seals[2], -- Seal of Light
 								[3] = PallyPower.Seals[3], -- Seal of Wisdom
 								[4] = PallyPower.Seals[4], -- Seal of Righteousness
-								[5] = PallyPower.Seals[6], -- Seal of Command
-								[6] = PallyPower.Seals[7], -- Seal of Vengeance (Alliance)
-								[7] = PallyPower.Seals[8], -- Seal of Blood (Horde)
-								[8] = PallyPower.Seals[9], -- Seal of the Martyr (Alliance)
-								[9] = PallyPower.Seals[10] -- Seal of Corruption (Horde)
+								[5] = PallyPower.Seals[5], -- Seal of Command
+								[6] = PallyPower.Seals[6], -- Seal of Vengeance (Alliance)
+								[7] = PallyPower.Seals[7], -- Seal of Blood (Horde)
+								[8] = PallyPower.Seals[8], -- Seal of the Martyr (Alliance)
+								[9] = PallyPower.Seals[9] -- Seal of Corruption (Horde)
 							} or {
 								[0] = L["None"],
 								[1] = PallyPower.Seals[1], -- Seal of Justice
