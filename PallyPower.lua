@@ -677,6 +677,7 @@ function PallyPowerBlessingsGrid_Update(self, elapsed)
 				if CooldownInfo[id] then
 					_G[fname .. "CIcon" .. id]:Show()
 					_G[fname .. "CSkill" .. id]:Show()
+					local txt
 					if CooldownInfo[id].start ~= 0 and CooldownInfo[id].duration ~= 0 then
 						CooldownInfo[id].text = PallyPower:FormatTime(CooldownInfo[id].start + CooldownInfo[id].duration - GetTime())
 						if CooldownInfo[id].start + CooldownInfo[id].duration - GetTime() < 1 then
