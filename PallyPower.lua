@@ -177,7 +177,7 @@ function PallyPower:OnInitialize()
 		self.opt.WrathTransition = true
 	end
 
-	if not PallyPower_SavedPresets or PallyPower_SavedPresets == nil then
+	if not PallyPower_SavedPresets then
 		PallyPower_SavedPresets = {}
 		PallyPower_SavedPresets["PallyPower_Assignments"] = {[0] = {}}
 		PallyPower_SavedPresets["PallyPower_NormalAssignments"] = {[0] = {}}
