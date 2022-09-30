@@ -1759,7 +1759,7 @@ function PallyPower:ParseMessage(sender, msg)
 			local talent = strsub(numbers, (i - 1) * 2 + 2, (i - 1) * 2 + 2)
 			if rank ~= "n" then
 				AllPallys[sender][i] = {}
-				AllPallys[sender][i].rank = tonumber(rank)
+				AllPallys[sender][i].rank = tonumber(rank, 16)
 				AllPallys[sender][i].talent = tonumber(talent)
 			end
 		end
@@ -1907,7 +1907,7 @@ function PallyPower:ParseMessage(sender, msg)
 				if rank ~= "n" then
 					AllPallys[sender].AuraInfo[i] = {}
 					AllPallys[sender].AuraInfo[i].rank = tonumber(rank, 16)
-					AllPallys[sender].AuraInfo[i].talent = tonumber(talent, 16)
+					AllPallys[sender].AuraInfo[i].talent = tonumber(talent)
 				end
 			end
 			if assign then
