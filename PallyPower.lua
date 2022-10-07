@@ -3223,7 +3223,7 @@ function PallyPower:GetUnitAndSpellSmart(classid, mousebutton)
 						buffExpire = 270
 						penalty = 0
 					-- Alternate Blessing assigned then always allow buffing over a Greater Blessing: Set duration to zero and buff it.
-					elseif self.isWrath or (spell ~= self.Spells[7] and spellID ~= gspellID) then
+					elseif (self.isWrath and spellID ~= gspellID) or (spell ~= self.Spells[7] and spellID ~= gspellID) then
 						greaterBlessing = false
 						buffExpire = 0
 						penalty = 0
@@ -3631,7 +3631,7 @@ function PallyPower:AutoBuff(button, mousebutton)
 						buffExpire = 270
 						penalty = 0
 					-- Alternate Blessing assigned then always allow buffing over a Greater Blessing: Set duration to zero and buff it.
-					elseif self.isWrath or (spell ~= self.Spells[7] and spellID ~= gspellID) then
+					elseif (self.isWrath and spellID ~= gspellID) or (spell ~= self.Spells[7] and spellID ~= gspellID) then
 						buffExpire = 0
 						penalty = 0
 					end
