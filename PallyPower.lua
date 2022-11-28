@@ -492,7 +492,7 @@ function PallyPowerGrid_NormalBlessingMenu(btn, mouseBtn, pname, class)
 			if PallyPower_NormalAssignments[pally] and PallyPower_NormalAssignments[pally][class] and PallyPower_NormalAssignments[pally][class][pname] then
 				PallyPower_NormalAssignments[pally][class][pname] = nil
 			end
-			PallyPower:SendNormalBlessings(pname, class, tname)
+			PallyPower:SendNormalBlessings(pally, class, pname)
 			PallyPower:UpdateLayout()
 		end
 	end
