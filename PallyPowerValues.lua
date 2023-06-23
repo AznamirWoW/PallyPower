@@ -38,7 +38,9 @@ PALLYPOWER_DEFAULT_VALUES = {
 			HideTimerText = false,
 			LockBuffBars = false,
 			showPlayerButtons = true,
-			showClassButtons = true
+			showClassButtons = true,
+			offsetX = 0,
+			offsetY = 0
 		},
 		enabled = true,
 		layout = "Layout 2",

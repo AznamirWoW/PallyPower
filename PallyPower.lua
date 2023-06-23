@@ -24,7 +24,6 @@ local WisdomPallys, MightPallys, KingsPallys, SalvPallys, LightPallys, SancPally
 local classlist, classes = {}, {}
 
 PallyPower.player = UnitName("player")
-PallyPower.realm = GetRealmName()
 
 PallyPower_Assignments = {}
 PallyPower_NormalAssignments = {}
@@ -182,6 +181,10 @@ function PallyPower:OnInitialize()
 		PallyPower_SavedPresets["PallyPower_Assignments"] = {[0] = {}}
 		PallyPower_SavedPresets["PallyPower_NormalAssignments"] = {[0] = {}}
 	end
+	local h = _G["PallyPowerFrame"]
+	h:ClearAllPoints()
+	h:SetPoint("CENTER", "UIParent", "CENTER", self.opt.display.offsetX, self.opt.display.offsetY)
+
 end
 
 function PallyPower:OnEnable()
@@ -266,7 +269,7 @@ function PallyPower:Reset()
 
 	local h = _G["PallyPowerFrame"]
 	h:ClearAllPoints()
-	h:SetPoint("CENTER", "UIParent", "CENTER", 0, 0)
+	h:SetPoint("CENTER", "UIParent", "CENTER", self.opt.display.offsetX, self.opt.display.offsetY)
 	self.opt.buffscale = 0.9
 	self.opt.border = "Blizzard Tooltip"
 	self.opt.layout = "Layout 2"
@@ -1568,6 +1571,7 @@ end
 
 function PallyPower:PLAYER_ENTERING_WORLD()
 	--self:Debug("EVENT: PLAYER_ENTERING_WORLD")
+	PallyPower.realm = GetNormalizedRealmName() --GetRealmName()
 	self:UpdateLayout()
 	self:UpdateRoster()
 	self:ReportChannels()
@@ -3479,6 +3483,8 @@ function PallyPower:ClickHandle(button, mousebutton)
 			if (self.opt.display.LockBuffBars) then
 				LOCK_ACTIONBAR = "1"
 			end
+			local h = _G["PallyPowerFrame"]
+			_, _, _, self.opt.display.offsetX, self.opt.display.offsetY = h:GetPoint()
 		else
 			if (self.opt.display.LockBuffBars) then
 				LOCK_ACTIONBAR = "0"
