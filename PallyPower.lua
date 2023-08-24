@@ -24,7 +24,7 @@ local WisdomPallys, MightPallys, KingsPallys, SalvPallys, LightPallys, SancPally
 local classlist, classes = {}, {}
 
 PallyPower.player = UnitName("player")
-
+PallyPower_Talents = {}
 PallyPower_Assignments = {}
 PallyPower_NormalAssignments = {}
 PallyPower_AuraAssignments = {}
@@ -191,6 +191,7 @@ function PallyPower:OnEnable()
 	isPally = select(2, UnitClass("player")) == "PALADIN"
 
 	self.opt.enable = true
+	self:ScanTalents()
 	self:ScanSpells()
 	self:ScanCooldowns()
 	self:RegisterEvent("CHAT_MSG_ADDON")
@@ -1259,12 +1260,22 @@ function PallyPower:NeedsBuff(class, test, playerName)
 	return true
 end
 
+function PallyPower:ScanTalents()
+	local numTabs = GetNumTalentTabs()
+	for t = 1, numTabs do
+		for i = 1, GetNumTalents(t) do
+			local _, textureID = GetTalentInfo(t, i)
+			PallyPower_Talents[textureID] = {t, i}
+		end
+	end
+end
+
 function PallyPower:ScanSpells()
 	--self:Debug("[ScanSpells]")
 	if isPally then
 		local RankInfo = {}
 		for i = 1, #self.Spells do -- find max spell ranks
-			local spellName = GetSpellInfo(self.Spells[i])
+			local spellName, _, spellTexture = GetSpellInfo(self.Spells[i])
 			local spellRank = GetSpellSubtext(GetSpellInfo(self.Spells[i]))
 			if spellName then
 				RankInfo[i] = {}
@@ -1272,29 +1283,11 @@ function PallyPower:ScanSpells()
 					spellRank = "1" -- BoK and BoS
 				end
 				local talent = 0
-				if i == 1 then
-					if self.isWrath then
-						-- TODO: GetTalentInfo bugged on beta right now so column/rows are "correct" but incorrect
-						-- talent = talent + select(5, GetTalentInfo(1, 6)) -- Improved Blessing of Wisdom
-						talent = talent + select(5, GetTalentInfo(1, 6)) -- Improved Blessing of Wisdom
-					else
-						talent = talent + select(5, GetTalentInfo(1, 10)) -- Improved Blessing of Wisdom
-					end
-				elseif i == 2 then
-					if self.isWrath then
-						-- TODO: GetTalentInfo bugged on beta right now so column/rows are "correct" but incorrect
-						-- talent = talent + select(5, GetTalentInfo(3, 5)) -- Improved Blessing of Might
-						talent = talent + select(5, GetTalentInfo(3, 1)) -- Improved Blessing of Might
-					else
-						talent = talent + select(5, GetTalentInfo(3, 1)) -- Improved Blessing of Might
-					end
-				elseif i == 3 and not self.isWrath then
-					talent = talent + select(5, GetTalentInfo(2, 6)) -- Blessing of Kings
-				elseif i == 6 and not self.isWrath then
-					if self.isBCC then
-						talent = talent + select(5, GetTalentInfo(2, 14)) -- Blessing of Sanctuary
-					else
-						talent = talent + select(5, GetTalentInfo(2, 12)) -- Blessing of Sanctuary
+				if PallyPower_Talents[spellTexture] then
+					local tab = PallyPower_Talents[spellTexture][1]
+					local loc = PallyPower_Talents[spellTexture][2]
+					if i == 1 or i == 2 or i == 3 or i == 6 then
+						talent = talent + select(5, GetTalentInfo(tab, loc))
 					end
 				end
 				RankInfo[i].talent = talent
@@ -1305,7 +1298,7 @@ function PallyPower:ScanSpells()
 		AllPallys[self.player] = RankInfo
 		AllPallys[self.player].AuraInfo = {}
 		for i = 1, PALLYPOWER_MAXAURAS do -- find max ranks/talents for auaras
-			local spellName = GetSpellInfo(self.Auras[i])
+			local spellName, _, spellTexture = GetSpellInfo(self.Auras[i])
 			local spellRank = GetSpellSubtext(GetSpellInfo(self.Auras[i]))
 			if spellName then
 				AllPallys[self.player].AuraInfo[i] = {}
@@ -1313,37 +1306,11 @@ function PallyPower:ScanSpells()
 					spellRank = "1" -- Concentration
 				end
 				local talent = 0
-				if i == 1 then
-					if self.isWrath then
-						-- TODO: GetTalentInfo bugged on beta right now so column/rows are "correct" but incorrect
-						-- talent = talent + select(5, GetTalentInfo(2, 11)) -- Improved Devotion Aura
-						talent = talent + select(5, GetTalentInfo(2, 2)) -- Improved Devotion Aura
-					else
-						talent = talent + select(5, GetTalentInfo(2, 1)) -- Improved Devotion Aura
-					end
-				elseif i == 2 then
-					if self.isWrath then
-						-- TODO: GetTalentInfo bugged on beta right now so column/rows are "correct" but incorrect
-						-- talent = talent + select(5, GetTalentInfo(3, 14)) -- Sanctified Retribution
-						talent = talent + select(5, GetTalentInfo(3, 15)) -- Sanctified Retribution
-					else
-						talent = talent + select(5, GetTalentInfo(3, 11)) -- Improved Retribution Aura
-					end
-				elseif i == 3 then
-					if self.isWrath then
-						-- TODO: GetTalentInfo bugged on beta right now so column/rows are "correct" but incorrect
-						-- talent = talent + select(5, GetTalentInfo(1, 9)) -- Improved Concentration Aura
-						talent = talent + select(5, GetTalentInfo(1, 8)) -- Improved Concentration Aura
-					elseif self.isBCC then
-						talent = talent + select(5, GetTalentInfo(2, 12)) -- Improved Concentration Aura
-					else
-						talent = talent + select(5, GetTalentInfo(2, 11)) -- Improved Concentration Aura
-					end
-				elseif i == 7 and not self.isWrath then
-					if self.isBCC then
-						talent = talent + select(5, GetTalentInfo(3, 14)) -- Sanctity Aura
-					else
-						talent = talent + select(5, GetTalentInfo(3, 13)) -- Sanctity Aura
+				if PallyPower_Talents[spellTexture] then
+					local tab = PallyPower_Talents[spellTexture][1]
+					local loc = PallyPower_Talents[spellTexture][2]
+					if i == 1 or i == 2 or i == 3 or i == 7 then
+						talent = talent + select(5, GetTalentInfo(tab, loc))
 					end
 				end
 				AllPallys[self.player].AuraInfo[i].talent = talent
