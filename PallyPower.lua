@@ -1283,12 +1283,11 @@ function PallyPower:ScanSpells()
 					spellRank = "1" -- BoK and BoS
 				end
 				local talent = 0
-				if PallyPower_Talents[spellTexture] then
+				-- only for Wisdom, Might, Sanctuary blessings
+				if PallyPower_Talents[spellTexture] and (i == 1 or i == 2 or i == 6) then
 					local tab = PallyPower_Talents[spellTexture][1]
 					local loc = PallyPower_Talents[spellTexture][2]
-					if i == 1 or i == 2 or i == 3 or i == 6 then
-						talent = talent + select(5, GetTalentInfo(tab, loc))
-					end
+					talent = talent + select(5, GetTalentInfo(tab, loc))
 				end
 				RankInfo[i].talent = talent
 				RankInfo[i].rank = tonumber(select(3, strfind(spellRank, "(%d+)")))
@@ -1306,12 +1305,10 @@ function PallyPower:ScanSpells()
 					spellRank = "1" -- Concentration
 				end
 				local talent = 0
-				if PallyPower_Talents[spellTexture] then
+				if PallyPower_Talents[spellTexture] and (i == 1 or i == 2 or i == 3 or i == 7) then
 					local tab = PallyPower_Talents[spellTexture][1]
 					local loc = PallyPower_Talents[spellTexture][2]
-					if i == 1 or i == 2 or i == 3 or i == 7 then
-						talent = talent + select(5, GetTalentInfo(tab, loc))
-					end
+					talent = talent + select(5, GetTalentInfo(tab, loc))
 				end
 				AllPallys[self.player].AuraInfo[i].talent = talent
 				AllPallys[self.player].AuraInfo[i].rank = tonumber(select(3, strfind(spellRank, "(%d+)")))
