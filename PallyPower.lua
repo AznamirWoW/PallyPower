@@ -180,6 +180,7 @@ function PallyPower:OnInitialize()
 		PallyPower_SavedPresets = {}
 		PallyPower_SavedPresets["PallyPower_Assignments"] = {[0] = {}}
 		PallyPower_SavedPresets["PallyPower_NormalAssignments"] = {[0] = {}}
+		PallyPower_SavedPresets["PallyPower_AuraAssignments"] = {[0] = {}}
 	end
 	local h = _G["PallyPowerFrame"]
 	h:ClearAllPoints()
@@ -3833,6 +3834,10 @@ function PallyPower:AutoAssign()
 end
 
 function PallyPower:StorePreset()
+	PallyPower_SavedPresets = {}
+	PallyPower_SavedPresets["PallyPower_Assignments"] = {[0] = {}}
+	PallyPower_SavedPresets["PallyPower_NormalAssignments"] = {[0] = {}}
+	PallyPower_SavedPresets["PallyPower_AuraAssignments"] = {[0] = {}}
 	--save current Assignments to preset
 	PallyPower_SavedPresets["PallyPower_Assignments"][0] = tablecopy(PallyPower_Assignments)
 	PallyPower_SavedPresets["PallyPower_NormalAssignments"][0] = tablecopy(PallyPower_NormalAssignments)
