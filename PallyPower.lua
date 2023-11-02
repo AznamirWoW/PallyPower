@@ -1506,7 +1506,8 @@ function PallyPower:SendMessage(msg, type, target)
 				else
 					if IsInRaid() then
 						type = "RAID"
-					elseif IsInGroup(LE_PARTY_CATEGORY_HOME) then
+					--elseif IsInGroup(LE_PARTY_CATEGORY_HOME) then
+					else
 						type = "PARTY"
 					end
 				end
