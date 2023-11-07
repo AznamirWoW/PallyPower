@@ -678,8 +678,25 @@ function PallyPowerBlessingsGrid_Update(self, elapsed)
 				AllPallys[name].CooldownInfo = {}
 			end
 			local CooldownInfo = AllPallys[name].CooldownInfo
-			for id = 1, 2 do
+			
+			for id = 1, 4 do
 				if CooldownInfo[id] then
+					-- use extra icon to show weather LoH is improved or not
+					if (id == 1) then
+						if (CooldownInfo[id].improved and CooldownInfo[id].improved > 0) then
+							_G[fname .. "CIcon" .. id]:SetTexture("Interface\\AddOns\\PallyPower\\Icons\\Spell_Holy_LayOnHands_Improved")
+						else
+							_G[fname .. "CIcon" .. id]:SetTexture("Interface\\Icons\\Spell_Holy_LayOnHands")
+						end
+					end
+					-- use extra icon to show weather Divine Guardian or not
+					if (id == 3) then
+						if (CooldownInfo[id].improved and CooldownInfo[id].improved > 0) then
+							_G[fname .. "CIcon" .. id]:SetTexture("Interface\\AddOns\\PallyPower\\Icons\\Spell_Holy_Powerwordbarrier_improved")
+						else
+							_G[fname .. "CIcon" .. id]:SetTexture("Interface\\Icons\\Spell_Holy_Powerwordbarrier")
+						end
+					end
 					_G[fname .. "CIcon" .. id]:Show()
 					_G[fname .. "CSkill" .. id]:Show()
 					local txt
@@ -711,7 +728,7 @@ function PallyPowerBlessingsGrid_Update(self, elapsed)
 			i = i + 1
 			numPallys = numPallys + 1
 		end
-		PallyPowerBlessingsFrame:SetHeight(14 + 24 + 56 + (numPallys * 100) + 22 + 13 * numMaxClass)
+		PallyPowerBlessingsFrame:SetHeight(14 + 24 + 56 + (numPallys * 112) + 22 + 13 * numMaxClass)
 		_G["PallyPowerBlessingsFramePlayer1"]:SetPoint("TOPLEFT", 8, -80 - 13 * numMaxClass)
 		for i = 1, PALLYPOWER_MAXCLASSES do
 			_G["PallyPowerBlessingsFrameClassGroup" .. i .. "Line"]:SetHeight(56 + 13 * numMaxClass)
@@ -1348,6 +1365,12 @@ function PallyPower:ScanCooldowns()
 					CooldownInfo[cd].start = start
 					CooldownInfo[cd].duration = duration
 					CooldownInfo[cd].remaining = math.max(start + duration - GetTime(), 0)
+					if cd == 1 then -- improved Lay on Hands
+						CooldownInfo[cd].improved = select(5, GetTalentInfo(1, self.isWrath and 4 or 7))
+					end
+					if (cd == 3) and self.isWrath then -- improved Divine Guardian
+						CooldownInfo[cd].improved = select(5, GetTalentInfo(2, 25))
+					end
 					break
 				end
 			end
@@ -1456,7 +1479,7 @@ function PallyPower:SendSelf(sender)
 		if #AllPallys[self.player].CooldownInfo > 0 then
 			local s = ""
 			CooldownInfo = AllPallys[self.player].CooldownInfo
-			for i = 1, 2 do
+			for i = 1, self.isWrath and 4 or 2 do
 				if CooldownInfo[i] then
 					if not CooldownInfo[i].duration then
 						s = s .. ":n"
@@ -1468,8 +1491,13 @@ function PallyPower:SendSelf(sender)
 					else
 						s = s .. ":" .. CooldownInfo[i].remaining
 					end
+					if not CooldownInfo[i].improved then
+						s = s .. ":n"
+					else
+						s = s .. ":" .. CooldownInfo[i].improved
+					end
 				else
-					s = s .. ":n:n"
+					s = s .. ":n:n:n"
 				end
 				Cooldowns = s
 			end
@@ -1826,24 +1854,37 @@ function PallyPower:ParseMessage(sender, msg)
 	end
 
 	if strfind(msg, "COOLDOWNS") then
-		local _, duration1, remaining1, duration2, remaining2 = strsplit(":", msg)
+		local senderCooldownList = {strsplit(":", msg)}
+		tremove(senderCooldownList, 1) -- remove the overhead
+	
+		local isOldPP = (#senderCooldownList % 3) > 0 -- if data is sent from older PP only use 2 params
+		local dataSize = isOldPP and 2 or 3
+
+		local senderCooldownTable = {
+			duration = {},
+			remaining = {},
+			improved = {}
+		}
+		local cooldownIteratorOffset = 1
+		for i = 1, (#senderCooldownList/dataSize) do 
+			-- print(i, cooldownIteratorOffset, senderCooldownList[cooldownIteratorOffset], senderCooldownList[cooldownIteratorOffset+1], senderCooldownList[cooldownIteratorOffset+2])
+			senderCooldownTable.duration[i] = tonumber(senderCooldownList[cooldownIteratorOffset])
+			senderCooldownTable.remaining[i] = tonumber(senderCooldownList[cooldownIteratorOffset+1])
+			senderCooldownTable.improved[i] = (not isOldPP) and tonumber(senderCooldownList[cooldownIteratorOffset+2]) or 0
+			cooldownIteratorOffset = (dataSize * i)+1
+		end
 		if AllPallys[sender] then
 			if not AllPallys[sender].CooldownInfo then
 				AllPallys[sender].CooldownInfo = {}
 			end
-			if not AllPallys[sender].CooldownInfo[1] and remaining1 ~= "n" then
-				AllPallys[sender].CooldownInfo[1] = {}
-				duration1 = tonumber(duration1)
-				remaining1 = tonumber(remaining1)
-				AllPallys[sender].CooldownInfo[1].start = GetTime() - (duration1 - remaining1)
-				AllPallys[sender].CooldownInfo[1].duration = duration1
-			end
-			if not AllPallys[sender].CooldownInfo[2] and remaining2 ~= "n" then
-				AllPallys[sender].CooldownInfo[2] = {}
-				duration2 = tonumber(duration2)
-				remaining2 = tonumber(remaining2)
-				AllPallys[sender].CooldownInfo[2].start = GetTime() - (duration2 - remaining2)
-				AllPallys[sender].CooldownInfo[2].duration = duration2
+			for i=1, #self.Cooldowns do 
+				if not AllPallys[sender].CooldownInfo[i] and senderCooldownTable.remaining[i] ~= nil then
+					AllPallys[sender].CooldownInfo[i] = {}
+					AllPallys[sender].CooldownInfo[i].duration = senderCooldownTable.duration[i] or 0
+
+					AllPallys[sender].CooldownInfo[i].start = GetTime() - (AllPallys[sender].CooldownInfo[i].duration - senderCooldownTable.remaining[i])
+					AllPallys[sender].CooldownInfo[i].improved = senderCooldownTable.improved[i] or 0
+				end
 			end
 		end
 	end
