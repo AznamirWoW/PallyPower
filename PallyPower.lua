@@ -1235,17 +1235,9 @@ function PallyPower:NeedsBuff(class, test, playerName)
 		if (class == 1 or class == 2 or (self.isWrath and class == 10)) and test == 1 then
 			return false
 		end
-		-- no might for casters (and hunters in Classic)
+		-- no might for casters
 		if (class == 3 or class == 7 or class == 8) and test == 2 then
 			return false
-		end
-		-- Additional check for Hunters (Class 6) in Survival Spec for Season of Discovery
-		local SURVIVAL_SPEC_ID = 255
-		if self.isVanilla and class == 6 then
-			local specID = GetSpecializationInfo(GetSpecialization())
-			if specID == SURVIVAL_SPEC_ID and test == 2 then
-				return false
-			end
 		end
 	end
 	if playerName then
@@ -2053,7 +2045,7 @@ function PallyPower:UpdateRoster()
 						tmp.class = "PET"
 					end
 					local unitType, _, _, _, _, npcId = strsplit("-", UnitGUID(unitid))
-					if (npcId == "510") or (npcId == "19668") or (unitType ~= "Pet" and npcId == "1863") or (unitType ~= "Pet" and npcId == "26125") or (unitType ~= "Pet" and npcId == "185317") then -- 510: Water Elemental, 19668: Shadowfiend, 1863: Succubus, 26125: Risen Ghoul, 185317: Incubus
+					if (unitType ~= "Pet") and (npcId == "510" or npcId == "19668" or npcId == "1863" or npcId == "26125" or npcId == "185317") then -- 510: Water Elemental, 19668: Shadowfiend, 1863: Succubus, 26125: Risen Ghoul, 185317: Incubus
 						tmp.class = false
 					else
 						local i = 1

@@ -38,5 +38,3 @@ externals:
         url: https://repos.curseforge.com/wow/libuidropdownmenu/trunk
     Libs/LibDBIcon-1.0:
         url: https://repos.curseforge.com/wow/libdbicon-1-0/trunk
-    Libs/ClassicSpecs:
-        url: https://github.com/tstirrat/LibClassicSpecs
