@@ -1236,7 +1236,7 @@ function PallyPower:NeedsBuff(class, test, playerName)
 			return false
 		end
 		-- no might for casters (and hunters in Classic)
-		if (class == 3 or (self.isVanilla and class == 6) or class == 7 or class == 8) and test == 2 then
+		if (class == 3 or class == 7 or class == 8) and test == 2 then -- removed (self.isVanilla and class == 6) or
 			return false
 		end
 	end
@@ -2045,7 +2045,8 @@ function PallyPower:UpdateRoster()
 						tmp.class = "PET"
 					end
 					local unitType, _, _, _, _, npcId = strsplit("-", UnitGUID(unitid))
-					if (npcId == "510") or (npcId == "19668") or (npcId == "1863") or (unitType ~= "Pet" and npcId == "26125") or (npcId == "185317") then -- 510: Water Elemental, 19668: Shadowfiend, 1863: Succubus, 26125: Risen Ghoul, 185317: Incubus
+					-- 510: Water Elemental, 19668: Shadowfiend, 1863: Succubus, 26125: Risen Ghoul, 185317: Incubus
+					if  (unitType ~= "Pet") and (npcId == "510" or npcId == "19668" or npcId == "1863" or npcId == "26125" or npcId == "185317") then
 						tmp.class = false
 					else
 						local i = 1
@@ -2705,11 +2706,12 @@ function PallyPower:GetBuffExpiration(classID)
 		if unit.unitid then
 			local j = 1
 			local spellID, gspellID = self:GetSpellID(classID, unit.name)
+			local isMight = (spellID == 2) or (gspellID == 2)
 			local spell = self.Spells[spellID]
 			local gspell = self.GSpells[gspellID]
 			local buffName = UnitBuff(unit.unitid, j)
 			while buffName do
-				if (buffName == gspell) then
+				if (buffName == gspell) or (not isWrath and isMight and buffName == PallyPower.Spells[8]) then
 					local _, _, _, _, buffDuration, buffExpire = UnitAura(unit.unitid, j, "HELPFUL")
 					if buffExpire then
 						if buffExpire == 0 then
@@ -2722,7 +2724,7 @@ function PallyPower:GetBuffExpiration(classID)
 						--self:Debug("[GetBuffExpiration] buffName: "..buffName.." | classExpire: "..classExpire.." | classDuration: "..classDuration)
 						break
 					end
-				elseif (buffName == spell) then
+				elseif (buffName == spell) or (not isWrath and isMight and buffName == PallyPower.Spells[8]) then
 					local _, _, _, _, buffDuration, buffExpire = UnitAura(unit.unitid, j, "HELPFUL")
 					if buffExpire then
 						if buffExpire == 0 then
@@ -3254,10 +3256,11 @@ function PallyPower:GetUnitAndSpellSmart(classid, mousebutton)
 end
 
 function PallyPower:IsBuffActive(spellName, gspellName, unitID)
+	local isMight = (spellName == PallyPower.Spells[2]) or (gSpellName == PallyPower.GSpells[2])
 	local j = 1
 	local buffName = UnitBuff(unitID, j)
 	while buffName do
-		if (buffName == spellName) or (buffName == gspellName) then
+		if (buffName == spellName) or (buffName == gspellName) or (not isWrath and isMight and buffName == PallyPower.Spells[8] )then
 			local _, _, _, _, buffDuration, buffExpire = UnitAura(unitID, j, "HELPFUL")
 			if buffExpire then
 				if buffExpire == 0 then
