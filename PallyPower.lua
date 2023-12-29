@@ -308,7 +308,7 @@ local function tablecopy(tbl)
   end
 
 local function safeget(t,k) -- always return nil or t[k] if at least t is a table / Treeston
-	return t and t[k]    
+	return t and t[k]
 end
 
 function PallyPowerBlessings_Clear()
@@ -2067,7 +2067,7 @@ function PallyPower:UpdateRoster()
 				local n = select(3, unitid:find("(%d+)"))
 				tmp.name, tmp.rank, tmp.subgroup = GetRaidRosterInfo(n)
 				tmp.zone = select(7, GetRaidRosterInfo(n))
-				
+
 				if self.opt.hideHighGroups then
 					local maxPlayerCount = (select(5, GetInstanceInfo()))
 					if maxPlayerCount and (maxPlayerCount > 5) then
@@ -2077,10 +2077,10 @@ function PallyPower:UpdateRoster()
 						end
 					end
 				end
-				
+
 				local raidtank = select(10, GetRaidRosterInfo(n))
 				tmp.tank = ((raidtank == "MAINTANK") or (self.opt.mainAssist and (raidtank == "MAINASSIST")))
-				
+
 				local class = self:GetClassID(pclass)
 				-- Warriors and Death Knights
 				if (class == 1 or (self.isWrath and class == 10)) then
@@ -2649,7 +2649,7 @@ function PallyPower:UpdateButton(button, baseName, classID)
 		if (not unit.visible) and InCombatLockdown() then
 			state = "have"
 		end
-		
+
 		if state == "need_big" then
 			nneed = nneed + 1
 		elseif state == "need_small" then
@@ -2847,7 +2847,7 @@ function PallyPower:UpdatePButton(button, baseName, classID, playerID, mousebutt
 		buffIcon:SetTexture(self.BlessingIcons[spellID])
 		buffIcon:SetVertexColor(1, 1, 1)
 		time:SetText(self:FormatTime(unit.hasbuff))
-		
+
 		-- The following logic keeps Blessing of Salvation from being assigned to Warrior, Druid and Paladin tanks while in a RAID
 		-- and SalvInCombat isn't enabled. Allows Normal Blessing of Salvation on everyone else and all other blessings.
 		if not InCombatLockdown() then
@@ -2882,7 +2882,7 @@ function PallyPower:UpdatePButton(button, baseName, classID, playerID, mousebutt
 				button:SetAttribute("spell2", nSpell)
 			end
 		end
-		
+
 		local state = ClassifyUnitBuffStateForButton(unit)
 		if state == "need_big" then
 			self:ApplyBackdrop(button, self.opt.cBuffNeedAll)
@@ -2891,7 +2891,7 @@ function PallyPower:UpdatePButton(button, baseName, classID, playerID, mousebutt
 		else
 			self:ApplyBackdrop(button, self.opt.cBuffGood)
 		end
-		
+
 		if unit.hasbuff then
 			buffIcon:SetAlpha(1)
 			if not unit.visible and not unit.inrange then
@@ -3513,7 +3513,7 @@ function PallyPower:AutoBuff(button, mousebutton)
 							buffExpire = 0
 							penalty = 0
 						end
-						
+
 						if not self.isWrath and gspellID == 4 then
 							-- If for some reason the targeted unit is in combat and there is a tank present
 							-- in the Class Group then disable Greater Blessing of Salvation for this unit.
@@ -3529,7 +3529,7 @@ function PallyPower:AutoBuff(button, mousebutton)
 								penalty = 9999
 							end
 						end
-						
+
 						if (not PallyPower.petsShareBaseClass) and unit.unitid:find("pet") then
 							buffExpire = 9999
 							penalty = 9999
@@ -3618,7 +3618,7 @@ function PallyPower:AutoBuff(button, mousebutton)
 					-- Raid than there are buffs to assign so an Alternate Blessing might not be in
 					-- use to wipe Salvation from a tank. Prevents getting stuck buffing a tank when
 					-- auto buff rotates among players in the class group.
-					
+
 					if unit.tank then
 						if not self.isWrath and (spellID == 4 and not self.opt.SalvInCombat) then
 							buffExpire = 9999
@@ -3878,7 +3878,7 @@ function PallyPower:LoadPreset()
 					for pname, passignments in pairs(PallyPower_NormalAssignments) do
 						if (AllPallys[pname] and PallyPower:GetUnitIdByName(pname) and passignments) then
 							for class, cassignments in pairs(passignments) do
-								if cassignments then 
+								if cassignments then
 									for tname, value in pairs(cassignments) do
 										PallyPower:SendNormalBlessings(pname, class, tname)
 									end
@@ -4041,125 +4041,74 @@ function PallyPower:SelectBuffsByClass(pallycount, class, prioritylist)
 			tinsert(pallys, name)
 		end
 	end
-	local bufftable = prioritylist
-	if pallycount > 0 then
-		local pallycounter = 1
-		for _, nextspell in pairs(bufftable) do
-			if pallycounter <= pallycount then
-				local buffer = self:BuffSelections(nextspell, class, pallys)
-				for i in pairs(pallys) do
-					if buffer == pallys[i] then
-						tremove(pallys, i)
-					end
-				end
-				if buffer ~= "" then
-					pallycounter = pallycounter + 1
-				end
+
+	local buffers = self.isWrath and {
+		[1] = WisdomPallys,
+		[2] = MightPallys,
+		[3] = KingsPallys,
+		[4] = SancPallys,
+	} or {
+		[1] = WisdomPallys,
+		[2] = MightPallys,
+		[3] = KingsPallys,
+		[4] = SalvPallys,
+		[5] = LightPallys,
+		[6] = SancPallys,
+	}
+
+	local assignments = PallyPowerAutoAssignments(pallys, prioritylist, buffers)
+	if assignments ~= nil then
+		for buff, buffer in pairs(assignments) do
+			if PallyPower_Assignments[buffer] == nil then
+				PallyPower_Assignments[buffer] = {}
 			end
+			PallyPower_Assignments[buffer][class] = buff
+			self:TankNormalBlessingOverride(buff, class, buffer)
 		end
 	end
 end
 
-function PallyPower:BuffSelections(buff, class, pallys)
-	local t = {}
-	if buff == 1 then
-		t = WisdomPallys
-	end
-	if buff == 2 then
-		t = MightPallys
-	end
-	if buff == 3 then
-		t = KingsPallys
-	end
-	if not self.isWrath and buff == 4 then
-		t = SalvPallys
-	end
-	if not self.isWrath and buff == 5 then
-		t = LightPallys
-	end
-	if not self.isWrath and buff == 6 then
-		t = SancPallys
-	end
-	if self.isWrath and buff == 4 then
-		t = SancPallys
-	end
-	local Buffer = ""
-	tsort(
-		t,
-		function(a, b)
-			return a.skill > b.skill
-		end
-	)
-	for _, v in pairs(t) do
-		if self:PallyAvailable(v.pallyname, pallys) then --removed check if v.skill / Zid
-			Buffer = v.pallyname
-			break
-		end
-	end
-	if Buffer ~= "" then
-		if (IsInRaid() and buff > 2) then
-			for pclass = 1, PALLYPOWER_MAXCLASSES do
-				PallyPower_Assignments[Buffer][pclass] = buff
-			end
-		elseif PallyPower_Assignments and not PallyPower_Assignments[Buffer] then
-			PallyPower_Assignments[Buffer] = {}
-			PallyPower_Assignments[Buffer][class] = buff
-		else
-			PallyPower_Assignments[Buffer][class] = buff
-		end
-		if IsInRaid() then
-			-----------------------------------------------------------------------------------------------------------------
-			-- Warriors and Death Knights
-			-----------------------------------------------------------------------------------------------------------------
-			if (buff == self.opt.mainTankGSpellsW) and (class == 1 or (self.isWrath and class == 10)) and self.opt.mainTank then
-				for i = 1, MAX_RAID_MEMBERS do
-					local playerName, _, _, _, playerClass = GetRaidRosterInfo(i)
-					if playerName and self:CheckMainTanks(playerName) and (class == self:GetClassID(string.upper(playerClass))) then
-						SetNormalBlessings(Buffer, class, playerName, self.opt.mainTankSpellsW)
-					end
-				end
-			end
-			if (buff == self.opt.mainAssistGSpellsW) and (class == 1 or (self.isWrath and class == 10)) and self.opt.mainAssist then
-				for i = 1, MAX_RAID_MEMBERS do
-					local playerName, _, _, _, playerClass = GetRaidRosterInfo(i)
-					if playerName and self:CheckMainAssists(playerName) and (class == self:GetClassID(string.upper(playerClass))) then
-						SetNormalBlessings(Buffer, class, playerName, self.opt.mainAssistSpellsW)
-					end
-				end
-			end
-			-----------------------------------------------------------------------------------------------------------------
-			-- Druids and Paladins
-			-----------------------------------------------------------------------------------------------------------------
-			if (buff == self.opt.mainTankGSpellsDP) and (class == 4 or class == 5) and self.opt.mainTank then
-				for i = 1, MAX_RAID_MEMBERS do
-					local playerName, _, _, _, playerClass = GetRaidRosterInfo(i)
-					if playerName and self:CheckMainTanks(playerName) and (class == self:GetClassID(string.upper(playerClass))) then
-						SetNormalBlessings(Buffer, class, playerName, self.opt.mainTankSpellsDP)
-					end
-				end
-			end
-			if (buff == self.opt.mainAssistGSpellsDP) and (class == 4 or class == 5) and self.opt.mainAssist then
-				for i = 1, MAX_RAID_MEMBERS do
-					local playerName, _, _, _, playerClass = GetRaidRosterInfo(i)
-					if playerName and self:CheckMainAssists(playerName) and (class == self:GetClassID(string.upper(playerClass))) then
-						SetNormalBlessings(Buffer, class, playerName, self.opt.mainAssistSpellsDP)
-					end
+function PallyPower:TankNormalBlessingOverride(buff, class, Buffer)
+	if IsInRaid() then
+		-----------------------------------------------------------------------------------------------------------------
+		-- Warriors and Death Knights
+		-----------------------------------------------------------------------------------------------------------------
+		if (buff == self.opt.mainTankGSpellsW) and (class == 1 or (self.isWrath and class == 10)) and self.opt.mainTank then
+			for i = 1, MAX_RAID_MEMBERS do
+				local playerName, _, _, _, playerClass = GetRaidRosterInfo(i)
+				if playerName and self:CheckMainTanks(playerName) and (class == self:GetClassID(string.upper(playerClass))) then
+					SetNormalBlessings(Buffer, class, playerName, self.opt.mainTankSpellsW)
 				end
 			end
 		end
-	else
-	end
-	return Buffer
-end
-
-function PallyPower:PallyAvailable(pally, pallys)
-	local available = false
-	for i in pairs(pallys) do
-		if pallys[i] == pally then
-			available = true
+		if (buff == self.opt.mainAssistGSpellsW) and (class == 1 or (self.isWrath and class == 10)) and self.opt.mainAssist then
+			for i = 1, MAX_RAID_MEMBERS do
+				local playerName, _, _, _, playerClass = GetRaidRosterInfo(i)
+				if playerName and self:CheckMainAssists(playerName) and (class == self:GetClassID(string.upper(playerClass))) then
+					SetNormalBlessings(Buffer, class, playerName, self.opt.mainAssistSpellsW)
+				end
+			end
+		end
+		-----------------------------------------------------------------------------------------------------------------
+		-- Druids and Paladins
+		-----------------------------------------------------------------------------------------------------------------
+		if (buff == self.opt.mainTankGSpellsDP) and (class == 4 or class == 5) and self.opt.mainTank then
+			for i = 1, MAX_RAID_MEMBERS do
+				local playerName, _, _, _, playerClass = GetRaidRosterInfo(i)
+				if playerName and self:CheckMainTanks(playerName) and (class == self:GetClassID(string.upper(playerClass))) then
+					SetNormalBlessings(Buffer, class, playerName, self.opt.mainTankSpellsDP)
+				end
+			end
+		end
+		if (buff == self.opt.mainAssistGSpellsDP) and (class == 4 or class == 5) and self.opt.mainAssist then
+			for i = 1, MAX_RAID_MEMBERS do
+				local playerName, _, _, _, playerClass = GetRaidRosterInfo(i)
+				if playerName and self:CheckMainAssists(playerName) and (class == self:GetClassID(string.upper(playerClass))) then
+					SetNormalBlessings(Buffer, class, playerName, self.opt.mainAssistSpellsDP)
+				end
+			end
 		end
 	end
-	return available
 end
 
 function PallyPowerAuraButton_OnClick(btn, mouseBtn)

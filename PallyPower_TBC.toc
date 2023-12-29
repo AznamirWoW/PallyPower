@@ -31,4 +31,5 @@ locale\zhTW.lua
 PallyPower.lua
 PallyPowerValues.lua
 PallyPowerOptions.lua
+PallyPowerAutoAssignment.lua
 PallyPower_TBC.xml
