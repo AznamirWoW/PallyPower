@@ -5,7 +5,8 @@ C_ChatInfo.RegisterAddonMessagePrefix(PallyPower.commPrefix)
 
 PallyPower.petsShareBaseClass = PallyPower.isBCC or PallyPower.isWrath
 
-PALLYPOWER_MAXCLASSES = PallyPower.isWrath and 10 or 9
+--PALLYPOWER_MAXCLASSES = PallyPower.isWrath and 10 or 9
+PALLYPOWER_MAXCLASSES = 10
 PALLYPOWER_MAXPERCLASS = 15
 PALLYPOWER_NORMALBLESSINGDURATION = (PallyPower.isBCC or PallyPower.isWrath) and (10 * 60) or (5 * 60)
 PALLYPOWER_GREATERBLESSINGDURATION = (PallyPower.isBCC or PallyPower.isWrath) and (30 * 60) or (15 * 60)
@@ -163,7 +164,8 @@ PallyPower.ClassID = PallyPower.isWrath and {
 	[6] = "HUNTER",
 	[7] = "MAGE",
 	[8] = "WARLOCK",
-	[9] = "PET"
+	[9] = "SHAMAN",
+	[10] = "PET",
 }
 
 PallyPower.ClassToID = PallyPower.isWrath and {
@@ -196,7 +198,8 @@ PallyPower.ClassToID = PallyPower.isWrath and {
 	["HUNTER"] = 6,
 	["MAGE"] = 7,
 	["WARLOCK"] = 8,
-	["PET"] = 9
+	["SHAMAN"] = 9,
+	["PET"] = 10,
 }
 
 PallyPower.ClassIcons = PallyPower.isWrath and {
@@ -229,7 +232,8 @@ PallyPower.ClassIcons = PallyPower.isWrath and {
 	[6] = "Interface\\Icons\\ClassIcon_Hunter",
 	[7] = "Interface\\Icons\\ClassIcon_Mage",
 	[8] = "Interface\\Icons\\ClassIcon_Warlock",
-	[9] = "Interface\\Icons\\Ability_Mount_JungleTiger"
+	[9] = "Interface\\Icons\\ClassIcon_Shaman",
+	[10] = "Interface\\Icons\\Ability_Mount_JungleTiger",
 }
 
 PallyPower.BlessingIcons = PallyPower.isWrath and {
