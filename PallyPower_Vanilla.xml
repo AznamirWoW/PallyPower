@@ -1472,7 +1472,7 @@
 
 	<Frame name = "PallyPowerBlessingsFrame" hidden = "true" toplevel = "true" frameStrata = "HIGH" enableMouse = "true" movable = "true" parent = "UIParent">
 		<Size>
-			<AbsDimension x = "1010" y = "1200"/>
+			<AbsDimension x = "1110" y = "1200"/>
 		</Size>
 		<Anchors>
 			<Anchor point = "TOPLEFT" relativeTo = "UIParent" relativePoint = "BOTTOMLEFT">
