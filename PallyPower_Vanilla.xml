@@ -1458,12 +1458,21 @@
 					</Anchor>
 				</Anchors>
 			</Button>
+			<Button name = "$parentClass10" inherits = "BuffGridButtonTemplate">
+				<Anchors>
+					<Anchor point = "TOPLEFT" relativeTo = "$parentClass9" relativePoint = "TOPRIGHT">
+						<Offset>
+							<AbsDimension x = "2" y = "0"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+			</Button>
 		</Frames>
 	</Frame>
 
 	<Frame name = "PallyPowerBlessingsFrame" hidden = "true" toplevel = "true" frameStrata = "HIGH" enableMouse = "true" movable = "true" parent = "UIParent">
 		<Size>
-			<AbsDimension x = "1010" y = "1200"/>
+			<AbsDimension x = "1110" y = "1200"/>
 		</Size>
 		<Anchors>
 			<Anchor point = "TOPLEFT" relativeTo = "UIParent" relativePoint = "BOTTOMLEFT">
@@ -1614,6 +1623,15 @@
 			<Frame name = "$parentClassGroup9" inherits = "ClassGroupTemplate">
 				<Anchors>
 					<Anchor point = "TOPLEFT" relativeTo = "$parentClassGroup8" relativePoint = "TOPRIGHT">
+						<Offset>
+							<AbsDimension x = "2" y = "0"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+			</Frame>
+			<Frame name = "$parentClassGroup10" inherits = "ClassGroupTemplate">
+				<Anchors>
+					<Anchor point = "TOPLEFT" relativeTo = "$parentClassGroup9" relativePoint = "TOPRIGHT">
 						<Offset>
 							<AbsDimension x = "2" y = "0"/>
 						</Offset>
@@ -1819,7 +1837,7 @@
 						GameTooltip:Hide(self, motion);
 					</OnLeave>
 				</Scripts>
-			</Button>			
+			</Button>
 			<Button name = "$parentPreset" inherits = "GameMenuButtonTemplate" text = "PALLYPOWER_PRESET" hidden = "false">
 				<Size>
 					<AbsDimension x = "100" y = "20"/>
