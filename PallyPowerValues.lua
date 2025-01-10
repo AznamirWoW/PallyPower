@@ -5,8 +5,7 @@ C_ChatInfo.RegisterAddonMessagePrefix(PallyPower.commPrefix)
 
 PallyPower.petsShareBaseClass = PallyPower.isBCC or PallyPower.isWrath
 
---PALLYPOWER_MAXCLASSES = PallyPower.isWrath and 10 or 9
-PALLYPOWER_MAXCLASSES = 10
+PALLYPOWER_MAXCLASSES = PallyPower.isBCC and 9 or 10
 PALLYPOWER_MAXPERCLASS = 15
 PALLYPOWER_NORMALBLESSINGDURATION = (PallyPower.isBCC or PallyPower.isWrath) and (10 * 60) or (5 * 60)
 PALLYPOWER_GREATERBLESSINGDURATION = (PallyPower.isBCC or PallyPower.isWrath) and (30 * 60) or (15 * 60)
