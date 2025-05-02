@@ -590,6 +590,19 @@ PallyPower.options = {
 								PallyPower.opt.autobuff.waitforpeople = val
 								PallyPower:UpdateRoster()
 							end
+						},
+						auto_mouseover = {
+							order = 3,
+							type = "toggle",
+							name = L["Run by Mouseover Buff"],
+							desc = L["With this option on the addon will buff your mouseover target if you have one and if it's not in your party (players in your party are handled by the normal buff logic)"],
+							get = function(info)
+								return PallyPower.opt.autobuff.buffmouseover
+							end,
+							set = function(info, val)
+								PallyPower.opt.autobuff.buffmouseover = val
+								PallyPower:UpdateRoster()
+							end
 						}
 					}
 				},
