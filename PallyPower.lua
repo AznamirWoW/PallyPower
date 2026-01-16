@@ -3418,7 +3418,6 @@ function PallyPower:ButtonPostClick(button, mousebutton)
 					local targetName = "[@" .. unitNames[step] .. ",help,nodead]"
 					gspellMacro = format(gspellMacro, targetName, spellName)
 					self:SetAttribute("macrotext1", gspellMacro)
-					print("Secure Macro: "..gspellMacro)
 				end
 				self:SetAttribute("step1", step + 1)
 
