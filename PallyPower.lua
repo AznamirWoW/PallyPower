@@ -2223,11 +2223,11 @@ function PallyPower:CreateLayout()
 	--self:Debug("CreateLayout()")
 	self.Header = _G["PallyPowerFrame"]
 	self.autoButton = CreateFrame("Button", "PallyPowerAuto", self.Header, "SecureHandlerShowHideTemplate, SecureHandlerEnterLeaveTemplate, SecureHandlerStateTemplate, SecureActionButtonTemplate, PallyPowerAutoButtonTemplate")
-	self.autoButton:RegisterForClicks("LeftButtonDown", "RightButtonDown")
+	self.autoButton:RegisterForClicks("LeftButtonDown", "RightButtonDown", "AnyUp", "AnyDown")
 	self.rfButton = CreateFrame("Button", "PallyPowerRF", self.Header, "PallyPowerRFButtonTemplate")
-	self.rfButton:RegisterForClicks("LeftButtonDown", "RightButtonDown")
+	self.rfButton:RegisterForClicks("LeftButtonDown", "RightButtonDown", "AnyUp", "AnyDown")
 	self.auraButton = CreateFrame("Button", "PallyPowerAura", self.Header, "PallyPowerAuraButtonTemplate")
-	self.auraButton:RegisterForClicks("LeftButtonDown")
+	self.auraButton:RegisterForClicks("LeftButtonDown", "AnyUp", "AnyDown")
 	self.classButtons = {}
 	self.playerButtons = {}
 	self.autoButton:Execute([[childs = table.new()]])
@@ -2264,7 +2264,7 @@ function PallyPower:CreateLayout()
 		cButton:SetAttribute("_onstate-inactive", [[
 			childs[1]:Hide()
 		]])
-		cButton:RegisterForClicks("LeftButtonDown", "RightButtonDown")
+		cButton:RegisterForClicks("LeftButtonDown", "RightButtonDown", "AnyUp", "AnyDown")
 		cButton:EnableMouseWheel(1)
 		self.classButtons[cbNum] = cButton
 		self.playerButtons[cbNum] = {}
@@ -2294,7 +2294,7 @@ function PallyPower:CreateLayout()
 					siblings[#siblings+1] = sibling;
 				]])
 			end
-			pButton:RegisterForClicks("LeftButtonDown", "RightButtonDown")
+			pButton:RegisterForClicks("LeftButtonDown", "RightButtonDown", "AnyUp", "AnyDown")
 			pButton:EnableMouseWheel(1)
 			pButton:Hide()
 			pButtons[pbNum] = pButton
