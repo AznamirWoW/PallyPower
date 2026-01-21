@@ -3476,12 +3476,48 @@ function PallyPower:DragStop()
 	_G["PallyPowerFrame"]:StopMovingOrSizing()
 end
 
+function PallyPower:BuffMouseOverTarget()
+	if not self.opt.autobuff.buffmouseover then
+		return false
+	end
+
+	if not UnitExists("mouseover") then
+		return false
+	end
+
+	-- If mouseover is in my party or raid, let normal PallyPower logic handle the buffs 
+	if UnitInParty("mouseover") == true or UnitInRaid("mouseover") == true then
+		return false
+	end
+
+	if not UnitIsFriend("mouseover", PallyPower.player) then
+		return false
+	end
+
+	if UnitIsDeadOrGhost("mouseover") then
+		return false
+	end
+
+	return true
+end
+
 function PallyPower:AutoBuff(button, mousebutton)
 	if InCombatLockdown() then return end
 
 	local now = time()
 	local greater = (mousebutton == "LeftButton" or mousebutton == "Hotkey2")
-	if greater then
+	if PallyPower:BuffMouseOverTarget() then
+		local _, unitClass = UnitClass("mouseover")
+		local spellID, gspellID = self:GetSpellID(self:GetClassID(unitClass), PallyPower.player)
+
+		button:SetAttribute("unit", "mouseover")
+
+		if greater then
+			button:SetAttribute("spell", self.GSpells[gspellID])
+		else
+			button:SetAttribute("spell", self.Spells[spellID])
+		end
+	elseif greater then
 		-- Greater Blessings
 		local minExpire, minUnit, minSpell, maxSpell = 600, nil, nil, nil
 		for i = 1, PALLYPOWER_MAXCLASSES do
