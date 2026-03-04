@@ -25,9 +25,10 @@ local classlist, classes = {}, {}
 
 PallyPower.player = UnitName("player")
 local PallyPower_Talents = {}
-local PallyPower_Assignments = {}
-local PallyPower_NormalAssignments = {}
-local PallyPower_AuraAssignments = {}
+
+PallyPower_Assignments = PallyPower_Assignments or {}
+PallyPower_NormalAssignments = PallyPower_NormalAssignments or {}
+PallyPower_AuraAssignments = PallyPower_AuraAssignments or {}
 
 local AllPallys = {}
 local SyncList = {}
@@ -36,9 +37,9 @@ local PP_DebugEnabled = false
 local initialized = false
 local isPally = false
 
-PP_Symbols = 0
-PP_Leader = false
-PP_LeaderSalv = false
+local PP_Symbols = 0
+local PP_Leader = false
+local PP_LeaderSalv = false
 
 -- unit tables
 local party_units = {}
