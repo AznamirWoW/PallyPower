@@ -1022,8 +1022,38 @@ PallyPower.options = {
 				}
 			}
 		},
-		blessings = {
+		advanced = {
 			order = 4,
+			name = "Advanced",
+			desc = "PallyPowerAdvanced settings",
+			type = "group",
+			cmdHidden = true,
+			args = {
+				advanced_settings = {
+					order = 1,
+					name = "PallyPowerAdvanced Settings",
+					type = "group",
+					inline = true,
+					args = {
+						always_prefer_wisdom_on_healers = {
+							order = 1,
+							type = "toggle",
+							name = "Always Prefer Wisdom on Healers",
+							desc = "Prefer Blessing of Wisdom over Blessing of Kings for healer assignments even when Wisdom is not improved.",
+							width = "full",
+							get = function(info)
+								return PallyPower.opt.AlwaysPreferWisdomOnHealers
+							end,
+							set = function(info, val)
+								PallyPower.opt.AlwaysPreferWisdomOnHealers = val
+							end
+						}
+					}
+				}
+			}
+		},
+		blessings = {
+			order = 5,
 			name = "Blessing Assignements",
 			type = "execute",
 			guiHidden = true,
@@ -1034,7 +1064,7 @@ PallyPower.options = {
 			end
 		},
 		options = {
-			order = 5,
+			order = 6,
 			name = "PallyPower Options",
 			type = "execute",
 			guiHidden = true,

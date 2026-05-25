@@ -202,6 +202,8 @@ function PallyPower:OnEnable()
 	self:RegisterEvent("GROUP_JOINED")
 	self:RegisterEvent("GROUP_LEFT")
 	self:RegisterEvent("PLAYER_ROLES_ASSIGNED")
+	self:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED", "RefreshTalentState")
+	self:RegisterEvent("PLAYER_TALENT_UPDATE", "RefreshTalentState")
 	self:RegisterEvent("UPDATE_BINDINGS", "BindKeys")
 	self:RegisterEvent("CHANNEL_UI_UPDATE", "ReportChannels")
 	self:RegisterBucketEvent("SPELLS_CHANGED", 1, "SPELLS_CHANGED")
@@ -1533,6 +1535,27 @@ function PallyPower:SPELLS_CHANGED()
 	PallyPower:ScanCooldowns()
 	PallyPower:SendSelf()
 	PallyPower:UpdateLayout()
+end
+
+function PallyPower:RefreshTalentState()
+	--self:Debug("EVENT: talent state changed")
+	if not isPally then
+		return
+	end
+
+	local function refresh()
+		twipe(PallyPower_Talents)
+		self:ScanTalents()
+		self:ScanSpells()
+		self:ScanCooldowns()
+		self:ScanInventory()
+		self:SendSelf()
+		self:UpdateLayout()
+		self:UpdateRoster()
+	end
+
+	refresh()
+	C_Timer.After(1.0, refresh)
 end
 
 function PallyPower:PLAYER_ENTERING_WORLD()
