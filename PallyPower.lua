@@ -24,21 +24,22 @@ local WisdomPallys, MightPallys, KingsPallys, SalvPallys, LightPallys, SancPally
 local classlist, classes = {}, {}
 
 PallyPower.player = UnitName("player")
-PallyPower_Talents = {}
-PallyPower_Assignments = {}
-PallyPower_NormalAssignments = {}
-PallyPower_AuraAssignments = {}
+local PallyPower_Talents = {}
 
-AllPallys = {}
-SyncList = {}
-PP_DebugEnabled = false
+PallyPower_Assignments = PallyPower_Assignments or {}
+PallyPower_NormalAssignments = PallyPower_NormalAssignments or {}
+PallyPower_AuraAssignments = PallyPower_AuraAssignments or {}
+
+local AllPallys = {}
+local SyncList = {}
+local PP_DebugEnabled = false
 
 local initialized = false
 local isPally = false
 
-PP_Symbols = 0
-PP_Leader = false
-PP_LeaderSalv = false
+local PP_Symbols = 0
+local PP_Leader = false
+local PP_LeaderSalv = false
 
 -- unit tables
 local party_units = {}
@@ -123,6 +124,8 @@ function PallyPower:OnInitialize()
 	self.PreviousAutoBuffedUnit = nil
 	self.menuFrame = LUIDDM:Create_UIDropDownMenu("PallyPowerMenuFrame", UIParent)
 
+--[[
+-- Removed to Prevent Taint
 	if not PallyPowerConfigFrame then
 		local ConfigFrame = AceGUI:Create("Frame")
 		ConfigFrame:EnableResize(false)
@@ -132,6 +135,7 @@ function PallyPower:OnInitialize()
 		_G["PallyPowerConfigFrame"] = ConfigFrame.frame
 		table.insert(UISpecialFrames, "PallyPowerConfigFrame")
 	end
+]]
 
 	self.MinimapIcon = LibStub("LibDBIcon-1.0")
 	self.LDB =
@@ -186,6 +190,7 @@ function PallyPower:OnInitialize()
 	h:ClearAllPoints()
 	h:SetPoint("CENTER", "UIParent", "CENTER", self.opt.display.offsetX, self.opt.display.offsetY)
 
+	table.insert(UISpecialFrames, "PallyPowerBlessingsFrame")
 end
 
 function PallyPower:OnEnable()
@@ -289,6 +294,13 @@ function PallyPower:OpenConfigWindow()
 		PallyPowerBlessingsFrame:Hide()
 		LUIDDM:CloseDropDownMenus()
 	end
+	if not PallyPowerConfigFrame then
+		local ConfigFrame = AceGUI:Create("Frame")
+		ConfigFrame:EnableResize(false)
+		LibStub("AceConfigDialog-3.0"):SetDefaultSize("PallyPower", 625, 580)
+		LibStub("AceConfigDialog-3.0"):Open("PallyPower", ConfigFrame)
+		_G["PallyPowerConfigFrame"] = ConfigFrame.frame
+	end
 	if not PallyPowerConfigFrame:IsShown() then
 		PallyPowerConfigFrame:Show()
 		PlaySound(SOUNDKIT.IG_SPELLBOOK_OPEN)
@@ -365,7 +377,6 @@ function PallyPowerBlessings_Toggle()
 		end
 		PallyPowerBlessingsFrame:Show()
 		PlaySound(SOUNDKIT.IG_SPELLBOOK_OPEN)
-		table.insert(UISpecialFrames, "PallyPowerBlessingsFrame")
 	end
 end
 
@@ -386,7 +397,7 @@ function PallyPowerBlessings_ShowCredits(self)
 	end
 end
 
-function GetNormalBlessings(pname, class, tname)
+local function GetNormalBlessings(pname, class, tname)
 	if PallyPower_NormalAssignments[pname] and PallyPower_NormalAssignments[pname][class] then
 		local blessing = PallyPower_NormalAssignments[pname][class][tname]
 		if blessing then
@@ -397,7 +408,7 @@ function GetNormalBlessings(pname, class, tname)
 	end
 end
 
-function SetNormalBlessings(pname, class, tname, value)
+local function SetNormalBlessings(pname, class, tname, value)
 	if not PallyPower_NormalAssignments[pname] then
 		PallyPower_NormalAssignments[pname] = {}
 	end
