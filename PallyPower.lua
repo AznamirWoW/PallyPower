@@ -52,6 +52,7 @@ local raidmainassists = {}
 
 local lastMsg = ""
 local prevBuffDuration
+local normalBlessingTimers = {}
 
 do
 	table.insert(party_units, "player")
@@ -419,15 +420,20 @@ local function SetNormalBlessings(pname, class, tname, value)
 		value = nil
 	end
 	PallyPower_NormalAssignments[pname][class][tname] = value
-	local msgQueue
-	msgQueue =
+	-- Cancel any existing pending timer for this exact assignment to prevent timer storm
+	local timerKey = pname .. ":" .. tostring(class) .. ":" .. tname
+	if normalBlessingTimers[timerKey] then
+		normalBlessingTimers[timerKey]:Cancel()
+		normalBlessingTimers[timerKey] = nil
+	end
+	normalBlessingTimers[timerKey] =
 		C_Timer.NewTimer(
 		2.0,
 		function()
+			normalBlessingTimers[timerKey] = nil
 			if PallyPower_NormalAssignments and PallyPower_NormalAssignments[pname] and PallyPower_NormalAssignments[pname][class] and PallyPower_NormalAssignments[pname][class][tname] then
 				PallyPower:SendNormalBlessings(pname, class, tname)
 				PallyPower:UpdateLayout()
-				msgQueue:Cancel()
 			end
 		end
 	)
@@ -2115,13 +2121,17 @@ function PallyPower:UpdateRoster()
 					end
 					if (raidtank == "MAINTANK" and self.opt.mainTank) then
 						if (PallyPower_Assignments[self.player] and PallyPower_Assignments[self.player][class] == self.opt.mainTankGSpellsW and (raidmaintanks[tmp.name] == false or raidmaintanks[tmp.name] == nil)) or (PallyPower_NormalAssignments[self.player] and PallyPower_NormalAssignments[self.player][class] and PallyPower_NormalAssignments[self.player][class][tmp.name] ~= self.opt.mainTankSpellsW and raidmaintanks[tmp.name] == true) then
-							SetNormalBlessings(self.player, class, tmp.name, self.opt.mainTankSpellsW)
+							if not (PallyPower_NormalAssignments[self.player] and PallyPower_NormalAssignments[self.player][class] and PallyPower_NormalAssignments[self.player][class][tmp.name] == self.opt.mainTankSpellsW) then
+								SetNormalBlessings(self.player, class, tmp.name, self.opt.mainTankSpellsW)
+							end
 							raidmaintanks[tmp.name] = true
 						end
 					end
 					if (raidtank == "MAINASSIST" and self.opt.mainAssist) then
 						if (PallyPower_Assignments[self.player] and PallyPower_Assignments[self.player][class] == self.opt.mainAssistGSpellsW and (raidmainassists[tmp.name] == false or raidmainassists[tmp.name] == nil)) or (PallyPower_NormalAssignments[self.player] and PallyPower_NormalAssignments[self.player][class] and PallyPower_NormalAssignments[self.player][class][tmp.name] ~= self.opt.mainAssistSpellsW and raidmainassists[tmp.name] == true) then
-							SetNormalBlessings(self.player, class, tmp.name, self.opt.mainAssistSpellsW)
+							if not (PallyPower_NormalAssignments[self.player] and PallyPower_NormalAssignments[self.player][class] and PallyPower_NormalAssignments[self.player][class][tmp.name] == self.opt.mainAssistSpellsW) then
+								SetNormalBlessings(self.player, class, tmp.name, self.opt.mainAssistSpellsW)
+							end
 							raidmainassists[tmp.name] = true
 						end
 					end
@@ -2149,9 +2159,13 @@ function PallyPower:UpdateRoster()
 					if (raidtank == "MAINTANK" and self.opt.mainTank) then
 						if (PallyPower_Assignments[self.player] and PallyPower_Assignments[self.player][class] == self.opt.mainTankGSpellsDP and (raidmaintanks[tmp.name] == false or raidmaintanks[tmp.name] == nil)) or (PallyPower_NormalAssignments[self.player] and PallyPower_NormalAssignments[self.player][class] and PallyPower_NormalAssignments[self.player][class][tmp.name] ~= self.opt.mainTankSpellsDP and raidmaintanks[tmp.name] == true) then
 							if (self.player == tmp.name and self.opt.mainTankSpellsDP == 7) then
-								SetNormalBlessings(self.player, class, tmp.name, 0)
+								if not (PallyPower_NormalAssignments[self.player] and PallyPower_NormalAssignments[self.player][class] and PallyPower_NormalAssignments[self.player][class][tmp.name] == nil) then
+									SetNormalBlessings(self.player, class, tmp.name, 0)
+								end
 							else
-								SetNormalBlessings(self.player, class, tmp.name, self.opt.mainTankSpellsDP)
+								if not (PallyPower_NormalAssignments[self.player] and PallyPower_NormalAssignments[self.player][class] and PallyPower_NormalAssignments[self.player][class][tmp.name] == self.opt.mainTankSpellsDP) then
+									SetNormalBlessings(self.player, class, tmp.name, self.opt.mainTankSpellsDP)
+								end
 							end
 							raidmaintanks[tmp.name] = true
 						end
@@ -2159,9 +2173,13 @@ function PallyPower:UpdateRoster()
 					if (raidtank == "MAINASSIST" and self.opt.mainAssist) then
 						if (PallyPower_Assignments[self.player] and PallyPower_Assignments[self.player][class] == self.opt.mainAssistGSpellsDP and (raidmainassists[tmp.name] == false or raidmainassists[tmp.name] == nil)) or (PallyPower_NormalAssignments[self.player] and PallyPower_NormalAssignments[self.player][class] and PallyPower_NormalAssignments[self.player][class][tmp.name] ~= self.opt.mainAssistSpellsDP and raidmainassists[tmp.name] == true) then
 							if (self.player == tmp.name and self.opt.mainTankSpellsDP == 7) then
-								SetNormalBlessings(self.player, class, tmp.name, 0)
+								if not (PallyPower_NormalAssignments[self.player] and PallyPower_NormalAssignments[self.player][class] and PallyPower_NormalAssignments[self.player][class][tmp.name] == nil) then
+									SetNormalBlessings(self.player, class, tmp.name, 0)
+								end
 							else
-								SetNormalBlessings(self.player, class, tmp.name, self.opt.mainAssistSpellsDP)
+								if not (PallyPower_NormalAssignments[self.player] and PallyPower_NormalAssignments[self.player][class] and PallyPower_NormalAssignments[self.player][class][tmp.name] == self.opt.mainAssistSpellsDP) then
+									SetNormalBlessings(self.player, class, tmp.name, self.opt.mainAssistSpellsDP)
+								end
 							end
 							raidmainassists[tmp.name] = true
 						end
