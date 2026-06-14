@@ -1589,9 +1589,11 @@ end
 
 function PallyPower:GROUP_JOINED(event)
 	--self:Debug("[Event] GROUP_JOINED")
+	-- Do NOT wipe PallyPower_NormalAssignments here.
+	-- The leader may have set per-player assignments for others;
+	-- wiping them causes assignments to vanish when anyone joins the raid.
 	AllPallys = {}
 	SyncList = {}
-	PallyPower_NormalAssignments = {}
 	self:ScanSpells()
 	self:ScanCooldowns()
 	self:ScanInventory()
@@ -1657,7 +1659,10 @@ function PallyPower:UpdateAllPallys()
 		end
 	end
 
-	if found < countAllPallys then -- Zid: if AllPallys count is reduced do a fresh setup
+	-- Only trigger a full re-discovery when a pally we already knew about
+	-- is no longer in the group (countAllPallys > 0 guards against the
+	-- transient state during raid load where found is 0 but nobody left).
+	if countAllPallys > 0 and found < countAllPallys then
 		C_Timer.After(
 			0.5,
 			function()
@@ -1736,9 +1741,16 @@ function PallyPower:ParseMessage(sender, msg)
 	end
 
 	if strfind(msg, "^SELF") then
-		PallyPower_NormalAssignments[sender] = {}
+		-- Reset spell-rank data and class-level assignments (these are always
+		-- fully re-sent). Do NOT reset NormalAssignments[sender]: those are
+		-- per-target overrides that may have been set by the raid leader and
+		-- are re-broadcast via separate NASSIGN messages. Wiping them here
+		-- caused the 'assignments reset on raid join' bug.
 		PallyPower_Assignments[sender] = {}
 		AllPallys[sender] = {}
+		if not PallyPower_NormalAssignments[sender] then
+			PallyPower_NormalAssignments[sender] = {}
+		end
 		self:SyncAdd(sender)
 		local _, _, numbers, assign = strfind(msg, "SELF ([0-9a-fn]*)@([0-9n]*)")
 		for i = 1, 6 do
