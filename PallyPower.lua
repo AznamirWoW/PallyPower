@@ -398,6 +398,12 @@ function PallyPowerBlessings_ShowCredits(self)
 	end
 end
 
+function PallyPower:SetFreeAssign(flag)
+	if AllPallys[PallyPower.player] then
+		AllPallys[PallyPower.player].freeassign = flag
+	end
+end
+
 local function GetNormalBlessings(pname, class, tname)
 	if PallyPower_NormalAssignments[pname] and PallyPower_NormalAssignments[pname][class] then
 		local blessing = PallyPower_NormalAssignments[pname][class][tname]
@@ -1947,11 +1953,7 @@ function PallyPower:CanControl(name)
 end
 
 function PallyPower:CheckLeader(nick)
-	if leaders[nick] == true then
-		return true
-	else
-		return false
-	end
+	return leaders[nick] == true
 end
 
 function PallyPower:CheckMainTanks(nick)

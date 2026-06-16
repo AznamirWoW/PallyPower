@@ -1941,14 +1941,10 @@
 						PallyPower.opt.freeassign = self:GetChecked();
 						if PallyPower.opt.freeassign then
 							PallyPower:SendMessage("FREEASSIGN YES");
-							if AllPallys[PallyPower.player] then
-								AllPallys[PallyPower.player].freeassign = true
-							end
+							PallyPower:SetFreeAssign(true)
 						else
 							PallyPower:SendMessage("FREEASSIGN NO");
-							if AllPallys[PallyPower.player] then
-								AllPallys[PallyPower.player].freeassign = false
-							end
+							PallyPower:SetFreeAssign(false)
 						end
 					</OnClick>
 					<OnEnter>
