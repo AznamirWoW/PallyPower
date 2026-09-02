@@ -1178,72 +1178,48 @@ function PallyPower:CanBuff(name, test)
 	return true
 end
 
+-- Resolves a blessing rank list down to a cast-ready spell string.
+-- The lists in PallyPowerValues.lua are ordered highest rank first, so the
+-- first entry the paladin knows (and the target qualifies for) is the best
+-- available rank. Always returns an explicit "Name(Rank N)" for ranked spells:
+-- passing a rank-less name leaves the rank choice up to the client, which on
+-- Classic Era resolves Greater Blessing of Might to rank 1.
+local function ResolveBlessingRank(rankList, unitLevel, rankless, config)
+	if not rankList then
+		return nil
+	end
+	for _, v in ipairs(rankList) do
+		local minLevel, spellID = v[1], v[2]
+		if (IsSpellKnown(spellID) or config) and unitLevel >= minLevel then
+			local spellName = GetSpellInfo(spellID)
+			if spellName then
+				if rankless then
+					return spellName
+				end
+				local spellRank = GetSpellSubtext(spellID)
+				if spellRank and spellRank ~= "" then
+					return spellName .. "(" .. spellRank .. ")"
+				end
+				-- Spell has no rank subtext: the bare name is all we can cast.
+				return spellName
+			end
+		end
+	end
+	return nil
+end
+
 function PallyPower:CanBuffBlessing(spellId, gspellId, unitId, config)
 	if unitId and spellId or gspellId then
 		local normSpell, greatSpell
-		if UnitLevel(unitId) >= 60 then
-			if spellId > 0 then
-				if not self.isWrath and spellId == 7 and GetUnitName(unitId, false) == self.player then
-					normSpell = nil
-				else
-					normSpell = self.Spells[spellId]
-				end
-			else
+		local unitLevel = UnitLevel(unitId) or 0
+		if spellId and spellId > 0 then
+			normSpell = ResolveBlessingRank(self.NormalBuffs[spellId], unitLevel, (spellId == 3 or spellId == 4), config)
+			if not self.isWrath and spellId == 7 and GetUnitName(unitId, false) == self.player then
 				normSpell = nil
 			end
-			if gspellId > 0 then
-				greatSpell = self.GSpells[gspellId]
-			else
-				greatSpell = nil
-			end
-			return normSpell, greatSpell
 		end
-		if spellId > 0 then
-			for _, v in pairs(self.NormalBuffs[spellId]) do
-				if IsSpellKnown(v[2]) or config then
-					if UnitLevel(unitId) >= v[1] then
-						local spellName = GetSpellInfo(v[2])
-						local spellRank = GetSpellSubtext(v[2])
-						if spellName and spellRank then
-							if spellId == 3 or spellId == 4 then
-								normSpell = spellName
-							else
-								normSpell = spellName .. "(" .. spellRank .. ")"
-							end
-						end
-						if not self.isWrath and spellId == 7 and GetUnitName(unitId, false) == self.player then
-							normSpell = nil
-						end
-						break
-					else
-						normSpell = nil
-					end
-				end
-			end
-		else
-			normSpell = nil
-		end
-		if gspellId > 0 and UnitLevel(unitId) > 49 then
-			for _, v in pairs(self.GreaterBuffs[gspellId]) do
-				if IsSpellKnown(v[2]) then
-					if UnitLevel(unitId) >= v[1] then
-						local gspellName = GetSpellInfo(v[2])
-						local gspellRank = GetSpellSubtext(v[2])
-						if gspellName and gspellRank then
-							if gspellId == 3 or gspellId == 4 then
-								greatSpell = gspellName
-							else
-								greatSpell = gspellName .. "(" .. gspellRank .. ")"
-							end
-						end
-						break
-					else
-						greatSpell = nil
-					end
-				end
-			end
-		else
-			greatSpell = nil
+		if gspellId and gspellId > 0 then
+			greatSpell = ResolveBlessingRank(self.GreaterBuffs[gspellId], unitLevel, (gspellId == 3 or gspellId == 4), nil)
 		end
 		return normSpell, greatSpell
 	end
