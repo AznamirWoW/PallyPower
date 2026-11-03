@@ -6,7 +6,7 @@ local isPally = select(2, UnitClass("player")) == "PALADIN"
 -- AceConfig
 -------------------------------------------------------------------
 PallyPower.options = {
-	name = "  " .. L["PallyPower Classic"],
+	name = "  " .. PallyPower.Title,
 	type = "group",
 	childGroups = "tab",
 	args = {
@@ -153,6 +153,7 @@ PallyPower.options = {
 						showpets_buff = {
 							order = 2,
 							type = "toggle",
+							hidden = function() return PallyPower.isForever end,
 							name = L["Show Pets"],
 							desc = PallyPower.petsShareBaseClass and L["SHOWPETS_OPTION_TOOLTIP_BCC"] or L["SHOWPETS_OPTION_TOOLTIP_VANILLA"],
 							width = 1.0,
@@ -545,7 +546,8 @@ PallyPower.options = {
 								[7] = PallyPower.Seals[7], -- Seal of Vengeance (Alliance)
 								[8] = PallyPower.Seals[8], -- Seal of Blood (Horde)
 								[9] = PallyPower.Seals[9], -- Seal of the Martyr (Alliance)
-								[10] = PallyPower.Seals[10] -- Seal of Corruption (Horde)
+								[10] = PallyPower.Seals[10], -- Seal of Corruption (Horde)
+								[11] = PallyPower.Seals[11] -- Seal of Fury (Forever)
 							}
 						}
 					}
@@ -588,6 +590,19 @@ PallyPower.options = {
 							end,
 							set = function(info, val)
 								PallyPower.opt.autobuff.waitforpeople = val
+								PallyPower:UpdateRoster()
+							end
+						},
+						auto_duration = {
+							order = 3,
+							type = "toggle",
+							name = L["Buff Duration"],
+							desc = L["If this option is disabled then the Auto Buff Button will ignore buffs' duration, allowing buffs to be reapplied at will. If enabled it only buffs players who are missing a blessing or are about to lose it."],
+							get = function(info)
+								return PallyPower.opt.autobuff.buffDuration == true
+							end,
+							set = function(info, val)
+								PallyPower.opt.autobuff.buffDuration = val
 								PallyPower:UpdateRoster()
 							end
 						}

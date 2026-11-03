@@ -1,6 +1,11 @@
+-- Private API layer from Compat.lua: modern C_ calls first, legacy globals only as a fallback.
+local PPAPI = _G.PPAPI or {}
+local GetSpellInfo = PPAPI.GetSpellInfo or _G.GetSpellInfo
+
 local L = LibStub("AceLocale-3.0"):GetLocale("PallyPower")
 
 PallyPower.commPrefix = "PLPWR"
+PallyPower.Title = PallyPower.isForever and "PallyPower Forever" or L["PallyPower Classic"]
 C_ChatInfo.RegisterAddonMessagePrefix(PallyPower.commPrefix)
 
 PallyPower.petsShareBaseClass = PallyPower.isBCC or PallyPower.isWrath
@@ -9,6 +14,11 @@ PALLYPOWER_MAXCLASSES = PallyPower.isWrath and 10 or 9
 PALLYPOWER_MAXPERCLASS = 15
 PALLYPOWER_NORMALBLESSINGDURATION = (PallyPower.isBCC or PallyPower.isWrath) and (10 * 60) or (5 * 60)
 PALLYPOWER_GREATERBLESSINGDURATION = (PallyPower.isBCC or PallyPower.isWrath) and (30 * 60) or (15 * 60)
+if PallyPower.isForever then
+	-- Forever: every blessing lasts 60 minutes (Greater Blessings not yet in the beta)
+	PALLYPOWER_NORMALBLESSINGDURATION = 60 * 60
+	PALLYPOWER_GREATERBLESSINGDURATION = 60 * 60
+end
 PALLYPOWER_MAXAURAS = PallyPower.isBCC and 8 or 7
 
 PALLYPOWER_DEFAULT_VALUES = {
@@ -232,6 +242,30 @@ PallyPower.ClassIcons = PallyPower.isWrath and {
 	[9] = "Interface\\Icons\\Ability_Mount_JungleTiger"
 }
 
+-- Forever: Vanilla classes with Shaman (both factions) in slot 9. Pets cannot be buffed on
+-- Forever (they scale with gear), so there is no pet column.
+if PallyPower.isForever then
+	PallyPower.ClassID = {
+		[1] = "WARRIOR", [2] = "ROGUE", [3] = "PRIEST", [4] = "DRUID", [5] = "PALADIN",
+		[6] = "HUNTER", [7] = "MAGE", [8] = "WARLOCK", [9] = "SHAMAN"
+	}
+	PallyPower.ClassToID = {
+		["WARRIOR"] = 1, ["ROGUE"] = 2, ["PRIEST"] = 3, ["DRUID"] = 4, ["PALADIN"] = 5,
+		["HUNTER"] = 6, ["MAGE"] = 7, ["WARLOCK"] = 8, ["SHAMAN"] = 9
+	}
+	PallyPower.ClassIcons = {
+		[1] = "Interface\\Icons\\ClassIcon_Warrior",
+		[2] = "Interface\\Icons\\ClassIcon_Rogue",
+		[3] = "Interface\\Icons\\ClassIcon_Priest",
+		[4] = "Interface\\Icons\\ClassIcon_Druid",
+		[5] = "Interface\\Icons\\ClassIcon_Paladin",
+		[6] = "Interface\\Icons\\ClassIcon_Hunter",
+		[7] = "Interface\\Icons\\ClassIcon_Mage",
+		[8] = "Interface\\Icons\\ClassIcon_Warlock",
+		[9] = "Interface\\Icons\\ClassIcon_Shaman"
+	}
+end
+
 PallyPower.BlessingIcons = PallyPower.isWrath and {
 	[-1] = "",
 	[1] = "Interface\\Icons\\Spell_Holy_GreaterBlessingofWisdom",
@@ -289,14 +323,14 @@ PallyPower.AuraIcons = PallyPower.isWrath and {
 
 -- XML Aliases
 do
-	PallyPower.GetAddOnMetadata = _G.GetAddOnMetadata or C_AddOns.GetAddOnMetadata
+	PallyPower.GetAddOnMetadata = (C_AddOns and C_AddOns.GetAddOnMetadata) or _G.GetAddOnMetadata
 	local version = string.trim(PallyPower.GetAddOnMetadata("PallyPower", "Version"))
 	if version == ("@project-".."version@") then -- split string so it doesn't get replaced by packager
 		version = "Development version"
 	end
-	PALLYPOWER_NAME = "  " .. L["PallyPower Classic"] .. " (" .. version .. ")"
+	PALLYPOWER_NAME = "  " .. PallyPower.Title .. " (" .. version .. ")"
 end
-PALLYPOWER_KEYCAT = L["PallyPower Classic"]
+PALLYPOWER_KEYCAT = PallyPower.Title
 PALLYPOWER_CLEAR = L["Clear"]
 PALLYPOWER_CLEAR_DESC = L["PP_CLEAR_TOOLTIP"]
 PALLYPOWER_REFRESH = L["Refresh"]
@@ -413,6 +447,11 @@ PallyPower.Seals = PallyPower.isWrath and {
 	[9] = GetSpellInfo(348700),		-- Seal of the Martyr (Alliance)
 	[10] = GetSpellInfo(348704),	-- Seal of Corruption (Horde)
 }
+
+-- Forever: Seal of Fury (tank seal, spell 1311656 = rank 2). Added as the 11th seal.
+if PallyPower.isForever then
+	PallyPower.Seals[11] = GetSpellInfo(1311656)	-- Seal of Fury
+end
 
 PallyPower.Auras = PallyPower.isWrath and {
 	[0] = "",
