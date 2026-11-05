@@ -15,8 +15,6 @@ author, Aznamir. Forever port by Pallyblaze and Laxativum.
 - Options button opens on the first click; Preset button no longer errors with nothing saved.
 - Talent scanning skipped (no improved blessings on Forever).
 - Credits, title and version updated (v10.10.26-forever).
-- Salvation split from blessings: per-paladin Salv checkbox, a Salvation button beside each class button (left Mass Salvation, right Salvation), Salvation removed from the blessing cycle.
-
 ## Earlier notes
 
 # PallyPower - WoW: Forever beta port (experimental)

@@ -786,19 +786,6 @@ function PallyPowerBlessingsGrid_Update(self, elapsed)
 					_G[fname .. "Name"]:SetTextColor(1, 0, 0)
 				end
 			end
-			do
-				local salvCheck = _G[fname .. "Salv"]
-				if salvCheck then
-					if PallyPower.isForever then
-						salvCheck:Show()
-						_G[fname .. "SalvText"]:Show()
-						salvCheck:SetChecked(SkillInfo.salv and true or false)
-					else
-						salvCheck:Hide()
-						_G[fname .. "SalvText"]:Hide()
-					end
-				end
-			end
 			_G[fname .. "Symbols"]:SetText(SkillInfo.symbols)
 			_G[fname .. "Symbols"]:SetTextColor(1, 1, 0.5)
 			for id = 1, PallyPower.isWrath and 4 or 6 do
@@ -1478,7 +1465,6 @@ function PallyPower:ScanSpells()
 		end
 		self:SyncAdd(self.player)
 		AllPallys[self.player] = RankInfo
-		AllPallys[self.player].salv = self.opt.salv and true or false
 		AllPallys[self.player].AuraInfo = {}
 		for i = 1, PALLYPOWER_MAXAURAS do -- find max ranks/talents for auaras
 			local spellName, _, spellTexture = GetSpellInfo(self.Auras[i])
@@ -1643,7 +1629,6 @@ function PallyPower:SendSelf(sender)
 		PP_Symbols = GetItemCount(21177)
 		AllPallys[self.player].symbols = PP_Symbols
 		AllPallys[self.player].freeassign = self.opt.freeassign
-		AllPallys[self.player].salv = self.opt.salv and true or false
 		local CooldownInfo, Cooldowns
 		if #AllPallys[self.player].CooldownInfo > 0 then
 			local s = ""
@@ -1682,14 +1667,6 @@ function PallyPower:SendSelf(sender)
 				self:SendMessage("FREEASSIGN YES | SYMCOUNT " .. PP_Symbols .. " | COOLDOWNS" .. Cooldowns)
 			else
 				self:SendMessage("FREEASSIGN NO | SYMCOUNT " .. PP_Symbols .. " | COOLDOWNS" .. Cooldowns)
-			end
-		end
-		if self.isForever then
-			local salvMsg = self.opt.salv and "SALV YES" or "SALV NO"
-			if sender and not leader then
-				self:SendMessage(salvMsg, "WHISPER", sender)
-			else
-				self:SendMessage(salvMsg)
 			end
 		end
 	end
@@ -2102,13 +2079,6 @@ function PallyPower:ParseMessage(sender, msg)
 		AllPallys[sender].freeassign = false
 	end
 
-	if strfind(msg, "^SALV YES") and AllPallys[sender] then
-		AllPallys[sender].salv = true
-		self:UpdateLayout()
-	elseif strfind(msg, "^SALV NO") and AllPallys[sender] then
-		AllPallys[sender].salv = false
-		self:UpdateLayout()
-	end
 
 	if strfind(msg, "^ASELF") then
 		PallyPower_AuraAssignments[sender] = 0
@@ -2497,7 +2467,6 @@ function PallyPower:CreateLayout()
 		end)
 	end
 	self.classButtons = {}
-	self.salvButtons = {}
 	self.playerButtons = {}
 	self.autoButton:Execute([[childs = table.new()]])
 	for cbNum = 1, PALLYPOWER_MAXCLASSES do
@@ -2536,25 +2505,6 @@ function PallyPower:CreateLayout()
 		cButton:RegisterForClicks("LeftButtonDown", "RightButtonDown", "AnyUp", "AnyDown")
 		cButton:EnableMouseWheel(1)
 		self.classButtons[cbNum] = cButton
-		if self.isForever then
-			-- Salvation button beside the class button: left = Mass Salvation, right = Salvation
-			local sButton = CreateFrame("Button", "PallyPowerS" .. cbNum, UIParent, "SecureHandlerShowHideTemplate, SecureHandlerEnterLeaveTemplate, SecureActionButtonTemplate, PallyPowerSalvTemplate")
-			sButton:SetParent(cButton)
-			sButton:SetFrameStrata("DIALOG")
-			sButton:RegisterForClicks("LeftButtonDown", "RightButtonDown", "AnyUp", "AnyDown")
-			sButton:SetAttribute("type1", "macro")
-			sButton:SetAttribute("type2", "macro")
-			sButton:SetScript("PreClick", function(btn, mouse)
-				PallyPower:SalvPreClick(btn, mouse)
-			end)
-			-- compact: no class icon, just the Salvation icon and its timer
-			_G["PallyPowerS" .. cbNum .. "ClassIcon"]:Hide()
-			local salvIcon = _G["PallyPowerS" .. cbNum .. "BuffIcon"]
-			salvIcon:ClearAllPoints()
-			salvIcon:SetPoint("TOPLEFT", sButton, "TOPLEFT", 4, -4)
-			sButton:Hide()
-			self.salvButtons[cbNum] = sButton
-		end
 		self.playerButtons[cbNum] = {}
 		local pButtons = self.playerButtons[cbNum]
 		local leadChild
@@ -2587,22 +2537,6 @@ function PallyPower:CreateLayout()
 			pButton:Hide()
 			pButtons[pbNum] = pButton
 		end -- by pbNum
-		local salvChild = self.salvButtons[cbNum]
-		if salvChild then
-			-- the Salvation button pops out and fades away with the player buttons
-			SecureHandlerSetFrameRef(cButton, "child", salvChild)
-			SecureHandlerExecute(cButton, [[
-				local child = self:GetFrameRef("child")
-				childs[#childs+1] = child;
-			]])
-			if leadChild then
-				SecureHandlerSetFrameRef(leadChild, "sibling", salvChild)
-				SecureHandlerExecute(leadChild, [[
-					local sibling = self:GetFrameRef("sibling")
-					siblings[#siblings+1] = sibling;
-				]])
-			end
-		end
 	end -- by classIndex
 	for cbNum = 1, PALLYPOWER_MAXCLASSES do
 		local cButton = self.classButtons[cbNum]
@@ -2774,7 +2708,6 @@ function PallyPower:UpdateLayout()
 			end
 			cButton:SetAttribute("Display", 1)
 			cButton:SetAttribute("classID", classIndex)
-			self:LayoutSalvButton(cbNum, cButton, classIndex, true)
 			cButton:SetAttribute("type1", "macro")
 			cButton:SetAttribute("type2", "macro")
 			if (cButton:GetAttribute("macrotext1") == nil) then
@@ -2839,7 +2772,6 @@ function PallyPower:UpdateLayout()
 		cButton:SetAttribute("Display", 0)
 		cButton:SetAttribute("classID", 0)
 		cButton:Hide()
-		self:LayoutSalvButton(i, cButton, 0, false)
 		local pButtons = self.playerButtons[cbNum]
 		for pbNum = 1, PALLYPOWER_MAXPERCLASS do
 			local pButton = pButtons[pbNum]
@@ -3319,7 +3251,6 @@ function PallyPower:ButtonsUpdate()
 	if self.opt.auras then
 		self:UpdateAuraButton(PallyPower_AuraAssignments[self.player])
 	end
-	self:UpdateSalvButtons()
 	if minClassExpire ~= 9999 or minSpecialExpire ~= 9999 or expire1 ~= 9999 or expire2 ~= 9999 then
 		if isPally and not self.buttonUpdate then
 			self.buttonUpdate = self:ScheduleRepeatingTimer(self.ButtonsUpdate, 1, self)
@@ -3423,207 +3354,6 @@ function PallyPower:ForeverClassNormalPick(classid)
 	self.PreviousAutoBuffedUnit = best
 	self._ppClassPrep[classid] = {unitid = best.unitid, n = bestN, g = bestG, at = nowPrecise}
 	return best.unitid, bestN, bestG
-end
-
--- ---------------------------------------------------------------------------------------------
--- Forever: Salvation is separate from the blessings and stacks with them. "Salvation" (1038) buffs one
--- player, "Mass Salvation" (25895, level 60) buffs a whole class. Each Salvation button sits beside a class
--- button: left-click = Mass Salvation (single Salvation until it is learned), right-click = Salvation on
--- the next player of that class.
--- ---------------------------------------------------------------------------------------------
-PallyPower.SalvTooltip = "This paladin casts Salvation (it stacks with blessings). Only you can change your own."
-local SALV_ID, MASS_SALV_ID = 1038, 25895
-
-function PallyPower:SalvNames()
-	return (GetSpellInfo(SALV_ID)), (GetSpellInfo(MASS_SALV_ID))
-end
-
-function PallyPower:SalvWanted()
-	local single, mass = self:SalvNames()
-	local w = {}
-	if single then w[single] = true end
-	if mass then w[mass] = true end
-	return w
-end
-
-function PallyPower:ToggleSalv(check)
-	local row = check:GetParent()
-	local nameFS = row and _G[row:GetName() .. "Name"]
-	local pname = nameFS and nameFS:GetText()
-	if pname ~= self.player then
-		-- only your own Salvation switch can be changed; show the other paladin's setting again
-		check:SetChecked(AllPallys[pname] and AllPallys[pname].salv and true or false)
-		return
-	end
-	local on = check:GetChecked() and true or false
-	self.opt.salv = on
-	if AllPallys[self.player] then AllPallys[self.player].salv = on end
-	self:SendMessage(on and "SALV YES" or "SALV NO")
-	self:UpdateLayout()
-end
-
-function PallyPower:LayoutSalvButton(cbNum, cButton, classIndex, active)
-	local sb = self.salvButtons and self.salvButtons[cbNum]
-	if not sb then return end
-	if InCombatLockdown() then return end
-	sb:SetAttribute("classID", classIndex or 0)
-	sb:SetAttribute("Display", 0)
-	local visible = active and self.opt.salv and isPally and self.opt.enabled
-		and ((GetNumGroupMembers() == 0 and self.opt.ShowWhenSolo) or (GetNumGroupMembers() > 0 and self.opt.ShowInParty))
-	if not visible then
-		sb:Hide()
-		return
-	end
-	local layout = self.Layouts[self.opt.layout]
-	local px = layout and layout.c[cbNum] and layout.c[cbNum].p[1] and layout.c[cbNum].p[1].x or 0
-	local _, h = cButton:GetSize()
-	sb:SetSize(72, (h and h > 0) and h or 34)
-	sb:ClearAllPoints()
-	if px < 0 then
-		sb:SetPoint("TOPLEFT", cButton, "TOPRIGHT", 2, 0)
-	else
-		sb:SetPoint("TOPRIGHT", cButton, "TOPLEFT", -2, 0)
-	end
-	-- shown on hover with the player buttons (secure handler on the class button), hidden otherwise
-	sb:SetAttribute("Display", 1)
-	sb:Hide()
-end
-
--- A tank is a player flagged main tank in the raid or given the Tank role (dungeon finder / group roles).
-local function PP_SalvIsTank(unit)
-	if not (unit and unit.unitid) then return false end
-	if unit.tank then return true end
-	local ok, role = pcall(UnitGroupRolesAssigned, unit.unitid)
-	if ok and not (issecretvalue and issecretvalue(role)) and role == "TANK" then return true end
-	return false
-end
-
-local function PP_SalvEligible(self, unit, single)
-	if not (unit and unit.unitid) then return false end
-	if PP_SalvIsTank(unit) then return false end
-	if UnitIsDeadOrGhost(unit.unitid) or not UnitIsConnected(unit.unitid) then return false end
-	if IsSpellInRange(single, unit.unitid) ~= 1 then return false end
-	return true
-end
-
--- Next player of the class to give Salvation to: players without it first, then whoever was done longest ago.
--- With Buff Duration checked, players with 4+ minutes left are left alone.
-local function PP_SalvPick(self, classid, single, wanted)
-	local class = classes[classid]
-	if not class then return end
-	local respect = self.opt.display.buffDuration == true
-	self._ppSalvStamp = self._ppSalvStamp or {}
-	local best, bestNeeds, bestStamp
-	for _, unit in pairs(class) do
-		if PP_SalvEligible(self, unit, single) then
-			local nm, remaining = self:FindBuff(unit.unitid, wanted)
-			local needs = (not nm) or (remaining ~= nil and remaining < 240)
-			local stamp = self._ppSalvStamp[unit.name] or 0
-			if respect and not needs then
-				-- still has plenty of time left
-			elseif (not best) or (needs and not bestNeeds) or (needs == bestNeeds and stamp < bestStamp) then
-				best, bestNeeds, bestStamp = unit, needs, stamp
-			end
-		end
-	end
-	return best
-end
-
-function PallyPower:SalvPreClick(button, mousebutton)
-	if InCombatLockdown() then return end
-	button:SetAttribute("macrotext1", nil)
-	button:SetAttribute("macrotext2", nil)
-	local classid = button:GetAttribute("classID")
-	if not classid or classid == 0 or not classes[classid] then return end
-	local single, massName = self:SalvNames()
-	if not single then return end
-	local attr = (mousebutton == "RightButton") and "macrotext2" or "macrotext1"
-	local now = GetTime()
-	self._ppSalvPrep = self._ppSalvPrep or {}
-	local prep = self._ppSalvPrep[classid .. attr]
-	if prep and (now - prep.at) < 0.2 then
-		-- mouse down and mouse up of one click: keep the same target
-		button:SetAttribute(attr, prep.macro)
-		return
-	end
-	local wanted = self:SalvWanted()
-	local classHasTank = false
-	for _, unit in pairs(classes[classid]) do
-		if PP_SalvIsTank(unit) then classHasTank = true break end
-	end
-	local macro
-	if mousebutton ~= "RightButton" and massName and IsSpellKnown(MASS_SALV_ID) and not classHasTank then
-		-- Mass Salvation: any player of the class in range, preferably one still missing it
-		local targets, first = {}, nil
-		for _, unit in pairs(classes[classid]) do
-			if PP_SalvEligible(self, unit, single) then
-				targets[#targets + 1] = unit.unitid
-				if not first then first = unit end
-			end
-		end
-		local pick = PP_SalvPick(self, classid, single, wanted) or first
-		if pick then
-			macro = "/cast [@" .. GetUnitName(pick.unitid, true) .. ",help,nodead] " .. massName
-			self:NoteCastTarget(targets, massName)
-		end
-	else
-		local pick = PP_SalvPick(self, classid, single, wanted)
-		if pick then
-			macro = "/cast [@" .. GetUnitName(pick.unitid, true) .. ",help,nodead] " .. single
-			self._ppSalvStamp[pick.name] = now
-			self:NoteCastTarget(pick.unitid, single)
-		end
-	end
-	if macro then
-		button:SetAttribute(attr, macro)
-		self._ppSalvPrep[classid .. attr] = {macro = macro, at = now}
-	end
-end
-
-function PallyPower:UpdateSalvButtons()
-	if not (self.isForever and self.salvButtons) then return end
-	local single = self:SalvNames()
-	if not single then return end
-	local wanted = self:SalvWanted()
-	local _, _, icon = GetSpellInfo(SALV_ID)
-	for cbNum = 1, PALLYPOWER_MAXCLASSES do
-		local sb = self.salvButtons[cbNum]
-		local classid = sb and sb:GetAttribute("classID")
-		if sb and sb:GetAttribute("Display") == 1 and classid and classid > 0 and classes[classid] then
-			local base = "PallyPowerS" .. cbNum
-			local nhave, nneed, minRem = 0, 0, nil
-			for _, unit in pairs(classes[classid]) do
-				if unit.unitid then
-					local skip = PP_SalvIsTank(unit) or UnitIsDeadOrGhost(unit.unitid)
-					if not skip then
-						local nm, remaining = self:FindBuff(unit.unitid, wanted)
-						if nm then
-							nhave = nhave + 1
-							if remaining and remaining > 0 and (not minRem or remaining < minRem) then
-								minRem = remaining
-							end
-						else
-							nneed = nneed + 1
-						end
-					end
-				end
-			end
-			_G[base .. "BuffIcon"]:SetTexture(icon)
-			local time = _G[base .. "Time"]
-			time:SetText(minRem and self:FormatTime(minRem) or "")
-			time:SetTextColor(self:GetSeverityColor(minRem and (minRem / 3600) or 0))
-			_G[base .. "Time2"]:SetText("")
-			_G[base .. "Text"]:SetText(nneed > 0 and nneed or "")
-			self:SetButton(base)
-			if nhave == 0 and nneed > 0 then
-				self:ApplyBackdrop(sb, self.opt.cBuffNeedAll)
-			elseif nneed > 0 then
-				self:ApplyBackdrop(sb, self.opt.cBuffNeedSome)
-			else
-				self:ApplyBackdrop(sb, self.opt.cBuffGood)
-			end
-		end
-	end
 end
 
 function PallyPower:GetUnitAndSpellSmart(classid, mousebutton)
@@ -4210,7 +3940,8 @@ function PallyPower:ClickHandle(button, mousebutton)
 end
 
 function PallyPower:DragStart()
-	-- Start dragging if not locked
+	-- Start dragging if not locked (the frame holds protected buttons, so it cannot be moved in combat)
+	if InCombatLockdown() then return end
 	if (not self.opt.display.frameLocked) then
 		_G["PallyPowerFrame"]:StartMoving()
 		PallyPowerFrame:SetClampedToScreen(true)
@@ -4559,13 +4290,6 @@ function PallyPower:ApplySkin()
 			Mixin(cButton, BackdropTemplateMixin)
 		end
 		cButton:SetBackdrop(tmp)
-		local sButton = self.salvButtons and self.salvButtons[cbNum]
-		if sButton then
-			if BackdropTemplateMixin then
-				Mixin(sButton, BackdropTemplateMixin)
-			end
-			sButton:SetBackdrop(tmp)
-		end
 		local pButtons = self.playerButtons[cbNum]
 		for pbNum = 1, PALLYPOWER_MAXPERCLASS do
 			local pButton = pButtons[pbNum]

@@ -1,12 +1,11 @@
+v11.05:
+
+* Removed the Salvation checkbox and the Salvation / Mass Salvation drop-out. Blizzard removed Salvation from the game, so it is no longer assignable or tracked.
+* Fixed a "tried to call the protected function StartMoving()" error when trying to drag the bar during combat. Dragging is now ignored in combat.
+
 v10.17:
 
 * Fixed Wisdom and Might not tracking in battlegrounds when buffing players under level 60 (their ranked cast name did not match what the game reports). They now light up green and count down like Kings.
-
-v10.15:
-
-* Salvation is now separate from the blessings, since it stacks with them. New "Salvation" checkbox on each paladin in the assignment window (you can only change your own). When it is checked, a small Salvation button pops out beside each class button when you hover it (it fades away like the player buttons): left-click = Mass Salvation (single Salvation until you learn it at 60), right-click = Salvation on the next player of that class. Players flagged main tank or with the Tank role are always skipped (a class with a tank uses single Salvation on left-click instead of Mass Salvation). Each button shows who is missing Salvation and the lowest time left.
-* Salvation is no longer a choice in the blessing cycle. Saved assignments that used it are cleared once.
-* Spells your character does not know are no longer listed in your row on the assignment window.
 
 v10.12:
 

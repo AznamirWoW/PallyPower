@@ -291,78 +291,6 @@
 		</Scripts>
 	</Button>
 
-	<Button name = "PallyPowerSalvTemplate" virtual = "true" frameStrata = "LOW">
-		<Size>
-			<AbsDimension x = "100" y = "34"/>
-		</Size>
-		<KeyValues>
-			<KeyValue key="backdropInfo" value="BACKDROP_TOOLTIP_8_8_1111" type="global" />
-		</KeyValues>
-		<Layers>
-			<Layer level = "OVERLAY">
-				<FontString name = "$parentTime" inherits = "GameFontHighlightSmall" text = "30:00" justifyH = "RIGHT">
-					<Size>
-						<AbsDimension x = "35" y = "16"/>
-					</Size>
-					<Anchors>
-						<Anchor point = "TOPRIGHT">
-							<Offset>
-								<AbsDimension x = "-5" y = "-3"/>
-							</Offset>
-						</Anchor>
-					</Anchors>
-				</FontString>
-				<FontString name = "$parentTime2" inherits = "GameFontHighlightSmall" text = "10:00" justifyH = "RIGHT">
-					<Size>
-						<AbsDimension x = "35" y = "16"/>
-					</Size>
-					<Anchors>
-						<Anchor point = "BOTTOMRIGHT">
-							<Offset>
-								<AbsDimension x = "-5" y = "3"/>
-							</Offset>
-						</Anchor>
-					</Anchors>
-				</FontString>
-				<Texture name = "$parentClassIcon" file = "Interface\Icons\ClassIcon_Warrior">
-					<Size>
-						<AbsDimension x = "26" y = "26"/>
-					</Size>
-					<Anchors>
-						<Anchor point = "TOPLEFT">
-							<Offset>
-								<AbsDimension x = "4" y = "-4"/>
-							</Offset>
-						</Anchor>
-					</Anchors>
-				</Texture>
-				<Texture name = "$parentBuffIcon" file = "Interface\Icons\Spell_Holy_SealOfWisdom">
-					<Size>
-						<AbsDimension x = "26" y = "26"/>
-					</Size>
-					<Anchors>
-						<Anchor point = "TOPLEFT" relativeTo = "$parentClassIcon" relativePoint = "TOPRIGHT">
-							<Offset>
-								<AbsDimension x = "2" y = "0"/>
-							</Offset>
-						</Anchor>
-					</Anchors>
-				</Texture>
-				<FontString name = "$parentText" inherits = "GameFontHighlightSmall" text = "99" justifyH = "RIGHT">
-					<Size>
-						<AbsDimension x = "10" y = "16"/>
-					</Size>
-					<Anchors>
-						<Anchor point = "TOPRIGHT" relativeTo = "$parentTime2" relativePoint = "TOPLEFT">
-							<Offset>
-								<AbsDimension x = "7" y = "0"/>
-							</Offset>
-						</Anchor>
-					</Anchors>
-				</FontString>
-			</Layer>
-		</Layers>
-	</Button>
 
 	<Button name = "PallyPowerPopupTemplate" virtual = "true" frameStrata = "DIALOG">
 		<Size>
@@ -1022,18 +950,6 @@
 		</Size>
 		<Layers>
 			<Layer level = "OVERLAY">
-				<FontString name = "$parentSalvText" inherits = "GameFontHighlightSmall" text = "Salvation" justifyH = "LEFT">
-					<Size>
-						<AbsDimension x = "70" y = "16"/>
-					</Size>
-					<Anchors>
-						<Anchor point = "TOPLEFT">
-							<Offset>
-								<AbsDimension x = "24" y = "-35"/>
-							</Offset>
-						</Anchor>
-					</Anchors>
-				</FontString>
 				<FontString name = "$parentName" inherits = "GameFontHighlightSmall" text = "SomePally$parent" justifyH = "LEFT">
 					<Size>
 						<AbsDimension x = "932" y = "16"/>
@@ -1453,33 +1369,6 @@
 			</Layer>
 		</Layers>
 		<Frames>
-			<CheckButton name = "$parentSalv" inherits = "OptionsBaseCheckButtonTemplate">
-				<Size>
-					<AbsDimension x = "20" y = "20"/>
-				</Size>
-				<Anchors>
-					<Anchor point = "TOPLEFT">
-						<Offset>
-							<AbsDimension x = "0" y = "-33"/>
-						</Offset>
-					</Anchor>
-				</Anchors>
-				<Scripts>
-					<OnClick>
-						PallyPower:ToggleSalv(self)
-					</OnClick>
-					<OnEnter>
-						if PallyPower.opt.ShowTooltips then
-							GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-							GameTooltip:SetText(PallyPower.SalvTooltip or "Salvation");
-							GameTooltip:Show();
-						end
-					</OnEnter>
-					<OnLeave>
-						GameTooltip:Hide();
-					</OnLeave>
-				</Scripts>
-			</CheckButton>
 			<Button name = "$parentAura1" inherits = "AuraGridButtonTemplate">
 				<Anchors>
 					<Anchor point = "TOPLEFT">
