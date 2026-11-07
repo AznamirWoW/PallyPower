@@ -3590,14 +3590,14 @@ end
 -- combat. There is nothing to read, so we rely on remembered casts (see NoteBlessingCast).
 local function PP_AurasHidden(unitID)
 	local ok, _, t = pcall(IsInInstance)
-	local inPvp = ok and (t == "pvp" or t == "arena")
-	if unitID == "player" then
-		-- our own auras are only treated as hidden when the call really fails (it does in battlegrounds)
-		if not inPvp then return false end
-		local ok2 = pcall(C_UnitAuras.GetAuraDataByIndex, "player", 1, "HELPFUL")
-		return not ok2
+	if unitID ~= "player" and ok and (t == "pvp" or t == "arena") then
+		return true
 	end
-	return inPvp
+	-- Anywhere else (dungeon boss fights and other restricted moments) the client may refuse the aura call
+	-- completely. When it does, treat the unit as hidden and keep what we remembered instead of showing red.
+	if not (C_UnitAuras and C_UnitAuras.GetAuraDataByIndex) then return false end
+	local ok2 = pcall(C_UnitAuras.GetAuraDataByIndex, unitID, 1, "HELPFUL")
+	return not ok2
 end
 
 PallyPower.AurasHidden = PP_AurasHidden
