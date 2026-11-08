@@ -327,6 +327,9 @@ function PallyPower:OnEnable()
 	self:RegisterEvent("ZONE_CHANGED")
 	self:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 	self:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
+	if self.isForever then
+		self:RegisterEvent("UNIT_SPELLCAST_SENT")
+	end
 	self:RegisterEvent("GROUP_JOINED")
 	self:RegisterEvent("GROUP_LEFT")
 	self:RegisterEvent("PLAYER_ROLES_ASSIGNED")
@@ -3019,7 +3022,13 @@ function PallyPower:UpdatePButtonOnPostClick(button, mousebutton)
 end
 
 function PallyPower:PButtonPreClick(button, mousebutton)
-	if InCombatLockdown() then return end
+	if InCombatLockdown() then
+		-- The button still casts what it was set up with before combat, and reading its attributes is
+		-- allowed. Note the target so the blessing is remembered while the client hides auras.
+		local n = (mousebutton == "RightButton") and 2 or 1
+		self:NoteCastTarget(button:GetAttribute("unit" .. n), button:GetAttribute("spell" .. n))
+		return
+	end
 
 	local classID = button:GetAttribute("classID")
 	local playerID = button:GetAttribute("playerID")
@@ -3603,7 +3612,10 @@ end
 PallyPower.AurasHidden = PP_AurasHidden
 
 function PallyPower:FindBuff(unitID, wanted, holdInCombat)
-	local sawHidden = self.isForever and PP_AurasHidden(unitID) or false
+	-- While auras are restricted (combat), a hidden blessing may be left out of the list entirely (as seals are,
+	-- see holdInCombat). A blessing that is not listed then means "unknown", not "gone".
+	local restricted = C_Secrets and C_Secrets.ShouldAurasBeSecret and C_Secrets.ShouldAurasBeSecret()
+	local sawHidden = self.isForever and (restricted or PP_AurasHidden(unitID)) or false
 	local j = 1
 	local buffName = UnitBuff(unitID, j)
 	while buffName do
@@ -3692,8 +3704,9 @@ function PallyPower:NoteBuffCastName(castName)
 	end
 end
 
--- Remember who our next blessing cast is aimed at (set when a button prepares its click), and when the
--- cast succeeds on a unit whose auras we cannot read, remember the blessing as running for its full duration.
+-- Remember who our next blessing cast is aimed at (set when a button is clicked, or by UNIT_SPELLCAST_SENT for
+-- macros and keybinds). When the cast succeeds, remember the blessing as running for its full duration: in
+-- combat the client hides the target's auras, and the next readable scan corrects or clears it anyway.
 function PallyPower:NoteCastTarget(unitid, ...)
 	if not (self.isForever and unitid) then return end
 	local names = {}
@@ -3708,22 +3721,83 @@ function PallyPower:NoteCastTarget(unitid, ...)
 	self._ppPending = {unitid = unitid, names = names, at = GetTime()}
 end
 
+local function PP_IsBlessing(name)
+	if type(name) ~= "string" or name == "" then return false end
+	for _, list in ipairs({PallyPower.Spells, PallyPower.GSpells}) do
+		for _, spell in pairs(list or {}) do
+			if spell == name then return true end
+		end
+	end
+	return false
+end
+
+-- Short blessings PallyPower does not assign. They count for the one-blessing-per-Paladin rule (see
+-- NoteBlessingCast) but are not remembered themselves.
+local PP_SHORT_BLESSINGS = {1022, 1044, 6940} -- Blessing of Protection, Freedom, Sacrifice
+local function PP_IsShortBlessing(name)
+	if type(name) ~= "string" then return false end
+	for _, id in ipairs(PP_SHORT_BLESSINGS) do
+		if GetSpellInfo(id) == name then return true end
+	end
+	return false
+end
+
+-- PallyPower only looks up the blessings assigned to us, so dropping every remembered blessing drops ours.
+local function PP_ForgetBlessings(unitID)
+	for _, list in ipairs({PallyPower.Spells, PallyPower.GSpells}) do
+		for _, name in pairs(list or {}) do
+			if type(name) == "string" and name ~= "" then
+				auraMemory[AuraMemoryKey(unitID, name)] = nil
+			end
+		end
+	end
+end
+
 function PallyPower:NoteBlessingCast(spellID)
 	if not self.isForever then return end
 	local pending = self._ppPending
 	if not pending or GetTime() - pending.at > 8 then return end
 	local castName = GetSpellInfo(spellID)
 	if not (castName and pending.names[castName]) then return end
+	self._ppPending = nil
+	local short = PP_IsShortBlessing(castName)
 	local units = type(pending.unitid) == "table" and pending.unitid or {pending.unitid}
-	local any = false
 	for _, u in ipairs(units) do
-		if PP_AurasHidden(u) then
+		-- "Players may only have one Blessing on them per Paladin": whatever blessing we gave this player before is
+		-- gone now. While auras are hidden this is the only way to see it.
+		PP_ForgetBlessings(u)
+		if not short then
 			AuraRemember(u, castName, GetTime() + 3600, 3600)
-			any = true
 		end
 	end
-	if any then
-		self:ScheduleTimer(function() PallyPower:UpdateRoster() end, 0.3)
+	-- UpdateRoster does not redraw in combat (UpdateLayout returns), and the repeating ButtonsUpdate timer
+	-- stops once no tracked blessing is running, so redraw directly.
+	self:ScheduleTimer(function() PallyPower:ButtonsUpdate() end, 0.3)
+end
+
+local function PP_RosterUnitByName(name)
+	if issecret(name) or type(name) ~= "string" or name == "" then return end
+	for _, unit in ipairs(roster) do
+		if unit.unitid and unit.name and (unit.name == name or Ambiguate(unit.name, "none") == name) then
+			return unit.unitid
+		end
+	end
+end
+
+-- Blessings cast from your own macros or keybinds (e.g. /cast [@mouseover] Blessing of Might), and Protection,
+-- Freedom or Sacrifice, go through no PallyPower button, so the target name in this event is the only hint who got
+-- it. If the client hides that name, only casts from PallyPower's buttons are tracked.
+function PallyPower:UNIT_SPELLCAST_SENT(event, unit, target, castGUID, spellID)
+	if not self.isForever or issecret(spellID) then return end
+	local castName = GetSpellInfo(spellID)
+	if not (PP_IsBlessing(castName) or PP_IsShortBlessing(castName)) then return end
+	local pending = self._ppPending
+	-- a PallyPower button set the target for this cast a moment ago
+	if pending and GetTime() - pending.at < 1 then return end
+	self._ppPending = nil
+	local unitid = PP_RosterUnitByName(target)
+	if unitid then
+		self:NoteCastTarget(unitid, castName)
 	end
 end
 
