@@ -3452,14 +3452,24 @@ function PallyPower:LayoutOathButton(cbNum, cButton, classIndex, active)
 		return
 	end
 	local layout = self.Layouts[self.opt.layout]
-	local px = layout and layout.c[cbNum] and layout.c[cbNum].p[1] and layout.c[cbNum].p[1].x or 0
-	local _, h = cButton:GetSize()
+	local p1 = layout and layout.c[cbNum] and layout.c[cbNum].p[1]
+	local px, py = p1 and p1.x or 0, p1 and p1.y or 0
+	local w, h = cButton:GetSize()
 	ob:SetSize(72, (h and h > 0) and h or 34)
 	ob:ClearAllPoints()
 	if px < 0 then
 		ob:SetPoint("TOPLEFT", cButton, "TOPRIGHT", 2, 0)
-	else
+	elseif px > 0 then
 		ob:SetPoint("TOPRIGHT", cButton, "TOPLEFT", -2, 0)
+	else
+		-- horizontal layouts: the player buttons stack above or below the class button, so the Oath button
+		-- goes on the opposite side instead of overlapping the neighbouring class button
+		ob:SetSize((w and w > 0) and w or 100, (h and h > 0) and h or 34)
+		if py < 0 then
+			ob:SetPoint("BOTTOMLEFT", cButton, "TOPLEFT", 0, 2)
+		else
+			ob:SetPoint("TOPLEFT", cButton, "BOTTOMLEFT", 0, -2)
+		end
 	end
 	-- shown on hover with the player buttons (secure handler on the class button), hidden otherwise
 	ob:SetAttribute("Display", 1)
