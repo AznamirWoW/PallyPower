@@ -2458,6 +2458,23 @@ function PallyPower:CreateLayout()
 	self.autoButton:RegisterForClicks("LeftButtonDown", "RightButtonDown", "AnyUp", "AnyDown")
 	self.rfButton = CreateFrame("Button", "PallyPowerRF", self.Header, "PallyPowerRFButtonTemplate")
 	self.rfButton:RegisterForClicks("LeftButtonDown", "RightButtonDown", "AnyUp", "AnyDown")
+	if self.isForever then
+		-- Oath of Light timer, shown next to the seal / Righteous Fury tracker (see UpdateOathTimer)
+		local ot = CreateFrame("Frame", "PallyPowerOathTimer", self.Header, "BackdropTemplate")
+		ot:SetSize(62, 34)
+		ot:SetPoint("TOPLEFT", self.rfButton, "TOPRIGHT", 2, 0)
+		ot:SetFrameStrata("LOW")
+		if BACKDROP_TOOLTIP_8_8_1111 then ot:SetBackdrop(BACKDROP_TOOLTIP_8_8_1111) end
+		ot.icon = ot:CreateTexture(nil, "OVERLAY")
+		ot.icon:SetSize(26, 26)
+		ot.icon:SetPoint("TOPLEFT", ot, "TOPLEFT", 4, -4)
+		ot.time = ot:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+		ot.time:SetPoint("LEFT", ot.icon, "RIGHT", 2, 0)
+		ot.time:SetWidth(30)
+		ot.time:SetJustifyH("RIGHT")
+		ot:SetAlpha(0)
+		self.oathTimer = ot
+	end
 	self.auraButton = CreateFrame("Button", "PallyPowerAura", self.Header, "PallyPowerAuraButtonTemplate")
 	self.auraButton:RegisterForClicks("LeftButtonDown", "AnyUp", "AnyDown")
 	if self.isForever then
@@ -2471,6 +2488,7 @@ function PallyPower:CreateLayout()
 	end
 	self.classButtons = {}
 	self.playerButtons = {}
+	self.oathButtons = {}
 	self.autoButton:Execute([[childs = table.new()]])
 	for cbNum = 1, PALLYPOWER_MAXCLASSES do
 		-- create class buttons
@@ -2508,6 +2526,25 @@ function PallyPower:CreateLayout()
 		cButton:RegisterForClicks("LeftButtonDown", "RightButtonDown", "AnyUp", "AnyDown")
 		cButton:EnableMouseWheel(1)
 		self.classButtons[cbNum] = cButton
+		if self.isForever then
+			-- Oath of Light button beside the class button: left or right click swears the Oath on a player of that class
+			local oButton = CreateFrame("Button", "PallyPowerO" .. cbNum, UIParent, "SecureHandlerShowHideTemplate, SecureHandlerEnterLeaveTemplate, SecureActionButtonTemplate, PallyPowerOathTemplate")
+			oButton:SetParent(cButton)
+			oButton:SetFrameStrata("DIALOG")
+			oButton:RegisterForClicks("LeftButtonDown", "RightButtonDown", "AnyUp", "AnyDown")
+			oButton:SetAttribute("type1", "macro")
+			oButton:SetAttribute("type2", "macro")
+			oButton:SetScript("PreClick", function(btn, mouse)
+				PallyPower:OathPreClick(btn, mouse)
+			end)
+			-- compact: no class icon, just the Oath of Light icon and its timer
+			_G["PallyPowerO" .. cbNum .. "ClassIcon"]:Hide()
+			local oathIcon = _G["PallyPowerO" .. cbNum .. "BuffIcon"]
+			oathIcon:ClearAllPoints()
+			oathIcon:SetPoint("TOPLEFT", oButton, "TOPLEFT", 4, -4)
+			oButton:Hide()
+			self.oathButtons[cbNum] = oButton
+		end
 		self.playerButtons[cbNum] = {}
 		local pButtons = self.playerButtons[cbNum]
 		local leadChild
@@ -2540,6 +2577,22 @@ function PallyPower:CreateLayout()
 			pButton:Hide()
 			pButtons[pbNum] = pButton
 		end -- by pbNum
+		local oathChild = self.oathButtons[cbNum]
+		if oathChild then
+			-- the Oath of Light button pops out and fades away with the player buttons
+			SecureHandlerSetFrameRef(cButton, "child", oathChild)
+			SecureHandlerExecute(cButton, [[
+				local child = self:GetFrameRef("child")
+				childs[#childs+1] = child;
+			]])
+			if leadChild then
+				SecureHandlerSetFrameRef(leadChild, "sibling", oathChild)
+				SecureHandlerExecute(leadChild, [[
+					local sibling = self:GetFrameRef("sibling")
+					siblings[#siblings+1] = sibling;
+				]])
+			end
+		end
 	end -- by classIndex
 	for cbNum = 1, PALLYPOWER_MAXCLASSES do
 		local cButton = self.classButtons[cbNum]
@@ -2711,6 +2764,7 @@ function PallyPower:UpdateLayout()
 			end
 			cButton:SetAttribute("Display", 1)
 			cButton:SetAttribute("classID", classIndex)
+			self:LayoutOathButton(cbNum, cButton, classIndex, true)
 			cButton:SetAttribute("type1", "macro")
 			cButton:SetAttribute("type2", "macro")
 			if (cButton:GetAttribute("macrotext1") == nil) then
@@ -2775,6 +2829,7 @@ function PallyPower:UpdateLayout()
 		cButton:SetAttribute("Display", 0)
 		cButton:SetAttribute("classID", 0)
 		cButton:Hide()
+		self:LayoutOathButton(i, cButton, 0, false)
 		local pButtons = self.playerButtons[cbNum]
 		for pbNum = 1, PALLYPOWER_MAXPERCLASS do
 			local pButton = pButtons[pbNum]
@@ -3260,7 +3315,9 @@ function PallyPower:ButtonsUpdate()
 	if self.opt.auras then
 		self:UpdateAuraButton(PallyPower_AuraAssignments[self.player])
 	end
-	if minClassExpire ~= 9999 or minSpecialExpire ~= 9999 or expire1 ~= 9999 or expire2 ~= 9999 then
+	self:UpdateOathButtons()
+	self:UpdateOathTimer()
+	if minClassExpire ~= 9999 or self._ppOathRem or minSpecialExpire ~= 9999 or expire1 ~= 9999 or expire2 ~= 9999 then
 		if isPally and not self.buttonUpdate then
 			self.buttonUpdate = self:ScheduleRepeatingTimer(self.ButtonsUpdate, 1, self)
 		end
@@ -3363,6 +3420,217 @@ function PallyPower:ForeverClassNormalPick(classid)
 	self.PreviousAutoBuffedUnit = best
 	self._ppClassPrep[classid] = {unitid = best.unitid, n = bestN, g = bestG, at = nowPrecise}
 	return best.unitid, bestN, bestG
+end
+
+-- ---------------------------------------------------------------------------------------------
+-- Forever: Oath of Light (talent, spell 1328548). Single-target ally buff, 5 minutes, only one Oath per
+-- paladin at a time. Each Oath button pops out beside a class button; left or right click swears the Oath
+-- on a player of that class: a tank first (main tank / tank role), otherwise whoever is missing it.
+-- ---------------------------------------------------------------------------------------------
+local OATH_ID = 1328548
+local OATH_SECONDS = 300
+PallyPower.OathID = OATH_ID
+
+function PallyPower:OathName()
+	return (GetSpellInfo(OATH_ID))
+end
+
+local function PP_OathKnown()
+	return IsSpellKnown and IsSpellKnown(OATH_ID) or false
+end
+
+function PallyPower:LayoutOathButton(cbNum, cButton, classIndex, active)
+	local ob = self.oathButtons and self.oathButtons[cbNum]
+	if not ob then return end
+	if InCombatLockdown() then return end
+	ob:SetAttribute("classID", classIndex or 0)
+	ob:SetAttribute("Display", 0)
+	local visible = active and PP_OathKnown() and isPally and self.opt.enabled
+		and ((GetNumGroupMembers() == 0 and self.opt.ShowWhenSolo) or (GetNumGroupMembers() > 0 and self.opt.ShowInParty))
+	if not visible then
+		ob:Hide()
+		return
+	end
+	local layout = self.Layouts[self.opt.layout]
+	local p1 = layout and layout.c[cbNum] and layout.c[cbNum].p[1]
+	local px, py = p1 and p1.x or 0, p1 and p1.y or 0
+	local w, h = cButton:GetSize()
+	ob:SetSize(72, (h and h > 0) and h or 34)
+	ob:ClearAllPoints()
+	if px < 0 then
+		ob:SetPoint("TOPLEFT", cButton, "TOPRIGHT", 2, 0)
+	elseif px > 0 then
+		ob:SetPoint("TOPRIGHT", cButton, "TOPLEFT", -2, 0)
+	else
+		-- horizontal layouts: the player buttons stack above or below the class button, so the Oath button
+		-- goes on the opposite side instead of overlapping the neighbouring class button
+		ob:SetSize((w and w > 0) and w or 100, (h and h > 0) and h or 34)
+		if py < 0 then
+			ob:SetPoint("BOTTOMLEFT", cButton, "TOPLEFT", 0, 2)
+		else
+			ob:SetPoint("TOPLEFT", cButton, "BOTTOMLEFT", 0, -2)
+		end
+	end
+	-- shown on hover with the player buttons (secure handler on the class button), hidden otherwise
+	ob:SetAttribute("Display", 1)
+	ob:Hide()
+end
+
+local function PP_OathIsTank(unit)
+	if not (unit and unit.unitid) then return false end
+	if unit.tank then return true end
+	local ok, role = pcall(UnitGroupRolesAssigned, unit.unitid)
+	if ok and not (issecretvalue and issecretvalue(role)) and role == "TANK" then return true end
+	return false
+end
+
+local function PP_OathEligible(unit, oath)
+	if not (unit and unit.unitid) then return false end
+	if UnitIsDeadOrGhost(unit.unitid) or not UnitIsConnected(unit.unitid) then return false end
+	if IsSpellInRange(oath, unit.unitid) ~= 1 then return false end
+	return true
+end
+
+-- Tanks first; otherwise players without the Oath, then whoever was sworn longest ago.
+local function PP_OathPick(self, classid, oath, wanted)
+	local class = classes[classid]
+	if not class then return end
+	self._ppOathStamp = self._ppOathStamp or {}
+	local best, bestRank, bestStamp
+	for _, unit in pairs(class) do
+		if PP_OathEligible(unit, oath) then
+			local nm = self:FindBuff(unit.unitid, wanted)
+			local rank = PP_OathIsTank(unit) and 0 or (nm and 2 or 1)
+			local stamp = self._ppOathStamp[unit.name] or 0
+			if (not best) or rank < bestRank or (rank == bestRank and stamp < bestStamp) then
+				best, bestRank, bestStamp = unit, rank, stamp
+			end
+		end
+	end
+	return best
+end
+
+function PallyPower:OathPreClick(button, mousebutton)
+	if InCombatLockdown() then return end
+	button:SetAttribute("macrotext1", nil)
+	button:SetAttribute("macrotext2", nil)
+	local classid = button:GetAttribute("classID")
+	if not classid or classid == 0 or not classes[classid] then return end
+	local oath = self:OathName()
+	if not oath then return end
+	local attr = (mousebutton == "RightButton") and "macrotext2" or "macrotext1"
+	local now = GetTime()
+	self._ppOathPrep = self._ppOathPrep or {}
+	local prep = self._ppOathPrep[classid .. attr]
+	if prep and (now - prep.at) < 0.2 then
+		-- mouse down and mouse up of one click: keep the same target
+		button:SetAttribute(attr, prep.macro)
+		return
+	end
+	local pick = PP_OathPick(self, classid, oath, {[oath] = true})
+	if pick then
+		local macro = "/cast [@" .. GetUnitName(pick.unitid, true) .. ",help,nodead] " .. oath
+		button:SetAttribute(attr, macro)
+		self._ppOathStamp[pick.name] = now
+		self._ppOathPrep[classid .. attr] = {macro = macro, at = now}
+		self:NoteCastTarget(pick.unitid, oath)
+	end
+end
+
+-- Time left on the Oath of Light, next to the seal tracker. Appears once the talent is known; the timer
+-- shows the longest Oath found on anyone in the group (there is only one per paladin).
+function PallyPower:UpdateOathTimer()
+	local ot = self.oathTimer
+	self._ppOathRem = nil
+	if not ot then return end
+	local oath = self:OathName()
+	if not (oath and PP_OathKnown() and isPally and self.opt.enabled and ((GetNumGroupMembers() == 0 and self.opt.ShowWhenSolo) or (GetNumGroupMembers() > 0 and self.opt.ShowInParty))) then
+		ot:SetAlpha(0)
+		return
+	end
+	if not InCombatLockdown() then
+		-- Inside the aura button (icon next to the aura icon, timer at the right). If that button is hidden,
+		-- a small box beside the seal tracker, else beside the auto button.
+		local inside = self.auraButton:IsShown()
+		local anchor = inside and self.auraButton or ((self.rfButton:IsShown() and self.rfButton) or self.autoButton)
+		local mode = inside and "in" or "out"
+		if self._ppOathAnchor ~= anchor or self._ppOathMode ~= mode then
+			self._ppOathAnchor, self._ppOathMode = anchor, mode
+			ot:SetParent(inside and anchor or self.Header)
+			ot:ClearAllPoints()
+			ot.icon:ClearAllPoints()
+			ot.time:ClearAllPoints()
+			if inside then
+				ot:SetAllPoints(anchor)
+				ot:SetFrameLevel(anchor:GetFrameLevel() + 1)
+				ot:SetBackdrop(nil)
+				ot.icon:SetPoint("TOPLEFT", ot, "TOPLEFT", 32, -4)
+				ot.time:SetPoint("RIGHT", ot, "RIGHT", -5, 0)
+			else
+				ot:SetSize(62, 34)
+				ot:SetPoint("TOPLEFT", anchor, "TOPRIGHT", 2, 0)
+				if BACKDROP_TOOLTIP_8_8_1111 then ot:SetBackdrop(BACKDROP_TOOLTIP_8_8_1111) end
+				ot.icon:SetPoint("TOPLEFT", ot, "TOPLEFT", 4, -4)
+				ot.time:SetPoint("LEFT", ot.icon, "RIGHT", 2, 0)
+			end
+		end
+	end
+	local wanted = {[oath] = true}
+	local rem
+	local function check(unitid)
+		if unitid and not UnitIsDeadOrGhost(unitid) then
+			local nm, remaining = self:FindBuff(unitid, wanted)
+			if nm and remaining and remaining > 0 and (not rem or remaining > rem) then rem = remaining end
+		end
+	end
+	check("player")
+	for _, unit in ipairs(roster) do check(unit.unitid) end
+	local _, _, icon = GetSpellInfo(OATH_ID)
+	ot.icon:SetTexture(icon)
+	ot.icon:SetDesaturated(rem == nil)
+	if rem then
+		ot.time:SetText(self:FormatTime(rem))
+		ot.time:SetTextColor(self:GetSeverityColor(rem / OATH_SECONDS))
+		if self._ppOathMode == "out" then ot:SetBackdropColor(self.opt.cBuffGood.r, self.opt.cBuffGood.g, self.opt.cBuffGood.b, self.opt.cBuffGood.t) end
+		self._ppOathRem = rem
+	else
+		ot.time:SetText("")
+		if self._ppOathMode == "out" then ot:SetBackdropColor(self.opt.cBuffNeedAll.r, self.opt.cBuffNeedAll.g, self.opt.cBuffNeedAll.b, self.opt.cBuffNeedAll.t) end
+	end
+	ot:SetAlpha(1)
+end
+
+function PallyPower:UpdateOathButtons()
+	if not (self.isForever and self.oathButtons) then return end
+	local oath = self:OathName()
+	if not oath then return end
+	local wanted = {[oath] = true}
+	local _, _, icon = GetSpellInfo(OATH_ID)
+	for cbNum = 1, PALLYPOWER_MAXCLASSES do
+		local ob = self.oathButtons[cbNum]
+		local classid = ob and ob:GetAttribute("classID")
+		if ob and ob:GetAttribute("Display") == 1 and classid and classid > 0 and classes[classid] then
+			local base = "PallyPowerO" .. cbNum
+			local has, rem = false, nil
+			for _, unit in pairs(classes[classid]) do
+				if unit.unitid and not UnitIsDeadOrGhost(unit.unitid) then
+					local nm, remaining = self:FindBuff(unit.unitid, wanted)
+					if nm then
+						has = true
+						if remaining and remaining > 0 and (not rem or remaining > rem) then rem = remaining end
+					end
+				end
+			end
+			_G[base .. "BuffIcon"]:SetTexture(icon)
+			local time = _G[base .. "Time"]
+			time:SetText(rem and self:FormatTime(rem) or "")
+			time:SetTextColor(self:GetSeverityColor(rem and (rem / OATH_SECONDS) or 0))
+			_G[base .. "Time2"]:SetText("")
+			_G[base .. "Text"]:SetText("")
+			self:SetButton(base)
+			self:ApplyBackdrop(ob, has and self.opt.cBuffGood or self.opt.cBuffNeedAll)
+		end
+	end
 end
 
 function PallyPower:GetUnitAndSpellSmart(classid, mousebutton)
@@ -3762,12 +4030,24 @@ function PallyPower:NoteBlessingCast(spellID)
 	self._ppPending = nil
 	local short = PP_IsShortBlessing(castName)
 	local units = type(pending.unitid) == "table" and pending.unitid or {pending.unitid}
+	local isOath = (castName == self:OathName())
+	if isOath then
+		-- Oath of Light is not a blessing: leave the remembered blessings alone, but there is only one Oath per
+		-- Paladin, so forget it on everyone else.
+		for _, ru in ipairs(roster) do
+			if ru.unitid and ru.unitid ~= units[1] then auraMemory[AuraMemoryKey(ru.unitid, castName)] = nil end
+		end
+	end
 	for _, u in ipairs(units) do
-		-- "Players may only have one Blessing on them per Paladin": whatever blessing we gave this player before is
-		-- gone now. While auras are hidden this is the only way to see it.
-		PP_ForgetBlessings(u)
-		if not short then
-			AuraRemember(u, castName, GetTime() + 3600, 3600)
+		if isOath then
+			AuraRemember(u, castName, GetTime() + OATH_SECONDS, OATH_SECONDS)
+		else
+			-- "Players may only have one Blessing on them per Paladin": whatever blessing we gave this player before is
+			-- gone now. While auras are hidden this is the only way to see it.
+			PP_ForgetBlessings(u)
+			if not short then
+				AuraRemember(u, castName, GetTime() + 3600, 3600)
+			end
 		end
 	end
 	-- UpdateRoster does not redraw in combat (UpdateLayout returns), and the repeating ButtonsUpdate timer
@@ -4364,6 +4644,13 @@ function PallyPower:ApplySkin()
 			Mixin(cButton, BackdropTemplateMixin)
 		end
 		cButton:SetBackdrop(tmp)
+		local oButton = self.oathButtons and self.oathButtons[cbNum]
+		if oButton then
+			if BackdropTemplateMixin then
+				Mixin(oButton, BackdropTemplateMixin)
+			end
+			oButton:SetBackdrop(tmp)
+		end
 		local pButtons = self.playerButtons[cbNum]
 		for pbNum = 1, PALLYPOWER_MAXPERCLASS do
 			local pButton = pButtons[pbNum]
