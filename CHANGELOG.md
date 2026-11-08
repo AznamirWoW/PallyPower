@@ -1,3 +1,8 @@
+v11.08:
+
+* Added an Oath of Light button in the drop-out beside each class (only shows once you have the talent). Left or right click swears the Oath on a player of that class: a tank first, otherwise whoever is missing it. It shows the time left (5 minutes) and tracks that only one Oath can be active at a time.
+* Added an Oath of Light timer inside the aura button so you can see when it runs out.
+
 v11.05:
 
 * Removed the Salvation checkbox and the Salvation / Mass Salvation drop-out. Blizzard removed Salvation from the game, so it is no longer assignable or tracked.
