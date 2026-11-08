@@ -4644,6 +4644,13 @@ function PallyPower:ApplySkin()
 			Mixin(cButton, BackdropTemplateMixin)
 		end
 		cButton:SetBackdrop(tmp)
+		local oButton = self.oathButtons and self.oathButtons[cbNum]
+		if oButton then
+			if BackdropTemplateMixin then
+				Mixin(oButton, BackdropTemplateMixin)
+			end
+			oButton:SetBackdrop(tmp)
+		end
 		local pButtons = self.playerButtons[cbNum]
 		for pbNum = 1, PALLYPOWER_MAXPERCLASS do
 			local pButton = pButtons[pbNum]
