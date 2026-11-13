@@ -192,6 +192,59 @@ local function placeholder()
 end
 
 if C_UnitAuras and C_UnitAuras.GetAuraDataByIndex then
+	-- Preserve aura handles before the legacy adapter replaces secret times.
+	-- A remembered handle supplies a native duration wherever access remains
+	-- permitted. Restricted combat queries use the remembered countdown instead.
+	local auraInstances = {}
+	local function unitInstances(unit)
+		local known = auraInstances[unit]
+		local now = GetTime()
+		if known and known.checked == now then return known.names end
+		local ok, guid = pcall(UnitGUID, unit)
+		local readable = ok and not issecret(guid)
+		if not known or (readable and guid ~= known.guid) then
+			known = {names = {}}
+			auraInstances[unit] = known
+		end
+		if readable then known.guid = guid end
+		known.checked = now
+		return known.names
+	end
+	-- Whole-aura access is blocked on Forever during combat. Once a query
+	-- confirms that restriction, stop retrying it for every buff and timer.
+	-- Retry on combat-state changes, or once per second outside combat.
+	local auraAccess = {}
+	local function accessState(unit)
+		local combat, now = InCombatLockdown() and true or false, GetTime()
+		local state = auraAccess[unit]
+		if not state or state.combat ~= combat or (not combat and now - state.checked >= 1) then
+			state = {combat = combat, checked = now}
+			auraAccess[unit] = state
+		end
+		return state
+	end
+	function API.AreAurasBlocked(unit)
+		local state = accessState(unit)
+		return state.scanBlocked or state.durationBlocked or false
+	end
+	function API.GetBuffDuration(unit, ...)
+		if not C_UnitAuras.GetAuraDuration or API.AreAurasBlocked(unit) then return end
+		local known = unitInstances(unit)
+		for i = 1, select("#", ...) do
+			local name = select(i, ...)
+			local id = name and known[name]
+			if id then
+				local ok, duration = pcall(C_UnitAuras.GetAuraDuration, unit, id)
+				if not ok then
+					accessState(unit).durationBlocked = true
+					return
+				end
+				if not issecret(duration) and duration then return duration, "live aura instance" end
+				known[name] = nil
+			end
+		end
+	end
+
 	local function clean(v, default)
 		if issecret(v) then return default end
 		return v
@@ -209,6 +262,11 @@ if C_UnitAuras and C_UnitAuras.GetAuraDataByIndex then
 	local function toLegacyShape(data, unit)
 		if issecret(data.name) then return placeholder() end
 		local name = data.name
+		local id = data.auraInstanceID
+		if name and not issecret(id) and id then
+			local known = unitInstances(unit)
+			known[name] = id
+		end
 		local exp, dur = data.expirationTime, data.duration
 		if issecret(exp) or issecret(dur) then
 			local key = cacheKey(unit, name)
@@ -216,8 +274,15 @@ if C_UnitAuras and C_UnitAuras.GetAuraDataByIndex then
 			if cached and cached.exp > GetTime() then
 				exp, dur = cached.exp, cached.dur
 			else
-				-- first seen while hidden: assume a fresh 60 minute buff (all Forever blessings)
-				exp, dur = GetTime() + 3600, 3600
+				-- A hidden seal is not a one-hour blessing. Native timer displays
+				-- use GetAuraDuration instead; this estimate only serves legacy callers.
+				dur = 3600
+				if PP_IS_FOREVER and PallyPower and PallyPower.Seals then
+					for _, seal in pairs(PallyPower.Seals) do
+						if seal == name then dur = 30 break end
+					end
+				end
+				exp = GetTime() + dur
 				if cacheCount > 500 then timeCache, cacheCount = {}, 0 end
 				timeCache[key] = {exp = exp, dur = dur}
 				cacheCount = cacheCount + 1
@@ -234,9 +299,16 @@ if C_UnitAuras and C_UnitAuras.GetAuraDataByIndex then
 	end
 	local function fetch(unit, index, filter)
 		if type(index) ~= "number" or index > MAX_AURA_INDEX then return end
+		local state = accessState(unit)
+		if state.scanBlocked then return placeholder() end
 		local ok, data = pcall(C_UnitAuras.GetAuraDataByIndex, unit, index, filter)
 		if not ok then
 			-- "cannot be accessed when secret": the aura is there but hidden from us
+			state.scanBlocked = true
+			return placeholder()
+		end
+		if issecret(data) then
+			state.scanBlocked = true
 			return placeholder()
 		end
 		if not data then return end

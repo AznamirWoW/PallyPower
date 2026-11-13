@@ -31,6 +31,8 @@ locale\zhCN.lua
 locale\zhTW.lua
 
 PallyPower.lua
+CombatWheel.lua
+AuraTimers.lua
 PallyPowerValues.lua
 PallyPowerOptions.lua
 PallyPower_Vanilla.xml
