@@ -33,6 +33,7 @@ locale\zhTW.lua
 PallyPower.lua
 CombatWheel.lua
 AuraTimers.lua
+NativeAuras.lua
 PallyPowerValues.lua
 PallyPowerOptions.lua
 PallyPower_Vanilla.xml

@@ -2805,7 +2805,10 @@ function PallyPower:UpdateLayout()
 
 	self:ButtonsUpdate()
 	self:UpdateAnchor(displayedButtons)
-	if self.isForever then self:PrepareCombatWheel() end
+	if self.isForever then
+		self:PrepareCombatWheel()
+		self:PrepareAuraDisplays()
+	end
 end
 
 function PallyPower:SetButton(baseName)
@@ -3058,8 +3061,7 @@ function PallyPower:UpdatePButton(button, baseName, classID, playerID, mousebutt
 		tankIcon[unit.tank and "Show" or "Hide"](tankIcon)
 		buffIcon:SetTexture(self.BlessingIcons[spellID])
 		buffIcon:SetVertexColor(1, 1, 1)
-		if not self.isForever or not self:UpdateAuraTimer(time, unit.unitid, unit.hasbuff, unit.buffDuration,
-			unit.buffName, self.Spells[spellID], self.GSpells[spellID]) then
+		if not self.isForever or not self:UpdatePlayerAuraTimer(time, button, unit, spellID) then
 			time:SetText(self:FormatTime(unit.hasbuff))
 			if self.isForever then
 				time:SetTextColor(self:GetSeverityColor(unit.hasbuff and unit.buffDuration and unit.buffDuration > 0
@@ -3128,6 +3130,7 @@ function PallyPower:UpdatePButton(button, baseName, classID, playerID, mousebutt
 			end
 		end
 	else
+		if self.isForever then self:StopAuraTimer(time); time:SetText("") end
 		self:ApplyBackdrop(button, self.opt.cBuffGood)
 		buffIcon:SetAlpha(0)
 		rng:SetAlpha(0)
@@ -3991,12 +3994,17 @@ function PallyPower:UNIT_SPELLCAST_SENT(event, unit, target, castGUID, spellID)
 	end
 end
 
+function PallyPower:GetBuffAlternatives(spellName, gspellName)
+	local isMight = (spellName and spellName == self.Spells[2]) or (gspellName and gspellName == self.GSpells[2])
+	return spellName, gspellName, not self.isWrath and isMight and self.Spells[8] or nil
+end
+
 function PallyPower:IsBuffActive(spellName, gspellName, unitID)
-	local isMight = (spellName == PallyPower.Spells[2]) or (gSpellName == PallyPower.GSpells[2])
+	local _, _, substitute = self:GetBuffAlternatives(spellName, gspellName)
 	local wanted = {}
 	if spellName then wanted[spellName] = true end
 	if gspellName then wanted[gspellName] = true end
-	if not PallyPower.isWrath and isMight and PallyPower.Spells[8] then wanted[PallyPower.Spells[8]] = true end
+	if substitute then wanted[substitute] = true end
 	local buffName, buffExpire, buffDuration = self:FindBuff(unitID, wanted)
 	if buffName then
 		return buffExpire, buffDuration, buffName

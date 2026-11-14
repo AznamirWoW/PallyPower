@@ -93,15 +93,28 @@ SLASH_PPAURA1 = "/ppaura"
 SlashCmdList["PPAURA"] = function(msg)
 	local function out(...) print("|cff33ff99PP-Aura|r", ...) end
 	local unit = (msg and msg:match("%S+")) or "target"
-	if not UnitExists(unit) then unit = "player" end
 	local issecret = _G.issecretvalue or function() return false end
+	local exists = UnitExists(unit)
+	if issecret(exists) then out("unit existence is hidden; using player"); unit = "player"
+	elseif not exists then unit = "player" end
 	out("unit", unit, "inCombat", tostring(InCombatLockdown()))
+	if PallyPower.NativeAuras then
+		local containers, slots, enabled = PallyPower.NativeAuras:GetAllocationCounts()
+		out("native allocations: containers", containers, "fixed slots", slots, "enabled slots", enabled,
+			"(configuration counts, not aura presence)")
+	end
 	if unit == "player" then
 		for _, entry in ipairs({{"RF", "PallyPowerRFTime1"}, {"seal", "PallyPowerRFTime2"}}) do
 			local text = _G[entry[2]]
 			local timer = text and text.ppAuraTimer
-			out(entry[1], "timer source:", timer and timer.source or "not bound",
-				"active:", tostring(timer and timer.active or false), "secret duration:", tostring(timer and timer.secret or false))
+			local source, enabled
+			if text and PallyPower.NativeAuras then source, enabled = PallyPower.NativeAuras:DescribeTimer(text) end
+			if source then
+				out(entry[1], "timer source:", source, "display enabled:", tostring(enabled), "duration: managed by Blizzard")
+			else
+				out(entry[1], "timer source:", timer and timer.source or "not bound",
+					"active:", tostring(timer and timer.active or false), "secret duration:", tostring(timer and timer.secret or false))
+			end
 		end
 	end
 	if not (C_UnitAuras and C_UnitAuras.GetAuraDataByIndex) then out("C_UnitAuras missing") return end
@@ -110,7 +123,7 @@ SlashCmdList["PPAURA"] = function(msg)
 		local ok, d = pcall(C_UnitAuras.GetAuraDataByIndex, unit, i, "HELPFUL")
 		if not ok then
 			blocked = true
-			out("scan blocked at index", i, "(not a buff count):", tostring(d))
+			out("scan blocked at index", i, "(not a buff count; raw aura access denied)")
 			break
 		elseif issecret(d) then
 			blocked = true
