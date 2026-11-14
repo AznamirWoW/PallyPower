@@ -56,6 +56,12 @@ function PallyPower:UpdatePlayerAuraTimer(text, button, unit, blessing)
         text:SetText("")
         return true
     end
+    if self.NativeAuras then
+        local _, classBlessing = self:GetSpellID(button:GetAttribute("classID"), unit.name)
+        local missing = (unit.dead and InCombatLockdown()) and self.opt.cBuffGood
+            or (blessing ~= classBlessing and self.opt.cBuffNeedSpecial or self.opt.cBuffNeedAll)
+        self.NativeAuras:ConfigurePlayerStatus(text, missing)
+    end
     return self:UpdateAuraTimer(text, unit.unitid, unit.hasbuff, unit.buffDuration,
         self:GetBuffAlternatives(self.Spells[blessing], self.GSpells[blessing]))
 end

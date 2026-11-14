@@ -92,6 +92,12 @@ end
 SLASH_PPAURA1 = "/ppaura"
 SlashCmdList["PPAURA"] = function(msg)
 	local function out(...) print("|cff33ff99PP-Aura|r", ...) end
+	if msg and msg:match("^%s*colors%s*$") then
+		local good = PallyPower.opt.cBuffGood
+		out("configured good color RGBA:", good.r, good.g, good.b, good.t)
+		out("configured background skin:", PallyPower.opt.skin)
+		return
+	end
 	local unit = (msg and msg:match("%S+")) or "target"
 	local issecret = _G.issecretvalue or function() return false end
 	local exists = UnitExists(unit)
