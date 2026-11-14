@@ -6,6 +6,8 @@ PallyPower.NativeAuras = NativeAuras
 
 local ready, loadFailed, rankNames, spellsDirty
 local hosts, timers = {}, {}
+local failedTimers = {}
+local playerStatus = {}
 local filters = {}
 local enable
 local controller = CreateFrame("Frame")
@@ -85,7 +87,7 @@ local function spellFilter(...)
     return filter, signature
 end
 
-local function hostFor(parent, unit)
+local function hostFor(parent, unit, status)
     local host = hosts[parent]
     if not host then
         if InCombatLockdown() then return end
@@ -97,7 +99,7 @@ local function hostFor(parent, unit)
         container:SetSize(1, 1)
         container:SetPoint("TOPLEFT", parent, "TOPLEFT")
         container:SetEnabled(false)
-        host = {container = container, active = 0, displays = {}}
+        host = {container = container, parent = parent, active = 0, displays = {}, status = status}
         hosts[parent] = host
         parent:HookScript("OnHide", function()
             host.visible = false
@@ -115,7 +117,9 @@ local function hostFor(parent, unit)
     if not InCombatLockdown() then
         host.suspended = false
         local scale = parent:GetEffectiveScale() / UIParent:GetEffectiveScale()
-        local strata, level = parent:GetFrameStrata(), parent:GetFrameLevel() + 1
+        -- Status layers sit behind the original icons, labels and secure wheel.
+        local strata = parent:GetFrameStrata()
+        local level = math.max(0, parent:GetFrameLevel() + (host.status and -2 or 1))
         if host.scale ~= scale then host.container:SetScale(scale); host.scale = scale end
         if host.strata ~= strata then host.container:SetFrameStrata(strata); host.strata = strata end
         if host.level ~= level then host.container:SetFrameLevel(level); host.level = level end
@@ -145,6 +149,13 @@ enable = function(display, enabled)
         display.host.container:SetEnabled(active)
         display.host.enabled = active
     end
+    if display.base then
+        display.statusActive = enabled and display.signature ~= "" and not display.host.suspended
+        display.base:SetShown(display.statusActive)
+        if display.statusActive then
+            display.host.parent:SetBackdropColor(0, 0, 0, 0)
+        end
+    end
 end
 
 local function updateFilter(display, filter, signature)
@@ -163,12 +174,19 @@ local function copyTextStyle(text, source)
 end
 
 local function timerDisplay(source, unit)
+    if failedTimers[source] then return end
     local display = timers[source]
-    local host = hostFor(source:GetParent(), unit)
+    local status = playerStatus[source]
+    local host = hostFor(source:GetParent(), unit, status ~= nil)
     if not host then return end
     if not display then
         if InCombatLockdown() then return end
         display = {host = host, key = source:GetName(), enabled = true}
+        if status then
+            local base = host.container:CreateTexture(nil, "BACKGROUND")
+            base:SetAllPoints(source:GetParent().Center)
+            display.base = base
+        end
         -- Fixed slots allocate a single AuraButton, rather than a ten-button
         -- group pool, and keep the same frame as the tracked aura is replaced.
         host.container:AddAuraSlot(display.key, "HELPFUL", {
@@ -178,17 +196,105 @@ local function timerDisplay(source, unit)
                 frame:EnableMouse(false)
                 frame:EnableMouseWheel(false)
                 frame:SetAllPoints(source:GetParent())
-                frame:SetFrameLevel(source:GetParent():GetFrameLevel() + 1)
-                local text = frame:CreateFontString(nil, "OVERLAY")
+                frame:SetFrameLevel(status and host.level + 1 or source:GetParent():GetFrameLevel() + 1)
+                if status then
+                    local background = frame:CreateTexture(nil, "BACKGROUND")
+                    background:SetAllPoints(source:GetParent().Center)
+                    -- Keep configured opacity independent of native RGB writes
+                    -- on the texture (reload after changing opacity).
+                    frame:SetAlpha(PallyPower.opt.cBuffGood.t)
+                    -- Use the native CustomAsset presentation API so later
+                    -- color updates never call C methods on private regions.
+                    display.background = background
+                end
+                local textParent = frame
+                if status then
+                    -- Keep the countdown at its previous level above the
+                    -- original artwork, while the tile stays behind it.
+                    textParent = CreateFrame("Frame", nil, frame)
+                    textParent:EnableMouse(false)
+                    textParent:EnableMouseWheel(false)
+                    textParent:SetIgnoreParentAlpha(true)
+                    textParent:SetAllPoints(frame)
+                    textParent:SetFrameLevel(source:GetParent():GetFrameLevel() + 1)
+                end
+                local text = textParent:CreateFontString(nil, "OVERLAY")
                 copyTextStyle(text, source)
                 frame:SetDurationText(text, {binding = PallyPower:GetAuraTimerBindingTemplate()})
+                display.frame, display.text = frame, text
             end,
         })
+        -- securecallfunction reports initialization errors but can let slot
+        -- creation return. Never publish that partial display or retry its key.
+        if not display.frame then
+            host.container:SetAuraSlotEnabled(display.key, false)
+            if display.base then display.base:Hide() end
+            failedTimers[source] = true
+            return
+        end
         host.active = host.active + 1
         timers[source] = display
         host.displays[source] = display
     end
     return display
+end
+
+-- Inputs here are assignment-derived colors, not remembered aura presence.
+function NativeAuras:ConfigurePlayerStatus(source, missing)
+    playerStatus[source] = missing
+end
+
+function NativeAuras:HasPlayerStatus(source)
+    -- Locally owned configuration flag, never native aura presence/visibility.
+    local display = timers[source]
+    return display and display.statusActive or false
+end
+
+local function updatePlayerStatus(display, source)
+    if not display.base then return end
+    local missing, good = playerStatus[source], PallyPower.opt.cBuffGood
+    local parent = display.host.parent
+    local center = parent.Center
+    -- The selected skin contributes its own shading/alpha. A white texture
+    -- with identical RGB values can look much brighter than the original tile.
+    local skin = parent.backdropInfo.bgFile
+    local ulx, uly, _, lly, urx = center:GetTexCoord()
+    local asset = display.asset
+    local skinChanged = not asset or asset.asset ~= skin
+        or asset.texCoords.left ~= ulx or asset.texCoords.right ~= urx
+        or asset.texCoords.top ~= uly or asset.texCoords.bottom ~= lly
+    if skinChanged then
+        display.base:SetTexture(center:GetTexture())
+        display.base:SetTexCoord(center:GetTexCoord())
+        display.base:SetHorizTile(center:GetHorizTile())
+        display.base:SetVertTile(center:GetVertTile())
+        asset = {asset = skin, texCoords = {left = ulx, right = urx, top = uly, bottom = lly}}
+        display.asset = asset
+    end
+    display.base:SetVertexColor(missing.r, missing.g, missing.b, missing.t)
+    if skinChanged or display.goodR ~= good.r or display.goodG ~= good.g or display.goodB ~= good.b then
+        if display.goodR then display.frame:RemoveDispelTypeTexture(display.background) end
+        local assets, colors = {}, {}
+        local color = CreateColor(good.r, good.g, good.b, 1)
+        for _, kind in ipairs({"None", "Magic", "Curse", "Disease", "Poison", "Enrage", "Bleed"}) do
+            assets[kind], colors[kind] = asset, color
+        end
+        display.frame:AddDispelTypeTexture(display.background, {
+            showAlways = true,
+            style = Enum.CustomAuraButtonDispelTypeTextureStyle.CustomAsset,
+            customDispelAssetMap = assets, customDispelColorMap = colors,
+        })
+        display.goodR, display.goodG, display.goodB = good.r, good.g, good.b
+    end
+    local shown = source:IsShown()
+    if display.timerShown ~= shown then
+        -- Keep native presence live even when the user hides countdown text.
+        display.frame:SetDurationText(display.text, {
+            binding = PallyPower:GetAuraTimerBindingTemplate(),
+            textFormat = not shown and {formatString = "", components = {}} or nil,
+        })
+        display.timerShown = shown
+    end
 end
 
 function NativeAuras:UpdateTimer(source, unit, ...)
@@ -197,8 +303,9 @@ function NativeAuras:UpdateTimer(source, unit, ...)
     if not display then return false end
     local filter, signature = spellFilter(...)
     updateFilter(display, filter, signature)
-    display.requested = source:IsShown() and signature ~= ""
-    enable(display, display.requested and source:IsVisible() and not display.host.suspended)
+    updatePlayerStatus(display, source)
+    display.requested = (display.base ~= nil or source:IsShown()) and signature ~= ""
+    enable(display, display.requested and source:GetParent():IsVisible() and not display.host.suspended)
     -- Preserve the original region as a layout anchor and option-visibility
     -- flag; its replacement is owned by the native AuraButton.
     source:SetAlpha(0)

@@ -3076,12 +3076,16 @@ function PallyPower:UpdatePButton(button, baseName, classID, playerID, mousebutt
 		end
 
 		local state = ClassifyUnitBuffStateForButton(unit)
-		if state == "need_big" then
-			self:ApplyBackdrop(button, self.opt.cBuffNeedAll)
-		elseif state == "need_small" then
-			self:ApplyBackdrop(button, self.opt.cBuffNeedSpecial)
-		else
-			self:ApplyBackdrop(button, self.opt.cBuffGood)
+		-- Native satisfaction is independent of cached unit.hasbuff. Keep
+		-- legacy status when the adapter cannot safely display this player.
+		if not (self.isForever and self.NativeAuras:HasPlayerStatus(time)) then
+			if state == "need_big" then
+				self:ApplyBackdrop(button, self.opt.cBuffNeedAll)
+			elseif state == "need_small" then
+				self:ApplyBackdrop(button, self.opt.cBuffNeedSpecial)
+			else
+				self:ApplyBackdrop(button, self.opt.cBuffGood)
+			end
 		end
 		
 		if unit.hasbuff then
