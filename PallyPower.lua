@@ -4142,7 +4142,8 @@ function PallyPower:ButtonPostClick(button, mousebutton)
 			end
 		end
 		-- If there is a tank present for this "classid" then disable Greater Blessing of Salvation.
-		if not self.isWrath then
+		-- if not self.isWrath then
+		if not self.isWrath and not self.isForever then
 			if gSpell and strfind(gSpell, self.GSpells[4]) and not self.opt.SalvInCombat then
 				for k, v in pairs(classmaintanks) do
 					if (k == classid and v == true) then
