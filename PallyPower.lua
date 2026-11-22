@@ -81,8 +81,10 @@ local function PP_UseNormalForLeftClick()
 	return none
 end
 local function PP_LeftSpell(nSpell, gSpell)
-	if PP_UseNormalForLeftClick() then return nSpell end
-	return gSpell
+    if not PallyPower.isForever or not gSpell then
+        return nSpell or gSpell
+    end
+    return gSpell
 end
 
 function PallyPower:UseNormalForLeftClick()
@@ -476,7 +478,6 @@ function PallyPowerBlessings_Clear()
 	else
 		PallyPower:ClearAssignments(PallyPower.player)
 	end
-	PallyPower:UpdateLayout()
 	PallyPower:UpdateRoster()
 end
 
@@ -489,7 +490,6 @@ function PallyPowerBlessings_Refresh()
 		PallyPower:SendSelf()
 		PallyPower:SendMessage("REQ")
 	end
-	PallyPower:UpdateLayout()
 	PallyPower:UpdateRoster()
 end
 
@@ -1758,7 +1758,6 @@ function PallyPower:PLAYER_ENTERING_WORLD()
 			self:ScanInventory()
 		end
 	end
-	self:UpdateLayout()
 	self:UpdateRoster()
 	self:ReportChannels()
 
@@ -1767,7 +1766,6 @@ end
 function PallyPower:ZONE_CHANGED()
 	if IsInRaid() then
 		self.zone = GetRealZoneText()
-		self:UpdateLayout()
 		self:UpdateRoster()
 	end
 end
@@ -1775,7 +1773,6 @@ end
 function PallyPower:ZONE_CHANGED_NEW_AREA()
 	if IsInRaid() then
 		self.zone = GetRealZoneText()
-		self:UpdateLayout()
 		self:UpdateRoster()
 	end
 end
@@ -1805,7 +1802,6 @@ function PallyPower:GROUP_JOINED(event)
 		function()
 			self:SendSelf()
 			self:SendMessage("REQ")
-			self:UpdateLayout()
 			self:UpdateRoster()
 		end
 	)
@@ -1836,7 +1832,6 @@ function PallyPower:GROUP_LEFT(event)
 	self:ScanSpells()
 	self:ScanCooldowns()
 	self:ScanInventory()
-	self:UpdateLayout()
 	self:UpdateRoster()
 end
 
@@ -1876,7 +1871,6 @@ function PallyPower:UpdateAllPallys()
 				self:ScanInventory()
 				self:SendSelf()
 				self:SendMessage("REQ")
-				self:UpdateLayout()
 				self:UpdateRoster()
 			end
 		)
@@ -3032,7 +3026,8 @@ function PallyPower:UpdatePButtonOnPostClick(button, mousebutton)
 	end
 end
 
-function PallyPower:PButtonPreClick(button, mousebutton)
+function PallyPower:PButtonPreClick(button, mousebutton, down)
+	if not down then return end
 	if InCombatLockdown() then return end
 	local classID = button:GetAttribute("classID")
 	local playerID = button:GetAttribute("playerID")
@@ -3041,7 +3036,9 @@ function PallyPower:PButtonPreClick(button, mousebutton)
 	local normalID, greaterID = self:GetSpellID(classID, unit.name)
 	local normal, greater = self:GetAssignableBlessings(classID, unit, normalID, greaterID)
 	self:NoteCastTarget(unit.unitid, normal, PP_LeftSpell(normal, greater))
-	button:SetAttribute("spell1", PP_LeftSpell(normal, greater))
+	left_spell = PP_LeftSpell(normal, greater)
+	self:NoteCastTarget(unit.unitid, normal, left_spell)
+	button:SetAttribute("spell1", left_spell)
 	button:SetAttribute("spell2", normal)
 end
 
@@ -4016,13 +4013,14 @@ function PallyPower:IsBuffActive(spellName, gspellName, unitID)
 	return nil
 end
 
-function PallyPower:ButtonPreClick(button, mousebutton)
+function PallyPower:ButtonPreClick(button, mousebutton, down)
+	if not down then return end
 	if InCombatLockdown() then return end
-
-	local forceNormal = (mousebutton == "LeftButton") and PP_UseNormalForLeftClick()
-	if forceNormal then
-		mousebutton = "RightButton"
-	end
+	-- this should've been based on the spell, not a generic 'the user knows at least one greater blessing' check
+	--local forceNormal = (mousebutton == "LeftButton") and PP_UseNormalForLeftClick()
+	--if forceNormal then
+	--	mousebutton = "RightButton"
+	--end
 
 	-- Greater Blessing: Clear
 	button:SetAttribute("macrotext1", nil)
@@ -4042,6 +4040,9 @@ function PallyPower:ButtonPreClick(button, mousebutton)
 			spell = false
 		elseif not IsInRaid() or ((IsInRaid() and mousebutton == "RightButton")) then
 			unitid, spell, gspell = self:GetUnitAndSpellSmart(classid, mousebutton)
+			if mousebutton == "LeftButton" and not unitid then
+				print("Don't have a greater blessing to buff this assignment, use a right click instead.")
+			end
 			if unitid then
 				if (self.isWrath and classid == 11) or (not self.isWrath and classid == 10) then
 					local unitPrefix = "party"
@@ -4782,7 +4783,6 @@ function PallyPower:LoadPreset()
 					C_Timer.After(
 						0.25,
 						function()
-							PallyPower:UpdateLayout()
 							PallyPower:UpdateRoster()
 						end
 					)
