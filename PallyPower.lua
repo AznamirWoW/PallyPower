@@ -2433,9 +2433,7 @@ function PallyPower:CreateLayout()
 	self.auraButton = CreateFrame("Button", "PallyPowerAura", self.Header, "PallyPowerAuraButtonTemplate")
 	self.auraButton:RegisterForClicks("LeftButtonDown", "AnyUp", "AnyDown")
 	if self.isForever then
-		self.rfButton:SetAttribute("type", "spell")
-		self.rfButton:SetAttribute("pressAndHoldAction", true)
-		self.rfButton:SetAttribute("typerelease", "spell")
+		self.rfButton:SetAttribute("useOnKeyDown", false)
 		
 		-- Battlegrounds hide our own auras: remember what these buttons cast (see NoteClickCast).
 		self.rfButton:HookScript("PostClick", function(btn, mouse)
@@ -3360,7 +3358,7 @@ function PallyPower:LayoutOathButton(cbNum, cButton, classIndex, active)
 	if InCombatLockdown() then return end
 	ob:SetAttribute("classID", classIndex or 0)
 	ob:SetAttribute("Display", 0)
-	local visible = active and PP_OathKnown() and isPally and self.opt.enabled
+	local visible = active and self.opt.showOathOfLight ~= false and PP_OathKnown() and isPally and self.opt.enabled
 		and ((GetNumGroupMembers() == 0 and self.opt.ShowWhenSolo) or (GetNumGroupMembers() > 0 and self.opt.ShowInParty))
 	if not visible then
 		ob:Hide()
@@ -3459,7 +3457,7 @@ function PallyPower:UpdateOathTimer()
 	self._ppOathRem = nil
 	if not ot then return end
 	local oath = self:OathName()
-	if not (oath and PP_OathKnown() and isPally and self.opt.enabled and ((GetNumGroupMembers() == 0 and self.opt.ShowWhenSolo) or (GetNumGroupMembers() > 0 and self.opt.ShowInParty))) then
+	if not (oath and self.opt.showOathOfLight ~= false and PP_OathKnown() and isPally and self.opt.enabled and ((GetNumGroupMembers() == 0 and self.opt.ShowWhenSolo) or (GetNumGroupMembers() > 0 and self.opt.ShowInParty))) then
 		ot:SetAlpha(0)
 		return
 	end

@@ -511,6 +511,28 @@ PallyPower.options = {
 								PallyPower:RFAssign(PallyPower.opt.rf)
 							end
 						},
+						oath_of_light = {
+							order = 2.5,
+							type = "toggle",
+							name = L["Oath of Light"],
+							desc = L["Show or hide the Oath of Light and its associated timer."],
+							width = 1.1,
+							hidden = function(info)
+								return not PallyPower.isForever
+							end,
+							disabled = function(info)
+								return InCombatLockdown() or PallyPower.opt.enabled == false or not isPally
+							end,
+							get = function(info)
+								return PallyPower.opt.showOathOfLight ~= false
+							end,
+							set = function(info, val)
+								if InCombatLockdown() then return end
+								PallyPower.opt.showOathOfLight = val
+								PallyPower:UpdateRoster()
+								PallyPower:UpdateOathTimer()
+							end
+						},
 						seal = {
 							order = 3,
 							type = "select",
