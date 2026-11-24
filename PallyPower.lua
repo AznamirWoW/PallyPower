@@ -2433,6 +2433,10 @@ function PallyPower:CreateLayout()
 	self.auraButton = CreateFrame("Button", "PallyPowerAura", self.Header, "PallyPowerAuraButtonTemplate")
 	self.auraButton:RegisterForClicks("LeftButtonDown", "AnyUp", "AnyDown")
 	if self.isForever then
+		self.rfButton:SetAttribute("type", "spell")
+		self.rfButton:SetAttribute("pressAndHoldAction", true)
+		self.rfButton:SetAttribute("typerelease", "spell")
+		
 		-- Battlegrounds hide our own auras: remember what these buttons cast (see NoteClickCast).
 		self.rfButton:HookScript("PostClick", function(btn, mouse)
 			PallyPower:NoteClickCast(btn:GetAttribute(mouse == "RightButton" and "spell2" or "spell1"))
