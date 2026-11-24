@@ -3500,13 +3500,15 @@ function PallyPower:UpdateOathTimer()
 	for _, unit in ipairs(roster) do check(unit.unitid) end
 	local _, _, icon = GetSpellInfo(OATH_ID)
 	ot.icon:SetTexture(icon)
-	ot.icon:SetDesaturated(rem == nil)
+	--ot.icon:SetDesaturated(rem == nil)
 	if rem then
+		ot.icon:SetVertexColor(1.0, 1.0, 1.0, 1.0)
 		ot.time:SetText(self:FormatTime(rem))
 		ot.time:SetTextColor(self:GetSeverityColor(rem / OATH_SECONDS))
 		if self._ppOathMode == "out" then ot:SetBackdropColor(self.opt.cBuffGood.r, self.opt.cBuffGood.g, self.opt.cBuffGood.b, self.opt.cBuffGood.t) end
 		self._ppOathRem = rem
 	else
+		ot.icon:SetVertexColor(0.75, 0.0, 0.0, 1.0)
 		ot.time:SetText("")
 		if self._ppOathMode == "out" then ot:SetBackdropColor(self.opt.cBuffNeedAll.r, self.opt.cBuffNeedAll.g, self.opt.cBuffNeedAll.b, self.opt.cBuffNeedAll.t) end
 	end
